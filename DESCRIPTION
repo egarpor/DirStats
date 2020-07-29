@@ -1,0 +1,23 @@
+Package: DirStats
+Type: Package
+Title: Nonparametric Methods for Directional Data
+Version: 0.1.5
+Date: 2020-07-28
+Authors@R: person(given = "Eduardo", family = "García-Portugués",
+                  role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es")
+Description: Nonparametric kernel density estimation, bandwidth selection, and
+    other utilities for analyzing directional data.
+License: GPL-3
+LazyData: true
+Depends:
+    R (>= 3.6.0)
+Imports:
+    movMF,
+    rotasym
+Suggests:
+    viridisLite
+URL: https://github.com/egarpor/DirStats
+BugReports: https://github.com/egarpor/DirStats
+Encoding: UTF-8
+RoxygenNote: 7.1.0
+Roxygen: list(old_usage = TRUE)

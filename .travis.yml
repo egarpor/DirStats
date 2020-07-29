@@ -1,0 +1,21 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: r
+r:
+  - 4.0.0
+cache: packages
+warnings_are_errors: false
+env:
+  global:
+    - PKG_LIBS = "-llapack"
+    - PKG_CXXFLAGS = "-std=c++11"
+sudo: required
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libglu1-mesa-dev
+      - libgsl0-dev
+      - gfortran
+      - libgfortran3

@@ -1,0 +1,17 @@
+
+year <- sub("-.*", "", meta$Date)
+note <- paste("R package version", meta$Version)
+
+citHeader("To cite DirStats in publications use:")
+
+citEntry(entry = "Manual",
+  title        = "{DirStats}: Nonparametric Methods for Directional Data",
+  author       = personList(as.person("Eduardo Garc\\'ia-Portugu\\'es")),
+  year         = year,
+  note         = note,
+  url          = "https://CRAN.R-project.org/package=DirStats",
+  textVersion  =
+  paste(paste0("García-Portugués, E. (", year, ")."),
+        "DirStats: Nonparametric Methods for Directional Data.",
+        paste0(note, "."), "https://CRAN.R-project.org/package=DirStats")
+)

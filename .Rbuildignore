@@ -1,0 +1,14 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.travis\.yml$
+^README$
+^README.*$
+^checks$
+^TODO$
+^data-raw$
+^application$
+^simulations$
+^CRAN-RELEASE$
+^cran-comments\.md$
+^LICENSE\.md$
+TODO.md
