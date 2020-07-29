@@ -37,7 +37,7 @@ concentration parameters, and \code{p} is the vector of mixture proportions.}
 a grid search on \code{h} is done. Only effective if \code{L = NULL}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
-to \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
+to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 
 \item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
@@ -47,6 +47,17 @@ Defaults to \code{FALSE}.}
 the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
 (to avoid numerical instabilities), and \code{10}.}
 }
+\value{
+Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
+\code{bw_dir_emi} returns a list with entries:
+\itemize{
+  \item{\code{h_opt}: cross-validation bandwidth.}
+  \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
+  \item{\code{MISE_opt}: minimum of the MISE loss.}
+  \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if
+   used (otherwise \code{NULL}).}
+}
+}
 \description{
 Plug-in bandwidth selectors for kernel density estimation
 with directional data, including Rule-Of-Thumb (ROT),
@@ -55,9 +66,9 @@ Asymptotic MIxtures (AMI), and Exact MIxtures (EMI).
 \details{
 See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
 selector is implemented according to Proposition 2, \bold{but} without
-the paper's typo in (6), \eqn{q = 2}, where an incorrect extra
-\eqn{\hat\kappa} appears premultiplying
-\eqn{(1 + 4 \hat\kappa^2) \sinh(2 \hat\kappa)}.
+the paper's typo in equation (6), case \eqn{q = 2}, where an incorrect
+extra \eqn{\hat\kappa} appears premultiplying
+\eqn{(1 + 4 \hat\kappa^2) \sinh(2 \hat\kappa)} in the denominator.
 
 The AMI selector uses \code{R_Psi_mixvmf} for computing the curvature
 term of a mixture of von Mises--Fisher densities.

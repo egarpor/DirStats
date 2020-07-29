@@ -26,8 +26,9 @@ of order 131.
 }
 \details{
 The approximation to the integral of \eqn{f} has the form
-\deqn{\int_{S^2} f(x, y, z) dx dy dz =
-4 \pi \sum_{i = 1}^N w_i f(x_i, y_i, z_i)}
+\deqn{\int_{S^2} f(x, y, z) \,\mathrm{d}x \,\mathrm{d}y \,\mathrm{d}z =
+4 \pi \sum_{i = 1}^N w_i f(x_i, y_i, z_i)}{\int_{S^2} f(x, y, z)
+dx dy dz = 4 \pi \sum_{i = 1}^N w_i f(x_i, y_i, z_i)}
 where \eqn{N = 5810}. The nodes (in spherical coordinates) and weights
 are processed from
 \href{https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/lebedev_131.txt

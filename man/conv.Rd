@@ -34,7 +34,7 @@ Position in \eqn{S^2} (\code{to_sph}) or in \eqn{[0, 2\pi) \times [0, \pi]}
 }
 \description{
 Normalization of data in \eqn{R^{q + 1}} to \eqn{S^q}.
-Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and
+Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and between
 \eqn{S^2} and \eqn{[0, 2\pi) \times [0, \pi]}.
 }
 \examples{

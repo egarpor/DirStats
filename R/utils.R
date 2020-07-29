@@ -2,8 +2,8 @@
 
 #' @title Integration routines
 #'
-#' @description Several quadrature rules for using on \eqn{S^1}, \eqn{S^2}, and
-#' \eqn{S^q}, \eqn{q \ge 3}.
+#' @description Several quadrature rules for integration of functions on
+#' \eqn{S^1}, \eqn{S^2}, and \eqn{S^q}, \eqn{q \ge 3}.
 #'
 #' @param f function to be integrated on \eqn{S^q}. Must be vectorized and
 #' accept matrix inputs of size \code{c(nx, q + 1)}.
@@ -84,7 +84,7 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 #' @title Convenience functions
 #'
 #' @description Normalization of data in \eqn{R^{q + 1}} to \eqn{S^q}.
-#' Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and
+#' Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and between
 #' \eqn{S^2} and \eqn{[0, 2\pi) \times [0, \pi]}.
 #'
 #' @param x matrix or vector, in \eqn{S^1} for \code{to_cir}.

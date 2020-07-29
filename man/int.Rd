@@ -35,8 +35,8 @@ input? Defaults to \code{TRUE}.}
 A scalar approximating the integral.
 }
 \description{
-Several quadrature rules for using on \eqn{S^1}, \eqn{S^2}, and
-\eqn{S^q}, \eqn{q \ge 3}.
+Several quadrature rules for integration of functions on
+\eqn{S^1}, \eqn{S^2}, and \eqn{S^q}, \eqn{q \ge 3}.
 }
 \details{
 \code{int_cir} is an extension of equation (4.1.11) in Press et al. (1997),

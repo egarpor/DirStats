@@ -1,10 +1,10 @@
 
 
-#' @title Fitting of mixtures of von Mises--Fisher distributions
+#' @title Fitting mixtures of von Mises--Fisher distributions
 #'
-#' @description Fitting by the Expectation-Maximization algorithm of
-#' mixtures of von Mises--Fisher distributions, with determination of the
-#' optimal number of components.
+#' @description Fitting mixtures of von Mises--Fisher distributions by the
+#' Expectation-Maximization algorithm, with determination of the optimal
+#' number of mixture components.
 #'
 #' @inheritParams kde_dir
 #' @param M_bound bound for the number of components in the mixtures. If it is
@@ -31,12 +31,17 @@
 #'   of the fitted mixtures.}
 #' }
 #' @details
-#' See Algorithm 3 in García-Portugués (2013).
+#' See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
+#' fit is performed with \code{\link[movMF]{movMF}}.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
 #' Journal of Statistics}, 7:1655--1685.
 #' \url{https://doi.org/10.1214/13-ejs821}
+#'
+#' Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
+#' von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
+#' 58(10):1--31. \url{https://doi.org/10.18637/jss.v058.i10}
 #' @examples
 #' # Sample
 #' q <- 2
@@ -230,7 +235,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using
 #' the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
 #' (to avoid numerical instabilities), and \code{10}.
-#' @value Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
+#' @return Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
 #' \code{bw_dir_emi} returns a list with entries:
 #' \itemize{
 #'   \item{\code{h_opt}: cross-validation bandwidth.}
@@ -242,9 +247,9 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' @details
 #' See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
 #' selector is implemented according to Proposition 2, \bold{but} without
-#' the paper's typo in (6), \eqn{q = 2}, where an incorrect extra
-#' \eqn{\hat\kappa} appears premultiplying
-#' \eqn{(1 + 4 \hat\kappa^2) \sinh(2 \hat\kappa)}.
+#' the paper's typo in equation (6), case \eqn{q = 2}, where an incorrect
+#' extra \eqn{\hat\kappa} appears premultiplying
+#' \eqn{(1 + 4 \hat\kappa^2) \sinh(2 \hat\kappa)} in the denominator.
 #'
 #' The AMI selector uses \code{R_Psi_mixvmf} for computing the curvature
 #' term of a mixture of von Mises--Fisher densities.

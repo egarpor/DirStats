@@ -18,7 +18,7 @@ bw_dir_lscv(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
-to \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
+to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 
 \item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
 (von Mises--Fisher kernel) if \code{NULL} (default).}

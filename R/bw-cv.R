@@ -6,7 +6,7 @@
 #' selectors for kernel density estimation with directional data.
 #'
 #' @param h_grid vector of bandwidths for performing a grid search. Defaults
-#' to \code{exp(seq(log(0.05), log(1.5), l = 100))}.
+#' to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.
 #' @inheritParams kde_dir
 #' @param plot_it display an informative plot on the optimization's grid search?
 #' Defaults to \code{FALSE}.

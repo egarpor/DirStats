@@ -2,7 +2,7 @@
 % Please edit documentation in R/bw-pi.R
 \name{bic_vmf_mix}
 \alias{bic_vmf_mix}
-\title{Fitting of mixtures of von Mises--Fisher distributions}
+\title{Fitting mixtures of von Mises--Fisher distributions}
 \usage{
 bic_vmf_mix(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   crit = "BIC", iterative = TRUE, plot_it = FALSE, verbose = FALSE,
@@ -45,12 +45,13 @@ A list with entries:
 }
 }
 \description{
-Fitting by the Expectation-Maximization algorithm of
-mixtures of von Mises--Fisher distributions, with determination of the
-optimal number of components.
+Fitting mixtures of von Mises--Fisher distributions by the
+Expectation-Maximization algorithm, with determination of the optimal
+number of mixture components.
 }
 \details{
-See Algorithm 3 in García-Portugués (2013).
+See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
+fit is performed with \code{\link[movMF]{movMF}}.
 }
 \examples{
 # Sample
@@ -69,4 +70,8 @@ García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
 \url{https://doi.org/10.1214/13-ejs821}
+
+Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
+von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
+58(10):1--31. \url{https://doi.org/10.18637/jss.v058.i10}
 }
