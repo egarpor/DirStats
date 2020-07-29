@@ -2,7 +2,7 @@ Package: DirStats
 Type: Package
 Title: Nonparametric Methods for Directional Data
 Version: 0.1.5
-Date: 2020-07-28
+Date: 2020-07-29
 Authors@R: person(given = "Eduardo", family = "García-Portugués",
                   role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es")
 Description: Nonparametric kernel density estimation, bandwidth selection, and
