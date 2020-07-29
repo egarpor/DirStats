@@ -2,8 +2,8 @@
       implicit none
 
       ! Arguments
-      Double Precision data_dir(n, nq + 1), B(kk)
       Integer n, nq, kk, lenh
+      Double Precision data_dir(n, nq + 1), B(kk)
       Double Precision h(lenh), Cq(lenh), Cq2(lenh)
       Double Precision CV(lenh)
 
