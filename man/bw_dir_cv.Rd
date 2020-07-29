@@ -6,11 +6,11 @@
 \alias{bw_dir_lscv}
 \title{Cross-validation bandwidth selectors for directional data}
 \usage{
-bw_dir_lcv(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100), L = NULL,
+bw_dir_lcv(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)), L = NULL,
   plot_it = FALSE, optim = TRUE, optim_par = 0.25, optim_lower = 0.06,
   optim_upper = 10)
 
-bw_dir_lscv(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
+bw_dir_lscv(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   L = NULL, plot_it = FALSE, optim = TRUE, R_code = FALSE,
   optim_par = 0.25, optim_lower = 0.06, optim_upper = 10)
 }
@@ -18,12 +18,12 @@ bw_dir_lscv(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
-to \code{10^seq(log10(0.05), log10(2), l = 100)}.}
+to \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 
 \item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
 (von Mises--Fisher kernel) if \code{NULL} (default).}
 
-\item{plot_it}{display an informative plot on the optimization?
+\item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
 \item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise,
@@ -62,12 +62,12 @@ samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
 # bw_dir_lcv
 bw_dir_lcv(data = samp, optim = TRUE)$h_opt
-bw_dir_lcv(data = samp, optim = FALSE)$h_opt
+bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
 
 # bw_dir_lscv
 bw_dir_lscv(data = samp, optim = TRUE)$h_opt
-bw_dir_lscv(data = samp, optim = FALSE)$h_opt
+bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
 bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt
 }

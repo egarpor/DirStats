@@ -6,9 +6,9 @@
 #' selectors for kernel density estimation with directional data.
 #'
 #' @param h_grid vector of bandwidths for performing a grid search. Defaults
-#' to \code{10^seq(log10(0.05), log10(2), l = 100)}.
+#' to \code{exp(seq(log(0.05), log(1.5), l = 100))}.
 #' @inheritParams kde_dir
-#' @param plot_it display an informative plot on the optimization?
+#' @param plot_it display an informative plot on the optimization's grid search?
 #' Defaults to \code{FALSE}.
 #' @param optim run an optimization? Defaults to \code{TRUE}. Otherwise,
 #' a grid search on \code{h} is done. Only effective if \code{L = NULL}.
@@ -41,12 +41,12 @@
 #'
 #' # bw_dir_lcv
 #' bw_dir_lcv(data = samp, optim = TRUE)$h_opt
-#' bw_dir_lcv(data = samp, optim = FALSE)$h_opt
+#' bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 #' bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
 #'
 #' # bw_dir_lscv
 #' bw_dir_lscv(data = samp, optim = TRUE)$h_opt
-#' bw_dir_lscv(data = samp, optim = FALSE)$h_opt
+#' bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 #' bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
 #' bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt
 #' @name bw_dir_cv
@@ -55,7 +55,7 @@
 #' @useDynLib DirStats
 #' @rdname bw_dir_cv
 #' @export
-bw_dir_lcv <- function(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
+bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                        L = NULL, plot_it = FALSE, optim = TRUE,
                        optim_par = 0.25, optim_lower = 0.06,
                        optim_upper = 10) {
@@ -146,11 +146,11 @@ bw_dir_lcv <- function(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
   # Warning
   if (h_grid[ind_min] == max(h_grid) | h_grid[ind_min] == min(h_grid)) {
 
-    warning("h_opt is in the extreme of h_grid")
+    warning("h_opt is at the exteme of h_grid")
 
   }
 
-  # Return
+  # Result
   return(list(h_opt = h_grid[ind_min], h_grid = h_grid,
               CV_opt = CV[ind_min], CV_grid = CV))
 
@@ -160,7 +160,7 @@ bw_dir_lcv <- function(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
 #' @rdname bw_dir_cv
 #' @useDynLib DirStats
 #' @export
-bw_dir_lscv <- function(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
+bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                         L = NULL, plot_it = FALSE, optim = TRUE, R_code = FALSE,
                         optim_par = 0.25, optim_lower = 0.06,
                         optim_upper = 10) {
@@ -308,11 +308,11 @@ bw_dir_lscv <- function(data, h_grid = 10^seq(log10(0.05), log10(2), l = 100),
   # Warning
   if (h_grid[ind_min] == max(h_grid) | h_grid[ind_min] == min(h_grid)) {
 
-    warning("h_opt is in the extreme of h_grid")
+    warning("h_opt is at the exteme of h_grid")
 
   }
 
-  # Return
+  # Result
   return(list(h_opt = h_grid[ind_min], h_grid = h_grid,
               CV_opt = CV[ind_min], CV_grid = CV))
 

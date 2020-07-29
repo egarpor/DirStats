@@ -57,8 +57,8 @@ q <- 2
 n <- 300
 set.seed(42)
 samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-              rotasym::r_vMF(n = n/ 3, mu = c(rep(0, q), -1), kappa = 5),
-              rotasym::r_vMF(n = n/ 3, mu = c(1, rep(0, q)), kappa = 5))
+              rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+              rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
 
 # LCV bandwidth
 (h_LCV <- bw_dir_lcv(data = samp)$h_opt)
@@ -80,7 +80,7 @@ fit_mix <- bic_vmf_mix(data = samp)
 #> [1] 0.2054242
 
 # EMI bandwidth
-(h_EMI <- bw_dir_emi(data = samp, fit_mix = fit_mix))
+(h_EMI <- bw_dir_emi(data = samp, fit_mix = fit_mix)$h_opt)
 #> [1] 0.22527
 ```
 

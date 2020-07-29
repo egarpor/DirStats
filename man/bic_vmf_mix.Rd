@@ -25,7 +25,7 @@ of mixture components. Defaults to \code{3}.}
 \item{iterative}{keep exploring higher number of components if the optimum
 is attained at \code{M_bound}? Defaults to \code{TRUE}.}
 
-\item{plot_it}{display an informative plot on the optimization?
+\item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
 \item{verbose}{display fitting progress? Defaults to \code{FALSE}.}
@@ -58,8 +58,8 @@ q <- 2
 n <- 300
 set.seed(42)
 samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-              rotasym::r_vMF(n = n/ 3, mu = c(rep(0, q), -1), kappa = 5),
-              rotasym::r_vMF(n = n/ 3, mu = c(1, rep(0, q)), kappa = 5))
+              rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+              rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
 
 # Mixture fit
 bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)

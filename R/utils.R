@@ -84,7 +84,7 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 #' @title Convenience functions
 #'
 #' @description Normalization of data in \eqn{R^{q + 1}} to \eqn{S^q}.
-#' Transformation between \eqn{S^1} and \eqn{[0, 2\pi)}, and
+#' Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and
 #' \eqn{S^2} and \eqn{[0, 2\pi) \times [0, \pi]}.
 #'
 #' @param x matrix or vector, in \eqn{S^1} for \code{to_cir}.

@@ -15,7 +15,7 @@ bw_dir_ami(data, fit_mix = NULL, L = NULL)
 R_Psi_mixvmf(q, mu, kappa, p)
 
 bw_dir_emi(data, fit_mix = NULL, optim = TRUE,
-  h_grid = 10^seq(log10(0.05), log10(2), l = 100), plot_it = TRUE,
+  h_grid = exp(seq(log(0.05), log(1.5), l = 100)), plot_it = TRUE,
   optim_par = 0.25, optim_lower = 0.06, optim_upper = 10)
 }
 \arguments{
@@ -37,9 +37,9 @@ concentration parameters, and \code{p} is the vector of mixture proportions.}
 a grid search on \code{h} is done. Only effective if \code{L = NULL}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
-to \code{10^seq(log10(0.05), log10(2), l = 100)}.}
+to \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 
-\item{plot_it}{display an informative plot on the optimization?
+\item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
 \item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
@@ -82,7 +82,7 @@ bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x))
 
 # EMI
 bw_dir_emi(samp)
-bw_dir_emi(samp, fit_mix = fit_mix)
+bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors

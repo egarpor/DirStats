@@ -43,8 +43,8 @@
 #' n <- 300
 #' set.seed(42)
 #' samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-#'               rotasym::r_vMF(n = n/ 3, mu = c(rep(0, q), -1), kappa = 5),
-#'               rotasym::r_vMF(n = n/ 3, mu = c(1, rep(0, q)), kappa = 5))
+#'               rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+#'               rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
 #'
 #' # Mixture fit
 #' bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
@@ -230,6 +230,15 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using
 #' the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
 #' (to avoid numerical instabilities), and \code{10}.
+#' @value Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
+#' \code{bw_dir_emi} returns a list with entries:
+#' \itemize{
+#'   \item{\code{h_opt}: cross-validation bandwidth.}
+#'   \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
+#'   \item{\code{MISE_opt}: minimum of the MISE loss.}
+#'   \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if
+#'    used (otherwise \code{NULL}).}
+#' }
 #' @details
 #' See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
 #' selector is implemented according to Proposition 2, \bold{but} without
@@ -264,7 +273,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #'
 #' # EMI
 #' bw_dir_emi(samp)
-#' bw_dir_emi(samp, fit_mix = fit_mix)
+#' bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
 #' @name bw_dir_pi
 
 
@@ -426,7 +435,7 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 #' @rdname bw_dir_pi
 #' @export
 bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
-                       h_grid = 10^seq(log10(0.05), log10(2), l = 100),
+                       h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                        plot_it = TRUE, optim_par = 0.25, optim_lower = 0.06,
                        optim_upper = 10) {
 
@@ -524,61 +533,40 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
   if (optim) {
 
     # Search for the minimum
-    opt <- tryCatch(optim(fn = function(x) mise_star(h = x),
-                          par = optim_par, lower = optim_lower,
-                          upper = optim_upper, method = "L-BFGS-B"),
-                    silent = TRUE, error = function(e) NULL)
+    opt <- optim(fn = function(x) mise_star(h = x), par = optim_par,
+                 lower = optim_lower, upper = optim_upper, method = "L-BFGS-B")
 
-    # Run grid search?
-    if (is.null(opt)) {
-
-      # Run grid search
-      warning("Optimization failed, running grid search")
-
-      # Grid search
-      CV <- sapply(h_grid, mise_star)
-
-      # Index of the minimun CV
-      ind <- which.min(CV)
-
-      # Warning if extreme
-      if (h_grid[ind] == max(h_grid) | h_grid[ind] == min(h_grid)) {
-
-        warning("h_opt is at the extreme of the grid")
-
-      }
-
-    } else {
-
-      return(opt$par)
-
-    }
+    # Result
+    return(list(h_opt = opt$par, h_grid = NULL, MISE_opt = opt$value,
+                MISE_grid = NULL))
 
   } else {
 
     # Grid search
-    CV <- sapply(h_grid, mise_star)
+    MISE <- sapply(h_grid, mise_star)
 
     # Index of the minimun CV
-    ind <- which.min(CV)
+    ind_min <- which.min(MISE)
 
     # Warning if extreme
-    if (h_grid[ind] == max(h_grid) | h_grid[ind] == min(h_grid)) {
+    if (h_grid[ind_min] == max(h_grid) | h_grid[ind_min] == min(h_grid)) {
 
-      warning("h_opt is at the extreme of the grid")
+      warning("h_opt at the extreme of h_grid")
 
     }
 
     # Plot?
     if (plot_it) {
 
-      plot(h_grid, CV, type = "l", xlab = "h", ylab = "MISE")
+      plot(h_grid, MISE, type = "l", xlab = "h", ylab = "MISE")
       rug(h_grid)
-      abline(v = h_grid[ind], col = 2)
+      abline(v = h_grid[ind_min], col = 2)
 
     }
 
-    return(h_grid[ind])
+    # Result
+    return(list(h_opt = h_grid[ind_min], h_grid = h_grid,
+                MISE_opt = MISE[ind_min], MISE_grid = MISE))
 
   }
 
