@@ -518,6 +518,8 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
     } else {
 
+      old <- .Random.seed
+      on.exit({.Random.seed <<- old})
       set.seed(123456789)
       int <- int_hypsph(f = integrand, q = q, M = 1e4, h = h)
 

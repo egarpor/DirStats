@@ -26,12 +26,28 @@
 #'   \item{\code{CV_grid}: value of the CV function at \code{h_grid}, if used
 #'   (otherwise \code{NULL}).}
 #' }
+#' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
 #' When \code{L = NULL}, faster FORTRAN code is employed.
+#'
+#' @source
+#' The function \code{bw_dir_lscv} employs Netlib's subroutine
+#' \href{https://www.netlib.org/specfun/ribesl}{\code{ribesl}} for evaluating
+#' the modified Bessel function of the first kind. The subroutine is based
+#' on a program by Sookne (1973) and was modified by W. J. Cody and L. Stoltz.
+#' An earlier version was published in Cody (1983).
 #' @references
+#' Cody, W. J. (1983). Algorithm 597: Sequence of modified Bessel functions of
+#' the first kind. \emph{ACM Transactions on Mathematical Software},
+#' 9(2):242--245. \url{https://doi.org/10.1145/357456.357462}
+#'
 #' Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 #' with spherical data. \emph{Biometrika}, 74(4):751--762.
 #' \url{https://doi.org/10.1093/biomet/74.4.751}
+#'
+#' Sookne, D. J. (1973). Bessel functions of real argument and integer order.
+#' \emph{Journal of Research of the National Bureau of Standards},
+#' 77B:125--132.
 #' @examples
 #' # Sample
 #' n <- 25
@@ -278,6 +294,8 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
     } else {
 
+      old <- .Random.seed
+      on.exit({.Random.seed <<- old})
       set.seed(123456789)
       int <- sapply(seq_along(h_grid), function(hi) {
         int_hypsph(f = function(x) kde_dir(x = x, data = data,
