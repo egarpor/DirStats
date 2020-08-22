@@ -22,7 +22,7 @@
 #' \href{https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/lebedev_131.txt
 #' }{lebedev_131.txt}.
 #' @source \url{
-#' http://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
+#' https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
 #' }
 #' @references
 #' Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the

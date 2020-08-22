@@ -70,8 +70,11 @@ the paper's typo in equation (6), case \eqn{q = 2}, where an incorrect
 extra \eqn{\hat\kappa} appears premultiplying
 \eqn{(1 + 4 \hat\kappa^2) \sinh(2 \hat\kappa)} in the denominator.
 
-The AMI selector uses \code{R_Psi_mixvmf} for computing the curvature
+\code{bw_dir_ami} uses \code{R_Psi_mixvmf} for computing the curvature
 term of a mixture of von Mises--Fisher densities.
+
+\code{bw_dir_emi} employs Monte Carlo integration for \eqn{q > 2}, which
+results in a random output. Use \code{set.seed} before to avoid it.
 }
 \examples{
 # Sample

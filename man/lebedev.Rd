@@ -13,7 +13,7 @@ A data frame with 5810 rows and two variables:
 }
 \source{
 \url{
-http://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
+https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
 }
 }
 \usage{

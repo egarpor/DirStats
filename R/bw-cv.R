@@ -30,6 +30,8 @@
 #' \code{data} is not checked to have unit norm, so the user must be careful.
 #' When \code{L = NULL}, faster FORTRAN code is employed.
 #'
+#' \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
+#' results in a random output. Use \code{set.seed} before to avoid it.
 #' @source
 #' The function \code{bw_dir_lscv} employs Netlib's subroutine
 #' \href{https://www.netlib.org/specfun/ribesl}{\code{ribesl}} for evaluating
@@ -61,6 +63,7 @@
 #' bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
 #'
 #' # bw_dir_lscv
+#' set.seed(42)
 #' bw_dir_lscv(data = samp, optim = TRUE)$h_opt
 #' bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 #' bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
@@ -294,9 +297,6 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
     } else {
 
-      old <- .Random.seed
-      on.exit({.Random.seed <<- old})
-      set.seed(123456789)
       int <- sapply(seq_along(h_grid), function(hi) {
         int_hypsph(f = function(x) kde_dir(x = x, data = data,
                                            h = h_grid[hi])^2,

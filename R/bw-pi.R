@@ -251,8 +251,11 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' extra \eqn{\hat\kappa} appears premultiplying
 #' \eqn{(1 + 4 \hat\kappa^2) \sinh(2 \hat\kappa)} in the denominator.
 #'
-#' The AMI selector uses \code{R_Psi_mixvmf} for computing the curvature
+#' \code{bw_dir_ami} uses \code{R_Psi_mixvmf} for computing the curvature
 #' term of a mixture of von Mises--Fisher densities.
+#'
+#' \code{bw_dir_emi} employs Monte Carlo integration for \eqn{q > 2}, which
+#' results in a random output. Use \code{set.seed} before to avoid it.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
@@ -518,9 +521,6 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
     } else {
 
-      old <- .Random.seed
-      on.exit({.Random.seed <<- old})
-      set.seed(123456789)
       int <- int_hypsph(f = integrand, q = q, M = 1e4, h = h)
 
     }

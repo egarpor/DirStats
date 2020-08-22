@@ -61,6 +61,9 @@ selectors for kernel density estimation with directional data.
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.
 When \code{L = NULL}, faster FORTRAN code is employed.
+
+\code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
+results in a random output. Use \code{set.seed} before to avoid it.
 }
 \examples{
 # Sample
@@ -75,6 +78,7 @@ bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
 
 # bw_dir_lscv
+set.seed(42)
 bw_dir_lscv(data = samp, optim = TRUE)$h_opt
 bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
 bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
