@@ -18,9 +18,11 @@ NOTE double-checked and correctly spelled:
 
 * This is a new release.
 
-## CRAN changes
+## Resubmission
+
+This is a resubmission. In this version I have:
 
 * Removed set.seed()
 * Extended DESCRIPTION
-* Credits to ribesl.f90
+* Credited the authors of ribesl.f90
 
