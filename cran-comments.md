@@ -7,22 +7,11 @@
 * Ubuntu Linux 16.04 LTS, R-release, GCC (on R-hub)
 * Fedora Linux, R-devel, clang, gfortran (on R-hub)
 * Debian Linux, R-devel, GCC ASAN/UBSAN (on R-hub)
-
-NOTE double-checked and correctly spelled:
-
-- "Found the following (possibly) invalid URLs"
+* Oracle Solaris 10, x86, 32 bit, R-release (on R-hub)
+* Oracle Solaris 10, x86, 32 bit, R-release, Oracle Developer Studio 12.6 (on R-hub)
 
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
 
-* This is a new release.
-
-## Resubmission
-
-This is a resubmission. In this version I have:
-
-* Removed set.seed()
-* Extended DESCRIPTION
-* Credited the authors of ribesl.f90
-
+* "Days since last update: 1" I am resubmitting to fix the error in https://www.r-project.org/nosvn/R.check/r-patched-solaris-x86/DirStats-00check.html Apparently it is fixed in the Oracle Solaris 10 machines of R-hub (see above).
