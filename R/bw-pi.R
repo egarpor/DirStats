@@ -513,7 +513,7 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
     # Integral
     if (q == 1) {
 
-      int <- int_cir(fxs = integrand, N = 500, h = h)
+      int <- int_cir(f = integrand, N = 500, h = h)
 
     } else if (q == 2) {
 
