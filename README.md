@@ -1,13 +1,14 @@
 DirStats
 ========
 
-<!-- badges: start -->
-[![License](https://img.shields.io/badge/license-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Travis build
-status](https://travis-ci.org/egarpor/DirStats.svg?branch=master)](https://travis-ci.org/egarpor/DirStats)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/DirStats)](https://cran.r-project.org/package=DirStats)
-<!-- badges: end -->
+[![License:
+GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![](https://travis-ci.org/egarpor/DirStats.svg?branch=master)](https://travis-ci.org/egarpor/DirStats)
+[![](https://www.r-pkg.org/badges/version/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
+[![](http://cranlogs.r-pkg.org/badges/last-month/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
+
+<!-- <img src="" alt="DirStats  hexlogo" align="right" width="200" style="padding: 0 15px; float: right;"/> -->
 
 Overview
 --------
@@ -44,9 +45,9 @@ library(DirStats)
 Usage
 -----
 
-The following are examples of the usage of the Bai et al. (1988)’s
+The following are examples of the usage of the Bai et al. (1988)’s
 kernel density estimator, the cross-validatory bandwidth selectors in
-Hall et al. (1987), and the plug-in bandwidth selectors in
+Hall et al. (1987), and the plug-in bandwidth selectors in
 García-Portugués (2013).
 
 ### Compute bandwidths
