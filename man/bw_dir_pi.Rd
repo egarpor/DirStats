@@ -102,5 +102,5 @@ bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
-\url{https://doi.org/10.1214/13-ejs821}
+\doi{10.1214/13-ejs821}
 }

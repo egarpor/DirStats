@@ -69,9 +69,9 @@ bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
-\url{https://doi.org/10.1214/13-ejs821}
+\doi{10.1214/13-ejs821}
 
 Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
-58(10):1--31. \url{https://doi.org/10.18637/jss.v058.i10}
+58(10):1--31. \doi{10.18637/jss.v058.i10}
 }

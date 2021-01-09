@@ -1,6 +1,6 @@
 ## Test environments
 
-* local R installation, R 3.6.3
+* local R installation, R 4.0.3
 * ubuntu 16.04 (on travis-ci), R 3.6.3
 * win-builder (release, devel)
 * Windows Server 2008 R2 SP1, R-devel, 32/64 bit (on R-hub)
@@ -14,6 +14,4 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-* "Days since last update: 1" I am resubmitting to fix the error in https://www.r-project.org/nosvn/R.check/r-patched-solaris-x86/DirStats-00check.html Apparently it is fixed in the Oracle Solaris 10 machines of R-hub (see above).
+0 errors | 0 warnings | 0 note

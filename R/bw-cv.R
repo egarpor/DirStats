@@ -41,11 +41,11 @@
 #' @references
 #' Cody, W. J. (1983). Algorithm 597: Sequence of modified Bessel functions of
 #' the first kind. \emph{ACM Transactions on Mathematical Software},
-#' 9(2):242--245. \url{https://doi.org/10.1145/357456.357462}
+#' 9(2):242--245. \doi{10.1145/357456.357462}
 #'
 #' Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 #' with spherical data. \emph{Biometrika}, 74(4):751--762.
-#' \url{https://doi.org/10.1093/biomet/74.4.751}
+#' \doi{10.1093/biomet/74.4.751}
 #'
 #' Sookne, D. J. (1973). Bessel functions of real argument and integer order.
 #' \emph{Journal of Research of the National Bureau of Standards},
