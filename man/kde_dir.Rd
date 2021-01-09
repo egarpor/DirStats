@@ -78,5 +78,5 @@ lambda_L(L = function(x) exp(-x), q = q)
 Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
 density function of directional data. \emph{Journal of Multivariate
 Analysis}, 27(1):24--39.
-\url{https://doi.org/10.1016/0047-259X(88)90113-3}
+\doi{10.1016/0047-259X(88)90113-3}
 }
