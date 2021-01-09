@@ -112,13 +112,13 @@ References
 Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
 density function of directional data. *Journal of Multivariate
 Analysis*, 27(1):24–39.
-<a href="https://doi.org/10.1016/0047-259X(88)90113-3" class="uri">https://doi.org/10.1016/0047-259X(88)90113-3</a>
+[doi:10.1016/0047-259X(88)90113-3](https://doi.org/10.1016/0047-259X(88)90113-3).
 
 García-Portugués, E. (2013). Exact risk improvement of bandwidth
 selectors for kernel density estimation with directional data.
 *Electronic Journal of Statistics*, 7:1655–1685.
-<a href="https://doi.org/10.1214/13-ejs821" class="uri">https://doi.org/10.1214/13-ejs821</a>
+[doi:10.1214/13-ejs821](https://doi.org/10.1214/13-ejs821).
 
 Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density
 estimation with spherical data. *Biometrika*, 74(4):751–762.
-<a href="https://doi.org/10.1093/biomet/74.4.751" class="uri">https://doi.org/10.1093/biomet/74.4.751</a>
+[doi:10.1093/biomet/74.4.751](https://doi.org/10.1093/biomet/74.4.751).
