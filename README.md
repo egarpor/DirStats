@@ -1,25 +1,22 @@
-DirStats
-========
+# DirStats
 
 [![License:
 GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![](https://travis-ci.org/egarpor/DirStats.svg?branch=master)](https://travis-ci.org/egarpor/DirStats)
+[![](https://app.travis-ci.com/egarpor/DirStats.svg?branch=master)](https://app.travis-ci.com/egarpor/DirStats)
 [![](https://www.r-pkg.org/badges/version/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/last-month/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 
 <!-- <img src="" alt="DirStats  hexlogo" align="right" width="200" style="padding: 0 15px; float: right;"/> -->
 
-Overview
---------
+## Overview
 
 Currently implementing nonparametric kernel density estimation,
 bandwidth selection, and other utilities for analyzing directional data.
 Further nonparametric tools expected to be included in subsequent
 releases.
 
-Installation
-------------
+## Installation
 
 Get the released version from CRAN:
 
@@ -42,8 +39,7 @@ install_github("egarpor/DirStats")
 library(DirStats)
 ```
 
-Usage
------
+## Usage
 
 The following are examples of the usage of the Bai et al. (1988)’s
 kernel density estimator, the cross-validatory bandwidth selectors in
@@ -106,8 +102,7 @@ points(to_rad(samp), pch = 16)
 
 <img src="README/README-kde-1.png" style="display: block; margin: auto;" />
 
-References
-----------
+## References
 
 Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
 density function of directional data. *Journal of Multivariate
