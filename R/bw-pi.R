@@ -238,7 +238,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' @return Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
 #' \code{bw_dir_emi} returns a list with entries:
 #' \itemize{
-#'   \item{\code{h_opt}: cross-validation bandwidth.}
+#'   \item{\code{h_opt}: selected bandwidth.}
 #'   \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
 #'   \item{\code{MISE_opt}: minimum of the MISE loss.}
 #'   \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if
