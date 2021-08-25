@@ -18,10 +18,10 @@ DirStats
 cat(
   badger::badge_license(license = "GPLv3", color = "blue",
                         url = "https://www.gnu.org/licenses/gpl-3.0"),
-  "[![](https://app.travis-ci.com/egarpor/DirStats.svg?branch=master)](https://app.travis-ci.com/egarpor/DirStats)",
-	badger::badge_cran_release(color = "green"),
-	badger::badge_cran_download(pkg = NULL, type = "grand-total"),
-	badger::badge_cran_download(pkg = NULL, type = "last-month")
+  badger::badge_github_actions(action = "R-CMD-check"),
+  badger::badge_cran_release(color = "green"),
+  badger::badge_cran_download(pkg = NULL, type = "grand-total"),
+  badger::badge_cran_download(pkg = NULL, type = "last-month")
 )
 ```
 

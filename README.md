@@ -2,7 +2,8 @@
 
 [![License:
 GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![](https://app.travis-ci.com/egarpor/DirStats.svg?branch=master)](https://app.travis-ci.com/egarpor/DirStats)
+[![R build
+status](https://github.com/egarpor/DirStats/workflows/R-CMD-check/badge.svg)](https://github.com/egarpor/DirStats/actions)
 [![](https://www.r-pkg.org/badges/version/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/last-month/DirStats?color=green)](https://cran.r-project.org/package=DirStats)

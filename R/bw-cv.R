@@ -20,7 +20,7 @@
 #' (to avoid numerical instabilities), and \code{10}.
 #' @return A list with entries:
 #' \itemize{
-#'   \item{\code{h_opt}: cross-validation bandwidth.}
+#'   \item{\code{h_opt}: selected bandwidth.}
 #'   \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
 #'   \item{\code{CV_opt}: minimum of the CV loss.}
 #'   \item{\code{CV_grid}: value of the CV function at \code{h_grid}, if used
