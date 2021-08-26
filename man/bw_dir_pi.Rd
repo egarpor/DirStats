@@ -51,7 +51,7 @@ the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
 Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
 \code{bw_dir_emi} returns a list with entries:
 \itemize{
-  \item{\code{h_opt}: cross-validation bandwidth.}
+  \item{\code{h_opt}: selected bandwidth.}
   \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
   \item{\code{MISE_opt}: minimum of the MISE loss.}
   \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if

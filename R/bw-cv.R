@@ -335,4 +335,3 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
               CV_opt = CV[ind_min], CV_grid = CV))
 
 }
-

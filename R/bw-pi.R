@@ -318,13 +318,13 @@ bw_dir_rot <- function(data) {
   } else {
 
     num <- 4 * sqrt(pi) * besselI(nu = (q - 1) / 2, x = kappa)^2
-    den <- kappa^((q + 1)/2) *
+    den <- kappa^((q + 1) / 2) *
       (2 * q * besselI(nu = (q + 1) / 2, x = 2 * kappa) +
          (2 + q) * kappa * besselI(nu = (q + 3) / 2, x = 2 * kappa)) * n
 
   }
 
-  return((num/den) ^ (1 / (q + 4)))
+  return((num / den) ^ (1 / (q + 4)))
 
 }
 
@@ -382,7 +382,7 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
     q <- length(mu) - 1
     log_const <- rotasym::c_vMF(p = q + 1, kappa = kappa, log = TRUE)
     Psi <- drop(kappa * exp(log_const + kappa * x %*% mu) *
-                  (-x %*% mu + kappa/q * (1 - (x %*% mu)^2)))
+                  (-x %*% mu + kappa / q * (1 - (x %*% mu)^2)))
     return(Psi)
 
   }
@@ -405,7 +405,7 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
     # Curvature integrand
     integrand <- function(x) {
 
-      rowSums(sapply(1:length(p), function(i)
+      rowSums(sapply(seq_len(p), function(i)
         Psi_vmf(x = x, mu = mu[i, ], kappa = kappa[i])
       ) %*% p)^2
 
