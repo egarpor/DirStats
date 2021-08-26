@@ -85,4 +85,3 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
   return(rowSums(dens))
 
 }
-

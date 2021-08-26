@@ -124,7 +124,7 @@ c_h <- function(h, q, L = NULL) {
 
     # Analytical expression
     ch <- (2 * pi)^((q + 1)/2) * h^(q - 1) *
-      besselI(x = 1/h^2, nu = (q - 1)/2, expon.scaled = TRUE)
+      besselI(x = 1 / h^2, nu = (q - 1) / 2, expon.scaled = TRUE)
 
   } else {
 
@@ -226,4 +226,3 @@ d_L <- function(L = NULL, q) {
   return(d)
 
 }
-
