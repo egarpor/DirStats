@@ -405,7 +405,7 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
     # Curvature integrand
     integrand <- function(x) {
 
-      rowSums(sapply(seq_len(p), function(i)
+      rowSums(sapply(seq_along(p), function(i)
         Psi_vmf(x = x, mu = mu[i, ], kappa = kappa[i])
       ) %*% p)^2
 
