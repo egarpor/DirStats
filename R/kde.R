@@ -97,7 +97,7 @@ kde_dir <- function(x, data, h, L = NULL) {
     data_dir <- matrix(as.double(data), nrow = n, ncol = q + 1)
 
     # Call to kde_dir
-    kde <- .Fortran("kde_dir_vmf", x = x, daa_dir = data_dir,
+    kde <- .Fortran("kde_dir_vmf", x = x, data_dir = data_dir,
                     h = as.double(h), ch = as.double(ch),
                     n = as.integer(n), q = as.integer(q),
                     nx = as.integer(nx), kde = double(nx))$kde
