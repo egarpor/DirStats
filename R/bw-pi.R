@@ -307,9 +307,14 @@ bw_dir_rot <- function(data) {
 
   } else if (q == 2) {
 
-    num <- 8 * sinh(kappa)^2
-    den <- (-2 * kappa * cosh(2 * kappa) +
-              (1 + 4 * kappa^2) * sinh(2 * kappa)) * n
+    e <- exp(-2 * kappa)
+    e2 <- e^2
+    sinh_scaled <- 0.5 * (1 - e)
+    cosh_scaled2 <- 0.5 * (1 + e2)
+    sinh_scaled2 <- 0.5 * (1 - e2)
+    num <- 8 * sinh_scaled^2
+    den <- kappa * (-2 * kappa * cosh_scaled2 +
+                      (1 + 4 * kappa^2) * sinh_scaled2) * n
     # Caution! Typo in G-P (2013) in equation (6) for q = 2. It displays an
     # incorrect extra kappa:
     # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
@@ -317,14 +322,16 @@ bw_dir_rot <- function(data) {
 
   } else {
 
-    num <- 4 * sqrt(pi) * besselI(nu = (q - 1) / 2, x = kappa)^2
+    num <- 4 * sqrt(pi) * besselI(nu = (q - 1) / 2, x = kappa,
+                                  expon.scaled = TRUE)^2
     den <- kappa^((q + 1) / 2) *
-      (2 * q * besselI(nu = (q + 1) / 2, x = 2 * kappa) +
-         (2 + q) * kappa * besselI(nu = (q + 3) / 2, x = 2 * kappa)) * n
+      (2 * q * besselI(nu = (q + 1) / 2, x = 2 * kappa, expon.scaled = TRUE) +
+         (2 + q) * kappa * besselI(nu = (q + 3) / 2, x = 2 * kappa,
+                                   expon.scaled = TRUE)) * n
 
   }
 
-  return((num / den) ^ (1 / (q + 4)))
+  return((num / den)^(1 / (q + 4)))
 
 }
 

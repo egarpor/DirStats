@@ -1,8 +1,8 @@
 Package: DirStats
 Type: Package
 Title: Nonparametric Methods for Directional Data
-Version: 0.1.7
-Date: 2021-01-09
+Version: 0.1.8
+Date: 2022-06-26
 Authors@R: person(given = "Eduardo", family = "García-Portugués",
                   role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
                   comment = c(ORCID = "0000-0002-9224-4111"))
@@ -24,5 +24,5 @@ Suggests:
 URL: https://github.com/egarpor/DirStats
 BugReports: https://github.com/egarpor/DirStats
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 Roxygen: list(old_usage = TRUE)
