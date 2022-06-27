@@ -9,3 +9,4 @@
 ^LICENSE\.md$
 TODO.md
 ^\.github$
+^CRAN-SUBMISSION$
