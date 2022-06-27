@@ -15,3 +15,5 @@
 ## R CMD check results
 
 0 errors | 0 warnings | 0 note
+
+The NOTE on (possibly) invalid DOIs has been double-checked. The URLs work fine.
