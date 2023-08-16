@@ -376,7 +376,7 @@ bw_dir_ami <- function(data, fit_mix = NULL, L = NULL) {
 R_Psi_mixvmf <- function(q, mu, kappa, p) {
 
   # Dimension checks
-  if (length(p) != nrow(mu) | length(p) != length(kappa) |
+  if (length(p) != nrow(mu) || length(p) != length(kappa) ||
       length(kappa) != nrow(mu)) {
 
     stop("Check the dimension of the arguments")
@@ -563,7 +563,7 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
     ind_min <- which.min(MISE)
 
     # Warning if extreme
-    if (h_grid[ind_min] == max(h_grid) | h_grid[ind_min] == min(h_grid)) {
+    if (h_grid[ind_min] == max(h_grid) || h_grid[ind_min] == min(h_grid)) {
 
       warning("h_opt at the extreme of h_grid")
 

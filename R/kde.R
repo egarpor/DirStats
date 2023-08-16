@@ -123,7 +123,7 @@ c_h <- function(h, q, L = NULL) {
   if (is.null(L)) {
 
     # Analytical expression
-    ch <- (2 * pi)^((q + 1)/2) * h^(q - 1) *
+    ch <- (2 * pi)^((q + 1) / 2) * h^(q - 1) *
       besselI(x = 1 / h^2, nu = (q - 1) / 2, expon.scaled = TRUE)
 
   } else {

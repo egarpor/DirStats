@@ -163,7 +163,7 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   }
 
   # Warning
-  if (h_grid[ind_min] == max(h_grid) | h_grid[ind_min] == min(h_grid)) {
+  if (h_grid[ind_min] == max(h_grid) || h_grid[ind_min] == min(h_grid)) {
 
     warning("h_opt is at the exteme of h_grid")
 
@@ -324,7 +324,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   }
 
   # Warning
-  if (h_grid[ind_min] == max(h_grid) | h_grid[ind_min] == min(h_grid)) {
+  if (h_grid[ind_min] == max(h_grid) || h_grid[ind_min] == min(h_grid)) {
 
     warning("h_opt is at the exteme of h_grid")
 

@@ -67,7 +67,7 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
   stopifnot(ncol(mu) == q + 1)
 
   # Mixture components checks
-  if (length(p) != length(kappa) | length(kappa) != nrow(mu) |
+  if (length(p) != length(kappa) || length(kappa) != nrow(mu) ||
       length(p) != nrow(mu)) {
 
     stop("Check mixtures arguments")
