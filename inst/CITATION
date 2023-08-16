@@ -4,9 +4,11 @@ note <- paste("R package version", meta$Version)
 
 citHeader("To cite DirStats in publications use:")
 
-citEntry(entry = "Manual",
+bibentry(
+  bibtype      = "Manual",
   title        = "{DirStats}: Nonparametric Methods for Directional Data",
-  author       = personList(as.person("Eduardo Garc\\'ia-Portugu\\'es")),
+  author       = person(given = "Eduardo", family = "García-Portugués",
+                        role = c("aut", "cre")),
   year         = year,
   note         = note,
   url          = "https://CRAN.R-project.org/package=DirStats",
