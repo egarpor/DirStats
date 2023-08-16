@@ -7,7 +7,7 @@
 \alias{d_mixvmf}
 \title{Von Mises--Fisher distribution utilities}
 \usage{
-kappa_ml(data)
+kappa_ml(data, min_kappa = 1e-04, max_kappa = 100, ...)
 
 mu_ml(data)
 
@@ -15,6 +15,11 @@ d_mixvmf(x, mu, kappa, p, norm = FALSE)
 }
 \arguments{
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+
+\item{min_kappa, max_kappa}{minimum and maximum kappas to look for the maximum
+likelihood estimate.}
+
+\item{...}{further parameters passed to \code{\link{uniroot}}.}
 
 \item{x}{evaluation points, a matrix of size \code{c(nx, q + 1)}.}
 

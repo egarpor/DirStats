@@ -11,6 +11,9 @@
 #' concentration parameters, and \code{p} is the vector of mixture proportions.
 #' @param norm enforce normalization of \code{x} internally? Defaults
 #' to \code{FALSE}.
+#' @param min_kappa,max_kappa minimum and maximum kappas to look for the maximum
+#' likelihood estimate.
+#' @param ... further parameters passed to \code{\link{uniroot}}.
 #' @return Estimated vector mean (\code{mu_ml}) or concentration parameter
 #' (\code{kappa_ml}). A vector of length \code{nx} for \code{d_mixvmf}.
 #' @examples
@@ -33,13 +36,13 @@
 
 #' @rdname vmf
 #' @export
-kappa_ml <- function(data) {
+kappa_ml <- function(data, min_kappa = 1e-4, max_kappa = 1e2, ...) {
 
   p <- ncol(data)
   R <- norm2(colMeans(data, na.rm = TRUE))
-  A_p <- function(kappa) besselI(x = kappa, nu = p / 2) /
-    besselI(x = kappa, nu = p / 2 - 1) - R
-  return(uniroot(A_p, lower = 1e-04, upper = 100, tol = 1e-4)$root)
+  A_p <- function(kappa) besselI(x = kappa, nu = p / 2, expon.scaled = TRUE) /
+    besselI(x = kappa, nu = p / 2 - 1, expon.scaled = TRUE) - R
+  return(uniroot(A_p, lower = min_kappa, upper = max_kappa, ...)$root)
 
 }
 
@@ -64,7 +67,7 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
   stopifnot(ncol(mu) == q + 1)
 
   # Mixture components checks
-  if (length(p) != length(kappa) | length(kappa) != nrow(mu) |
+  if (length(p) != length(kappa) || length(kappa) != nrow(mu) ||
       length(p) != nrow(mu)) {
 
     stop("Check mixtures arguments")
