@@ -308,7 +308,8 @@
                         B(N) = TEMPA
                         NEND = -NEND
                         DO 130 L = 1, NEND
-  130                      B(N+L) = ZERO
+                           B(N+L) = ZERO
+  130                   CONTINUE
                      ELSE
                         IF (NEND .GT. 0) THEN
 !-------------------------------------------------------------------

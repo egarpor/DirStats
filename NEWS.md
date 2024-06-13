@@ -17,3 +17,7 @@
 # DirStats 0.1.9
 
 * Expose `min_kappa` and `max_kappa` in `kappa_ml()`.
+
+# DirStats 0.1.10
+
+* Fix 'Fortran 2018 deleted feature' warning.
