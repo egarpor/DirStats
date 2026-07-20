@@ -49,3 +49,29 @@ test_that("d_mixvmf checks the mixture argument dimensions", {
                         kappa = 1, p = c(0.5, 0.5)), "mixture")
 
 })
+
+
+test_that("d_mixvmf handles a single evaluation point, norm and vector inputs", {
+
+  mu <- rbind(c(-1, 0), c(0, 1))
+  # x given as a plain vector (single point), with norm = TRUE, and a
+  # multi-component mixture (so the density reshape branch is exercised)
+  d_vec <- d_mixvmf(x = c(0, 2), mu = mu, kappa = c(1, 2),
+                    p = c(0.5, 0.5), norm = TRUE)
+  expect_length(d_vec, 1)
+  # Must match the matrix-input evaluation at the normalized point
+  d_mat <- d_mixvmf(x = normalize(rbind(c(0, 2))), mu = mu, kappa = c(1, 2),
+                    p = c(0.5, 0.5))
+  expect_equal(d_vec, d_mat)
+
+})
+
+
+test_that("d_mixvmf accepts a single component given as a vector mu", {
+
+  x <- to_cir(c(0, 1, 2))
+  expect_equal(d_mixvmf(x = x, mu = c(1, 0), kappa = 2, p = 1),
+               rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
+               ignore_attr = TRUE)
+
+})
