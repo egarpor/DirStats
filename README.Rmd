@@ -25,7 +25,7 @@ cat(
 )
 ```
 
-<!-- <img src="" alt="DirStats  hexlogo" align="right" width="200" style="padding: 0 15px; float: right;"/> -->
+<img src="man/figures/logo.png" alt="DirStats hex logo" align="right" width="200" style="padding: 0 15px; float: right;"/>
 
 ## Overview
 

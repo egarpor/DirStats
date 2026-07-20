@@ -8,7 +8,7 @@ status](https://github.com/egarpor/DirStats/workflows/R-CMD-check/badge.svg)](ht
 [![](http://cranlogs.r-pkg.org/badges/grand-total/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/last-month/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 
-<!-- <img src="" alt="DirStats  hexlogo" align="right" width="200" style="padding: 0 15px; float: right;"/> -->
+<img src="man/figures/logo.png" alt="DirStats hex logo" align="right" width="200" style="padding: 0 15px; float: right;"/>
 
 ## Overview
 
