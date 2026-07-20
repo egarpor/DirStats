@@ -27,7 +27,7 @@ to_sph(th, ph)
 \item{ph}{vector of angles in \eqn{[0, \pi]}.}
 }
 \value{
-Euclidean norm (\code{norm}) and normalized data (\code{normalize}).
+Euclidean norm (\code{norm2}) and normalized data (\code{normalize}).
 Position in \eqn{S^1} (\code{to_cir}) or in \eqn{[0, 2\pi)} (\code{to_rad}).
 Position in \eqn{S^2} (\code{to_sph}) or in \eqn{[0, 2\pi) \times [0, \pi]}
 (\code{to_rad}).
@@ -63,4 +63,8 @@ to_rad(to_sph(c(th, th + 1),
               c(ph, ph + 1)))
 to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
+}
+\seealso{
+\code{\link{int}} for integration on \eqn{S^q}, which relies on
+these conversions.
 }

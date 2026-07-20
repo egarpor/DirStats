@@ -26,7 +26,7 @@
 #'   \item{\code{best_fit}: a list with estimated mixture parameters
 #'   \code{mu_hat}, \code{kappa_hat}, and \code{p_hat} of the best-fitting
 #'   mixture according to \code{crit}.}
-#'   \item{\code{fit_mixs}: a list with of the fitted mixtures.}
+#'   \item{\code{fits}: a list with the fitted mixtures.}
 #'   \item{\code{BICs}: a vector with the BICs (or other information criterion)
 #'   of the fitted mixtures.}
 #' }
@@ -42,6 +42,9 @@
 #' Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 #' von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
 #' 58(10):1--31. \doi{10.18637/jss.v058.i10}
+#' @seealso \code{\link{bw_dir_pi}} for the plug-in bandwidth selectors that
+#' build on this mixture fit, and \code{\link{vmf}} for the single-component
+#' estimators used as a fallback.
 #' @examples
 #' # Sample
 #' q <- 2
@@ -68,8 +71,24 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   # Create vector for BICs
   BICs <- rep(NA, M_bound)
 
-  # For computing the BICs
-  get_BIC <- function(x) ifelse(is.na(x[1]), NA, get(crit)(x))
+  # For computing the information criterion. "AICc" is not a standard
+  # stats generic, so it is computed from AIC() with the finite-sample
+  # correction 2 * k * (k + 1) / (n - k - 1)
+  get_BIC <- function(x) {
+    if (is.na(x[1])) {
+      return(NA)
+    }
+    if (crit == "AICc") {
+      ll <- stats::logLik(x)
+      k <- attr(ll, "df")
+      n_obs <- attr(ll, "nobs")
+      if (n_obs - k - 1 <= 0) {
+        return(NA)
+      }
+      return(stats::AIC(x) + (2 * k * (k + 1)) / (n_obs - k - 1))
+    }
+    get(crit, mode = "function")(x)
+  }
 
   # Mixture fitting for 1:M_bound
   if (verbose) {
@@ -261,6 +280,9 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' for kernel density estimation with directional data. \emph{Electronic
 #' Journal of Statistics}, 7:1655--1685.
 #' \doi{10.1214/13-ejs821}
+#' @seealso \code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}}
+#' for cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the
+#' mixture fit these selectors rely on.
 #' @examples
 #' # Sample
 #' n <- 25

@@ -80,3 +80,8 @@ density function of directional data. \emph{Journal of Multivariate
 Analysis}, 27(1):24--39.
 \doi{10.1016/0047-259X(88)90113-3}
 }
+\seealso{
+\code{\link{bw_dir_cv}} and \code{\link{bw_dir_pi}} for selecting
+the bandwidth \code{h}, and \code{\link{vmf}} for the underlying von
+Mises--Fisher utilities.
+}

@@ -24,6 +24,9 @@
 #' density function of directional data. \emph{Journal of Multivariate
 #' Analysis}, 27(1):24--39.
 #' \doi{10.1016/0047-259X(88)90113-3}
+#' @seealso \code{\link{bw_dir_cv}} and \code{\link{bw_dir_pi}} for selecting
+#' the bandwidth \code{h}, and \code{\link{vmf}} for the underlying von
+#' Mises--Fisher utilities.
 #' @examples
 #' # Sample
 #' n <- 50
@@ -52,7 +55,6 @@
 #' # lambda_L
 #' lambda_L(L = NULL, q = q)
 #' lambda_L(L = function(x) exp(-x), q = q)
-#' @useDynLib DirStats
 #' @export
 kde_dir <- function(x, data, h, L = NULL) {
 
@@ -74,20 +76,11 @@ kde_dir <- function(x, data, h, L = NULL) {
   stopifnot(ncol(x) == q + 1)
 
   # von Mises--Fisher kernel?
-  if (is.null(L)) {
-
-    is_vm <- TRUE
-
-  } else {
-
-    is_vm <- FALSE
-    ch <- c_h(h = h, q = q, L = L)
-
-  }
+  is_vm <- is.null(L)
   stopifnot(length(h) == 1)
 
-  # Normalizing constant
-  ch <- c_h(h = h, q = q, L = switch(is_vm + 1, L, NULL))
+  # Normalizing constant (L = NULL triggers the closed-form vMF expression)
+  ch <- c_h(h = h, q = q, L = L)
 
   # Approach type
   if (is_vm) {

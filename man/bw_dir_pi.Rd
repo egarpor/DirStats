@@ -104,3 +104,8 @@ for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
 \doi{10.1214/13-ejs821}
 }
+\seealso{
+\code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}}
+for cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the
+mixture fit these selectors rely on.
+}

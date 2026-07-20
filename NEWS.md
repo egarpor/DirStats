@@ -21,3 +21,15 @@
 # DirStats 0.1.10
 
 * Fix 'Fortran 2018 deleted feature' warning.
+
+# DirStats 0.2.0
+
+* Fixed `to_rad()` mapping the \eqn{S^2} south pole to the wrong polar angle
+  (`acos()` result was wrapped with `%% pi`, sending \eqn{\pi} to \eqn{0}).
+* `int_hypsph()` now honors its `na.rm` argument (it was hardcoded to `TRUE`).
+* `bic_vmf_mix()` now supports `crit = "AICc"` (previously errored).
+* Efficiency: `kde_dir()` no longer computes the normalizing constant twice
+  for user-defined kernels; `bw_dir_lcv()` avoids allocating a large
+  three-dimensional array in the non-von Mises--Fisher branch.
+* Documentation fixes and added `\link`/`\seealso` cross-references.
+* Added a `testthat` unit-test suite.

@@ -41,6 +41,9 @@
 #' Press, W. H., Teukolsky, S. A., Vetterling, W. T. and Flannery B. P. (1997).
 #' \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
 #' Volume 1. Cambridge University Press, Cambridge. Second edition.
+#' @seealso \code{\link{conv}} for the coordinate transformations used to build
+#' the integration grids, and \code{\link{lebedev}} for the quadrature data
+#' employed by \code{int_sph}.
 #' @name int
 
 
@@ -76,7 +79,7 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
   # Monte Carlo approximation
   sims <- rotasym::r_unif_sphere(n = M, p = q + 1)
   f_evals <- switch(f_vect + 1, apply(sims, 1, f, ...), f(sims, ...))
-  return(mean(f_evals, na.rm = TRUE) * rotasym::w_p(p = q + 1, log = FALSE))
+  return(mean(f_evals, na.rm = na.rm) * rotasym::w_p(p = q + 1, log = FALSE))
 
 }
 
@@ -90,7 +93,7 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 #' @param x matrix or vector, in \eqn{S^1} for \code{to_cir}.
 #' @param th vector of angles in \eqn{[0, 2\pi)}.
 #' @param ph vector of angles in \eqn{[0, \pi]}.
-#' @return Euclidean norm (\code{norm}) and normalized data (\code{normalize}).
+#' @return Euclidean norm (\code{norm2}) and normalized data (\code{normalize}).
 #' Position in \eqn{S^1} (\code{to_cir}) or in \eqn{[0, 2\pi)} (\code{to_rad}).
 #' Position in \eqn{S^2} (\code{to_sph}) or in \eqn{[0, 2\pi) \times [0, \pi]}
 #' (\code{to_rad}).
@@ -120,6 +123,8 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 #'               c(ph, ph + 1)))
 #' to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 #' to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
+#' @seealso \code{\link{int}} for integration on \eqn{S^q}, which relies on
+#' these conversions.
 #' @name conv
 
 
@@ -160,7 +165,9 @@ to_rad <- function(x) {
   if (q > 2) stop("to_rad only works with circular or spherical data")
   rad <- switch(q,
     atan2(x[, 2], x[, 1]) %% (2 * pi),
-    cbind(atan2(x[, 2], x[, 1]) %% (2 * pi), acos(x[, 3]) %% pi)
+    # The polar angle acos(x[, 3]) is already in [0, pi]; applying "%% pi"
+    # would wrongly wrap the south pole (acos(-1) = pi) back to 0
+    cbind(atan2(x[, 2], x[, 1]) %% (2 * pi), acos(x[, 3]))
   )
   return(rad)
 

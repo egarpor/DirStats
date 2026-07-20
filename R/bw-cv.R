@@ -50,6 +50,9 @@
 #' Sookne, D. J. (1973). Bessel functions of real argument and integer order.
 #' \emph{Journal of Research of the National Bureau of Standards},
 #' 77B:125--132.
+#' @seealso \code{\link{kde_dir}} for the kernel density estimator these
+#' bandwidths are intended for, and \code{\link{bw_dir_pi}} for plug-in
+#' alternatives.
 #' @examples
 #' # Sample
 #' n <- 25
@@ -71,7 +74,6 @@
 #' @name bw_dir_cv
 
 
-#' @useDynLib DirStats
 #' @rdname bw_dir_cv
 #' @export
 bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
@@ -134,18 +136,21 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
     # Normalizing constant
     ch <- c_h(h = h_grid, q = q, L = L)
 
-    # Pairwise kernels
-    CV <- array(dim = c(n, n, length(h_grid)))
+    # Leave-one-out kernel sums, one bandwidth at a time. This avoids
+    # allocating the full n x n x length(h_grid) array (and the subsequent
+    # apply()), keeping the memory footprint at O(n^2) instead of
+    # O(n^2 * length(h_grid))
     mat_L <- 1 - data %*% t(data)
+    CV <- matrix(nrow = n, ncol = length(h_grid))
     for (hi in seq_along(h_grid)) {
 
-      CV[, , hi] <- (ch[hi] / (n - 1)) * L(mat_L / h_grid[hi]^2)
-      diag(CV[, , hi]) <- 0
+      L_hi <- (ch[hi] / (n - 1)) * L(mat_L / h_grid[hi]^2)
+      diag(L_hi) <- 0
+      CV[, hi] <- rowSums(L_hi)
 
     }
 
     # Computation of the CV
-    CV <- apply(CV, c(1, 3), sum)
     CV <- -colMeans(log(CV))
 
   }
@@ -165,7 +170,7 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   # Warning
   if (h_grid[ind_min] == max(h_grid) || h_grid[ind_min] == min(h_grid)) {
 
-    warning("h_opt is at the exteme of h_grid")
+    warning("h_opt is at the extreme of h_grid")
 
   }
 
@@ -177,7 +182,6 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
 
 #' @rdname bw_dir_cv
-#' @useDynLib DirStats
 #' @export
 bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                         L = NULL, plot_it = FALSE, optim = TRUE, R_code = FALSE,
@@ -326,7 +330,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   # Warning
   if (h_grid[ind_min] == max(h_grid) || h_grid[ind_min] == min(h_grid)) {
 
-    warning("h_opt is at the exteme of h_grid")
+    warning("h_opt is at the extreme of h_grid")
 
   }
 

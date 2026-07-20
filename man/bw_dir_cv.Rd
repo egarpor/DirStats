@@ -97,3 +97,8 @@ Sookne, D. J. (1973). Bessel functions of real argument and integer order.
 \emph{Journal of Research of the National Bureau of Standards},
 77B:125--132.
 }
+\seealso{
+\code{\link{kde_dir}} for the kernel density estimator these
+bandwidths are intended for, and \code{\link{bw_dir_pi}} for plug-in
+alternatives.
+}

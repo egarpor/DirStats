@@ -1,14 +1,14 @@
 Package: DirStats
 Type: Package
 Title: Nonparametric Methods for Directional Data
-Version: 0.1.10
-Date: 2024-06-13
+Version: 0.2.0
+Date: 2026-07-20
 Authors@R: person(given = "Eduardo", family = "García-Portugués",
                   role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
                   comment = c(ORCID = "0000-0002-9224-4111"))
 Description: Nonparametric kernel density estimation, bandwidth selection,
     and other utilities for analyzing directional data. Implements the estimator
-    in Bai, Rao and Zhao (1987) <doi:10.1016/0047-259X(88)90113-3>, the
+    in Bai, Rao and Zhao (1988) <doi:10.1016/0047-259X(88)90113-3>, the
     cross-validation bandwidth selectors in Hall, Watson and Cabrera (1987)
     <doi:10.1093/biomet/74.4.751> and the plug-in bandwidth selectors in
     García-Portugués (2013) <doi:10.1214/13-ejs821>.
@@ -20,9 +20,11 @@ Imports:
     movMF,
     rotasym
 Suggests:
+    testthat (>= 3.0.0),
     viridisLite
 URL: https://github.com/egarpor/DirStats
 BugReports: https://github.com/egarpor/DirStats
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Roxygen: list(old_usage = TRUE)
+Config/testthat/edition: 3

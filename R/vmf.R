@@ -31,6 +31,9 @@
 #' dens <- d_mixvmf(x = x, mu = rbind(c(-1, 0), c(0, 1), c(1, 0)),
 #'                  kappa = 1:3, p = c(0.5, 0.2, 0.3))
 #' plot(to_rad(x), dens, type = "l")
+#' @seealso \code{\link{kde_dir}}, which uses the von Mises--Fisher kernel, and
+#' \code{\link{bic_vmf_mix}} for fitting mixtures of von Mises--Fisher
+#' distributions.
 #' @name vmf
 
 

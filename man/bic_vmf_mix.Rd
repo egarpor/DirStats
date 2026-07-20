@@ -39,7 +39,7 @@ A list with entries:
   \item{\code{best_fit}: a list with estimated mixture parameters
   \code{mu_hat}, \code{kappa_hat}, and \code{p_hat} of the best-fitting
   mixture according to \code{crit}.}
-  \item{\code{fit_mixs}: a list with of the fitted mixtures.}
+  \item{\code{fits}: a list with the fitted mixtures.}
   \item{\code{BICs}: a vector with the BICs (or other information criterion)
   of the fitted mixtures.}
 }
@@ -74,4 +74,9 @@ Journal of Statistics}, 7:1655--1685.
 Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
 58(10):1--31. \doi{10.18637/jss.v058.i10}
+}
+\seealso{
+\code{\link{bw_dir_pi}} for the plug-in bandwidth selectors that
+build on this mixture fit, and \code{\link{vmf}} for the single-component
+estimators used as a fallback.
 }

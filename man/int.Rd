@@ -66,3 +66,8 @@ Press, W. H., Teukolsky, S. A., Vetterling, W. T. and Flannery B. P. (1997).
 \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
 Volume 1. Cambridge University Press, Cambridge. Second edition.
 }
+\seealso{
+\code{\link{conv}} for the coordinate transformations used to build
+the integration grids, and \code{\link{lebedev}} for the quadrature data
+employed by \code{int_sph}.
+}
