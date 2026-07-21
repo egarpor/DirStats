@@ -19,8 +19,8 @@ border <- "#57c79a"  # hexagon border accent (viridis-teal)
 ink    <- "#eef3f5"  # wordmark, points, graticule
 
 # ---- Geometry -------------------------------------------------------------
-Rs   <- 0.95   # sphere radius on the canvas
-cy   <- 0.14   # sphere vertical offset (leaves room for the wordmark)
+Rs   <- 0.74   # sphere radius on the canvas (kept small to leave room below)
+cy   <- 0.42   # sphere vertical offset (sits high; wordmark + URL go below)
 Rhex <- 1.5    # hexagon circumradius
 res  <- 700    # raster resolution (pixels per side)
 
@@ -72,7 +72,8 @@ make_graticule <- function(pole = c(0.13, 0.86, 0.49), n = 220) {
 
 # ---- Logo builder ---------------------------------------------------------
 make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
-                      palette = viridisLite::viridis, wordmark = TRUE) {
+                      palette = viridisLite::viridis, wordmark = TRUE,
+                      url = "github.com/egarpor/DirStats") {
 
   # Clustered directional sample on the front hemisphere (view frame)
   set.seed(seed)
@@ -146,9 +147,14 @@ make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
     geom_polygon(data = hex, aes(X, Y), fill = NA, color = border,
                  linewidth = 3.2, lineend = "round", linejoin = "round")
   if (wordmark) {
-    p <- p + annotate("text", x = 0, y = -Rhex * 0.7, label = "DirStats",
+    p <- p + annotate("text", x = 0, y = -0.66, label = "DirStats",
                       color = ink, family = "sans", fontface = "bold",
-                      size = 12.5)
+                      size = 11)
+  }
+  if (nzchar(url)) {
+    # Small horizontal GitHub URL right-anchored near the lower-right edge
+    p <- p + annotate("text", x = 0.78, y = -0.99, label = url, hjust = 1,
+                      color = "#9fb6c2", family = "sans", size = 2.9)
   }
   p +
     coord_fixed(xlim = c(-1.36, 1.36), ylim = c(-1.57, 1.57), expand = FALSE) +
