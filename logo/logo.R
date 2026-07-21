@@ -5,13 +5,29 @@
 # estimate -- computed with DirStats::kde_dir() itself -- from a clustered
 # directional sample, with the sample points overlaid. Rendered as a 2D
 # orthographic projection with ggplot2 (deterministic, no rgl/OpenGL needed),
-# with Lambertian shading so the sphere reads as a lit 3D globe.
+# with Lambertian shading so the sphere reads as a lit 3D globe. The globe is
+# the sticker subplot; hexSticker::sticker() draws the hexagon, wordmark and URL
+# so the font and GitHub-link placement match the other egarpor package logos.
 #
-# Run from the package root:  Rscript data-raw/hex-logo.R
+# Run from the package root:  Rscript logo/logo.R
+# Output: logo/logo.png (master) and man/figures/logo.png (shipped mirror).
 # -----------------------------------------------------------------------------
 
 library(DirStats)
 library(ggplot2)
+library(hexSticker)
+
+## ---- Shared logo standard (identical across egarpor packages) -------------
+# Aller_Rg is bundled with (and auto-registered by) hexSticker, so no
+# showtext/font_add setup is needed for the sticker() idiom.
+FONT    <- "Aller_Rg"   # typeface for the package name and the GitHub URL
+P_SIZE  <- 31.2         # package-name size (shared across packages)
+U_SIZE  <- 9.0          # GitHub URL size (large enough to read)
+U_X     <- 1.00         # GitHub URL position: along the lower-right hex edge
+U_Y     <- 0.08
+U_ANGLE <- 30
+H_SIZE  <- 1.5          # hexagon border thickness
+DPI     <- 600
 
 # ---- Palette --------------------------------------------------------------
 navy   <- "#0b1b2b"  # hexagon background
@@ -19,9 +35,10 @@ border <- "#57c79a"  # hexagon border accent (viridis-teal)
 ink    <- "#eef3f5"  # wordmark, points, graticule
 
 # ---- Geometry -------------------------------------------------------------
-Rs   <- 0.74   # sphere radius on the canvas (kept small to leave room below)
-cy   <- 0.42   # sphere vertical offset (sits high; wordmark + URL go below)
-Rhex <- 1.5    # hexagon circumradius
+# The globe is drawn as a unit sphere centred at the origin in the subplot's own
+# coordinates; hexSticker insets and scales it via s_x/s_y/s_width.
+Rs   <- 1      # sphere radius in the subplot's coordinates
+cy   <- 0      # sphere centre (origin)
 res  <- 700    # raster resolution (pixels per side)
 
 # Orthonormal frame (e1, e2, pole) from a pole direction
@@ -70,10 +87,11 @@ make_graticule <- function(pole = c(0.13, 0.86, 0.49), n = 220) {
   do.call(rbind, lines)
 }
 
-# ---- Logo builder ---------------------------------------------------------
-make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
-                      palette = viridisLite::viridis, wordmark = TRUE,
-                      url = "github.com/egarpor/DirStats") {
+# ---- Globe subplot builder ------------------------------------------------
+# Returns the lit KDE globe as a transparent ggplot (no hexagon, no text): the
+# subplot passed to hexSticker::sticker().
+make_globe <- function(seed = 20240720, h = 0.3, graticule = TRUE,
+                       palette = viridisLite::viridis) {
 
   # Clustered directional sample on the front hemisphere (view frame)
   set.seed(seed)
@@ -117,10 +135,6 @@ make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
   g$X <- Rs * g$u
   g$Y <- cy + Rs * g$v
 
-  # Hexagon (pointy top/bottom, vertical sides: standard R sticker shape)
-  ang <- (seq(0, 300, by = 60) + 30) * pi / 180
-  hex <- data.frame(X = Rhex * cos(ang), Y = Rhex * sin(ang))
-
   # Sphere rim and visible sample points
   th <- seq(0, 2 * pi, length.out = 400)
   rim <- data.frame(X = Rs * cos(th), Y = cy + Rs * sin(th))
@@ -128,9 +142,8 @@ make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
   pd <- data.frame(X = Rs * samp[front, 1], Y = cy + Rs * samp[front, 2],
                    depth = samp[front, 3])
 
-  # Assemble
+  # Assemble the globe (transparent background -> the navy hex shows through)
   p <- ggplot() +
-    geom_polygon(data = hex, aes(X, Y), fill = navy, color = NA) +
     geom_raster(data = g, aes(X, Y, fill = fill)) +
     scale_fill_identity()
   if (graticule) {
@@ -138,26 +151,13 @@ make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
                        color = ink, alpha = 0.12, linewidth = 0.25,
                        na.rm = TRUE)
   }
-  p <- p +
+  p +
     geom_path(data = rim, aes(X, Y), color = ink, alpha = 0.45,
               linewidth = 0.5) +
     geom_point(data = pd, aes(X, Y, alpha = depth), color = ink,
                size = 0.8, show.legend = FALSE) +
     scale_alpha(range = c(0.45, 0.95)) +
-    geom_polygon(data = hex, aes(X, Y), fill = NA, color = border,
-                 linewidth = 3.2, lineend = "round", linejoin = "round")
-  if (wordmark) {
-    p <- p + annotate("text", x = 0, y = -0.66, label = "DirStats",
-                      color = ink, family = "sans", fontface = "bold",
-                      size = 11)
-  }
-  if (nzchar(url)) {
-    # Small horizontal GitHub URL right-anchored near the lower-right edge
-    p <- p + annotate("text", x = 0.78, y = -0.99, label = url, hjust = 1,
-                      color = "#9fb6c2", family = "sans", size = 2.9)
-  }
-  p +
-    coord_fixed(xlim = c(-1.36, 1.36), ylim = c(-1.57, 1.57), expand = FALSE) +
+    coord_fixed(xlim = c(-1.05, 1.05), ylim = c(-1.05, 1.05), expand = FALSE) +
     theme_void() +
     theme(plot.background = element_rect(fill = "transparent", color = NA),
           panel.background = element_rect(fill = "transparent", color = NA),
@@ -165,26 +165,32 @@ make_logo <- function(seed = 20240720, h = 0.3, graticule = TRUE,
 }
 
 # ---- Render ---------------------------------------------------------------
-# Fixed physical size (hex aspect sqrt(3)/2) so proportions are independent of
-# resolution; dpi controls the pixel size. The output is losslessly shrunk with
-# zopflipng afterwards, if available.
-save_logo <- function(p, file, dpi = 360) {
-  ggsave(file, p, width = 2.598, height = 3.0, units = "in", dpi = dpi,
-         bg = "transparent")
-  if (nzchar(Sys.which("zopflipng"))) {
-    system2("zopflipng", c("-y", shQuote(file), shQuote(file)),
-            stdout = FALSE, stderr = FALSE)
-  }
+# hexSticker draws the hexagon, the "DirStats" wordmark and the GitHub URL with
+# the shared font/size/position; the globe is the inset subplot.
+sticker_logo <- function(globe, file) {
+  sticker(
+    subplot = globe, s_x = 1, s_y = 1.14, s_width = 1.18, s_height = 1.18,
+    package = "DirStats", p_x = 1, p_y = 0.40, p_size = P_SIZE,
+    p_color = ink, p_family = FONT,
+    url = "github.com/egarpor/DirStats",
+    u_x = U_X, u_y = U_Y, u_angle = U_ANGLE, u_size = U_SIZE,
+    u_color = "#9fb6c2", u_family = FONT,
+    h_fill = navy, h_color = border, h_size = H_SIZE,
+    spotlight = FALSE, white_around_sticker = FALSE,
+    dpi = DPI, filename = file
+  )
+  invisible(file)
 }
 
+dir.create("logo", showWarnings = FALSE)
 dir.create("man/figures", recursive = TRUE, showWarnings = FALSE)
 
-# Primary logo
-save_logo(make_logo(), "man/figures/logo.png")
+# Primary logo (master + shipped mirror)
+sticker_logo(make_globe(), "logo/logo.png")
+file.copy("logo/logo.png", "man/figures/logo.png", overwrite = TRUE)
 
-# Variants for comparison (kept in data-raw, not shipped)
-save_logo(make_logo(graticule = FALSE), "data-raw/logo-variant-nogrid.png")
-save_logo(make_logo(palette = viridisLite::magma),
-          "data-raw/logo-variant-magma.png")
+# Variants for comparison (kept in logo/, not shipped)
+sticker_logo(make_globe(graticule = FALSE), "logo/logo-variant-nogrid.png")
+sticker_logo(make_globe(palette = viridisLite::magma), "logo/logo-variant-magma.png")
 
-message("Logo written to man/figures/logo.png")
+message("Wrote logo/logo.png and man/figures/logo.png")

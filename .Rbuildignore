@@ -4,6 +4,7 @@
 ^README.*$
 ^TODO$
 ^data-raw$
+^logo$
 ^CRAN-RELEASE$
 ^cran-comments\.md$
 ^LICENSE\.md$
