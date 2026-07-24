@@ -11,8 +11,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-DirStats
-========
+# DirStats <img src="man/figures/logo.png" align="right" height="175" alt="DirStats hexlogo"/>
 
 ```{r, echo = FALSE, results = 'asis'}
 cat(
@@ -25,32 +24,22 @@ cat(
 )
 ```
 
-<img src="man/figures/logo.png" alt="DirStats hex logo" align="right" width="200" style="padding: 0 15px; float: right;"/>
-
 ## Overview
 
 Currently implementing nonparametric kernel density estimation, bandwidth selection, and other utilities for analyzing directional data. Further nonparametric tools expected to be included in subsequent releases.
 
 ## Installation
 
-Get the released version from CRAN:
-
 ```{r, install-CRAN, eval = FALSE}
-# Install the package
+# Install it from CRAN
 install.packages("DirStats")
-
-# Load package
 library(DirStats)
 ```
 
-Alternatively, get the latest version from GitHub:
-
 ```{r, install-GitHub, eval = FALSE}
-# Install the package
-library(devtools)
-install_github("egarpor/DirStats")
-
-# Load package
+# Alternatively, from GitHub
+library(pak)
+pak("egarpor/DirStats")
 library(DirStats)
 ```
 

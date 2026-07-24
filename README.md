@@ -1,4 +1,4 @@
-# DirStats
+# DirStats <img src="man/figures/logo.png" align="right" height="175" alt="DirStats hexlogo"/>
 
 [![License:
 GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -7,8 +7,6 @@ status](https://github.com/egarpor/DirStats/workflows/R-CMD-check/badge.svg)](ht
 [![](https://www.r-pkg.org/badges/version/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/last-month/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
-
-<img src="man/figures/logo.png" alt="DirStats hex logo" align="right" width="200" style="padding: 0 15px; float: right;"/>
 
 ## Overview
 
@@ -19,24 +17,16 @@ releases.
 
 ## Installation
 
-Get the released version from CRAN:
-
 ``` r
-# Install the package
+# Install it from CRAN
 install.packages("DirStats")
-
-# Load package
 library(DirStats)
 ```
 
-Alternatively, get the latest version from GitHub:
-
 ``` r
-# Install the package
-library(devtools)
-install_github("egarpor/DirStats")
-
-# Load package
+# Alternatively, from GitHub
+library(pak)
+pak("egarpor/DirStats")
 library(DirStats)
 ```
 
