@@ -1,23 +1,25 @@
 ---
 output:
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
 
-```{r, echo = FALSE}
+```{r, setup, echo = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE, comment = "#>", fig.path = "README/README-",
   message = FALSE, warning = FALSE, fig.asp = 1, fig.align = 'center'
 )
 ```
 
-# DirStats <img src="man/figures/logo.png" align="right" height="175" alt="DirStats hexlogo"/>
+# DirStats <img src="man/figures/logo.png" align="right" height="175" alt="DirStats logo"/>
 
-```{r, echo = FALSE, results = 'asis'}
+```{r, badges, echo = FALSE, results = 'asis'}
 cat(
   badger::badge_license(license = "GPLv3", color = "blue",
                         url = "https://www.gnu.org/licenses/gpl-3.0"),
   badger::badge_github_actions(action = "R-CMD-check"),
+badger::badge_github_actions(action = "test-coverage"),
+  badger::badge_codecov(),
   badger::badge_cran_release(color = "green"),
   badger::badge_cran_download(pkg = NULL, type = "grand-total"),
   badger::badge_cran_download(pkg = NULL, type = "last-month")

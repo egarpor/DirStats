@@ -23,23 +23,27 @@ d_L(L = NULL, q)
 
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
-\item{h}{bandwidth, a scalar for \code{kde_dir}. Can be a vector
-for \code{c_h}.}
+\item{h}{bandwidth, a scalar for \code{kde_dir}. Can be a vector for
+\code{c_h}.}
 
-\item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
-(von Mises--Fisher kernel) if \code{NULL} (default).}
+\item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
+Mises--Fisher kernel) if \code{NULL} (default).}
 
-\item{q}{dimension of \eqn{S^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
 }
 \value{
-\code{kde_dir} returns a vector of size \code{nx} with the
-evaluated kernel density estimator. \code{c_h} returns the normalizing
-constant for the kernel, a vector of length \code{length(h)}.
-\code{lambda_L}, \code{b_L}, and \code{d_L} return moments of \code{L}.
+\itemize{
+  \item \code{kde_dir}: the evaluated kernel density estimator, a vector of
+  size \code{nx}.
+  \item \code{c_h}: the normalizing constant of the kernel, a vector of size
+  \code{length(h)}.
+  \item \code{lambda_L}, \code{b_L}, \code{d_L}: the moments
+  \eqn{\lambda(L)}, \eqn{b(L)}, and \eqn{d(L)} of \code{L}, each a scalar.
+}
 }
 \description{
-Kernel density estimation with directional data as in
-the estimator of Bai et al. (1988).
+Kernel density estimation with directional data as in the
+estimator of Bai et al. (1988).
 }
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.

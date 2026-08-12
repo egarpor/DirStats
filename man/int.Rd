@@ -14,20 +14,20 @@ int_sph(f, na.rm = TRUE, f_vect = TRUE, ...)
 int_hypsph(f, q, M = 1e+05, na.rm = TRUE, f_vect = TRUE, ...)
 }
 \arguments{
-\item{f}{function to be integrated on \eqn{S^q}. Must be vectorized and
-accept matrix inputs of size \code{c(nx, q + 1)}.}
+\item{f}{function to be integrated on \eqn{\mathbb{S}^q}. Must be vectorized
+and accept matrix inputs of size \code{c(nx, q + 1)}.}
 
 \item{N}{Defaults to \code{5e2}.}
 
 \item{na.rm}{ignore possible \code{NA}s arising from the evaluation of
 \code{f}? Defaults to \code{TRUE}.}
 
-\item{f_vect}{can \code{f} be called in a vectorized form, with matrix
-input? Defaults to \code{TRUE}.}
+\item{f_vect}{can \code{f} be called in a vectorized form, with matrix input?
+Defaults to \code{TRUE}.}
 
 \item{...}{further arguments passed to \code{f}.}
 
-\item{q}{dimension of \eqn{S^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
 
 \item{M}{number of Monte Carlo replicates. Defaults to \code{1e5}.}
 }
@@ -36,13 +36,14 @@ A scalar approximating the integral.
 }
 \description{
 Several quadrature rules for integration of functions on
-\eqn{S^1}, \eqn{S^2}, and \eqn{S^q}, \eqn{q \ge 3}.
+\eqn{\mathbb{S}^1}, \eqn{\mathbb{S}^2}, and \eqn{\mathbb{S}^q},
+\eqn{q \ge 3}.
 }
 \details{
 \code{int_cir} is an extension of equation (4.1.11) in Press et al. (1997),
 a periodic trapezoidal rule. \code{int_sph} employs the
-\link[=lebedev]{Lebedev quadrature} on \eqn{S^2}. \code{int_hypsph}
-implements a Monte Carlo integration on \eqn{S^q}.
+\link[=lebedev]{Lebedev quadrature} on \eqn{\mathbb{S}^2}. \code{int_hypsph}
+implements a Monte Carlo integration on \eqn{\mathbb{S}^q}.
 }
 \examples{
 # S^1, trapezoidal rule

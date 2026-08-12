@@ -20,22 +20,33 @@ to_rad(x)
 to_sph(th, ph)
 }
 \arguments{
-\item{x}{matrix or vector, in \eqn{S^1} for \code{to_cir}.}
+\item{x}{matrix or vector, in \eqn{\mathbb{S}^1} for \code{to_cir}.}
 
 \item{th}{vector of angles in \eqn{[0, 2\pi)}.}
 
 \item{ph}{vector of angles in \eqn{[0, \pi]}.}
 }
 \value{
-Euclidean norm (\code{norm2}) and normalized data (\code{normalize}).
-Position in \eqn{S^1} (\code{to_cir}) or in \eqn{[0, 2\pi)} (\code{to_rad}).
-Position in \eqn{S^2} (\code{to_sph}) or in \eqn{[0, 2\pi) \times [0, \pi]}
-(\code{to_rad}).
+\itemize{
+  \item \code{norm2}: the Euclidean norms of the rows of \code{x}, a vector
+  of size \code{nrow(x)}.
+  \item \code{normalize}: the row-normalized \code{x}, a matrix with the
+  same size as \code{x}.
+  \item \code{to_cir}: the position in \eqn{\mathbb{S}^1}, a matrix of size
+  \code{c(length(th), 2)}.
+  \item \code{to_sph}: the position in \eqn{\mathbb{S}^2}, a matrix of size
+  \code{c(length(th), 3)}.
+  \item \code{to_rad}: the angles of \code{x}, a vector of size
+  \code{nrow(x)} in \eqn{[0, 2\pi)} if \code{x} is in \eqn{\mathbb{S}^1},
+  or a matrix of size \code{c(nrow(x), 2)} in \eqn{[0, 2\pi) \times
+  [0, \pi]} if \code{x} is in \eqn{\mathbb{S}^2}.
+}
 }
 \description{
-Normalization of data in \eqn{R^{q + 1}} to \eqn{S^q}.
-Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and between
-\eqn{S^2} and \eqn{[0, 2\pi) \times [0, \pi]}.
+Normalization of data in \eqn{\mathbb{R}^{q + 1}} to
+\eqn{\mathbb{S}^q}. Transformations between \eqn{\mathbb{S}^1} and
+\eqn{[0, 2\pi)}, and between \eqn{\mathbb{S}^2} and
+\eqn{[0, 2\pi) \times [0, \pi]}.
 }
 \examples{
 # Normalization
@@ -65,6 +76,6 @@ to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
 }
 \seealso{
-\code{\link{int}} for integration on \eqn{S^q}, which relies on
-these conversions.
+\code{\link{int}} for integration on \eqn{\mathbb{S}^q}, which
+relies on these conversions.
 }

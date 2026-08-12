@@ -30,10 +30,13 @@ together with the asymptotic expansions. The spline is only effective when
 \item{kappa}{vector of non-negative concentration parameters.}
 }
 \value{
-\code{log_besselI_scaled} returns a vector, conformable with
-\code{nu} and \code{x}, with \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}.
-\code{fast_log_c_vMF} returns a vector of length \code{length(kappa)} with
-\eqn{\log C_p(\kappa)}.
+\itemize{
+  \item \code{log_besselI_scaled}: the evaluation of
+  \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector conformable with \code{nu}
+  and \code{x}.
+  \item \code{fast_log_c_vMF}: the evaluation of \eqn{\log C_p(\kappa)}, a
+  vector of size \code{length(kappa)}.
+}
 }
 \description{
 Numerically stable evaluation of the logarithm of the

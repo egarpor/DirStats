@@ -4,26 +4,33 @@
 \alias{bic_vmf_mix}
 \title{Fitting mixtures of von Mises--Fisher distributions}
 \usage{
-bic_vmf_mix(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
-  crit = "BIC", iterative = TRUE, plot_it = FALSE, verbose = FALSE,
-  kappa_max = 250)
+bic_vmf_mix(
+  data,
+  M_bound = ceiling(log(nrow(data))),
+  M_neig = 3,
+  crit = "BIC",
+  iterative = TRUE,
+  plot_it = FALSE,
+  verbose = FALSE,
+  kappa_max = 250
+)
 }
 \arguments{
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
 \item{M_bound}{bound for the number of components in the mixtures. If it is
-not enough, the search for the mixture with minimum \code{crit} will
-continue from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
+not enough, the search for the mixture with minimum \code{crit} will continue
+from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
 \code{ceiling(log(nrow(data)))}.}
 
-\item{M_neig}{number of neighbors explored around the optimal number
-of mixture components. Defaults to \code{3}.}
+\item{M_neig}{number of neighbors explored around the optimal number of
+mixture components. Defaults to \code{3}.}
 
 \item{crit}{information criterion employed, either \code{"BIC"} (default),
 \code{"AICc"} or \code{"AIC"}.}
 
-\item{iterative}{keep exploring higher number of components if the optimum
-is attained at \code{M_bound}? Defaults to \code{TRUE}.}
+\item{iterative}{keep exploring higher number of components if the optimum is
+attained at \code{M_bound}? Defaults to \code{TRUE}.}
 
 \item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
@@ -36,18 +43,18 @@ instabilities. Defaults to \code{250}.}
 \value{
 A list with entries:
 \itemize{
-  \item{\code{best_fit}: a list with estimated mixture parameters
+  \item \code{best_fit}: a list with estimated mixture parameters
   \code{mu_hat}, \code{kappa_hat}, and \code{p_hat} of the best-fitting
-  mixture according to \code{crit}.}
-  \item{\code{fits}: a list with the fitted mixtures.}
-  \item{\code{BICs}: a vector with the BICs (or other information criterion)
-  of the fitted mixtures.}
+  mixture according to \code{crit}.
+  \item \code{fits}: a list with the fitted mixtures.
+  \item \code{BICs}: a vector with the BICs (or other information criterion)
+  of the fitted mixtures.
 }
 }
 \description{
 Fitting mixtures of von Mises--Fisher distributions by the
-Expectation-Maximization algorithm, with determination of the optimal
-number of mixture components.
+Expectation-Maximization algorithm, with determination of the optimal number
+of mixture components.
 }
 \details{
 See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
@@ -69,7 +76,7 @@ bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
-\doi{10.1214/13-ejs821}
+\doi{10.1214/13-EJS821}
 
 Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 von Mises--Fisher Distributions. \emph{Journal of Statistical Software},

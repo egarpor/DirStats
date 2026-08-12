@@ -14,27 +14,34 @@ bw_dir_ami(data, fit_mix = NULL, L = NULL)
 
 R_Psi_mixvmf(q, mu, kappa, p)
 
-bw_dir_emi(data, fit_mix = NULL, optim = TRUE,
-  h_grid = exp(seq(log(0.05), log(1.5), l = 100)), plot_it = TRUE,
-  optim_par = 0.25, optim_lower = 0.06, optim_upper = 10)
+bw_dir_emi(
+  data,
+  fit_mix = NULL,
+  optim = TRUE,
+  h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
+  plot_it = TRUE,
+  optim_par = 0.25,
+  optim_lower = 0.06,
+  optim_upper = 10
+)
 }
 \arguments{
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
-\item{fit_mix}{output from \code{\link{bic_vmf_mix}}. Computed internally
-if \code{NULL} (default).}
+\item{fit_mix}{output from \code{\link{bic_vmf_mix}}. Computed internally if
+\code{NULL} (default).}
 
-\item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
-(von Mises--Fisher kernel) if \code{NULL} (default).}
+\item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
+Mises--Fisher kernel) if \code{NULL} (default).}
 
-\item{q}{dimension of \eqn{S^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
 
 \item{mu, kappa, p}{mixture parameters. \code{mu} is the mean matrix of size
 \code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
 concentration parameters, and \code{p} is the vector of mixture proportions.}
 
-\item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise,
-a grid search on \code{h} is done. Only effective if \code{L = NULL}.}
+\item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
+search on \code{h} is done. Only effective if \code{L = NULL}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
 to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
@@ -43,25 +50,26 @@ to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 Defaults to \code{FALSE}.}
 
 \item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
-\code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using
-the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
-(to avoid numerical instabilities), and \code{10}.}
+\code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
+\code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06} (to avoid
+numerical instabilities), and \code{10}.}
 }
 \value{
-Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
-\code{bw_dir_emi} returns a list with entries:
 \itemize{
-  \item{\code{h_opt}: selected bandwidth.}
-  \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
-  \item{\code{MISE_opt}: minimum of the MISE loss.}
-  \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if
-   used (otherwise \code{NULL}).}
+  \item \code{bw_dir_rot}, \code{bw_dir_ami}: the selected bandwidth, a
+  scalar.
+  \item \code{bw_dir_emi}: a list with entries \code{h_opt} (selected
+  bandwidth), \code{h_grid} (\code{h_grid}, if used, otherwise
+  \code{NULL}), \code{MISE_opt} (minimum of the MISE loss), and
+  \code{MISE_grid} (value of the MISE function at \code{h_grid}, if used,
+  otherwise \code{NULL}).
+  \item \code{R_Psi_mixvmf}: the curvature term of the mixture, a scalar.
 }
 }
 \description{
-Plug-in bandwidth selectors for kernel density estimation
-with directional data, including Rule-Of-Thumb (ROT),
-Asymptotic MIxtures (AMI), and Exact MIxtures (EMI).
+Plug-in bandwidth selectors for kernel density estimation with
+directional data, including Rule-Of-Thumb (ROT), Asymptotic MIxtures (AMI),
+and Exact MIxtures (EMI).
 }
 \details{
 See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
@@ -102,10 +110,10 @@ bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
-\doi{10.1214/13-ejs821}
+\doi{10.1214/13-EJS821}
 }
 \seealso{
-\code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}}
-for cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the
-mixture fit these selectors rely on.
+\code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}} for
+cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the mixture
+fit these selectors rely on.
 }

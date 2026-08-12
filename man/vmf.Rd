@@ -7,7 +7,7 @@
 \alias{d_mixvmf}
 \title{Von Mises--Fisher distribution utilities}
 \usage{
-kappa_ml(data, min_kappa = 1e-04, max_kappa = 100, ...)
+kappa_ml(data, min_kappa = 1e-04, max_kappa = 10000, ...)
 
 mu_ml(data)
 
@@ -16,8 +16,10 @@ d_mixvmf(x, mu, kappa, p, norm = FALSE)
 \arguments{
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
-\item{min_kappa, max_kappa}{minimum and maximum kappas to look for the maximum
-likelihood estimate.}
+\item{min_kappa, max_kappa}{initial search interval (in \code{kappa}) for the
+maximum likelihood estimate. The bracket is automatically extended if the
+root lies outside it, so these are \bold{not} hard bounds on the returned
+concentration. Default to \code{1e-4} and \code{1e4}.}
 
 \item{...}{further parameters passed to \code{\link{uniroot}}.}
 
@@ -27,12 +29,17 @@ likelihood estimate.}
 \code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
 concentration parameters, and \code{p} is the vector of mixture proportions.}
 
-\item{norm}{enforce normalization of \code{x} internally? Defaults
-to \code{FALSE}.}
+\item{norm}{enforce normalization of \code{x} internally? Defaults to
+\code{FALSE}.}
 }
 \value{
-Estimated vector mean (\code{mu_ml}) or concentration parameter
-(\code{kappa_ml}). A vector of length \code{nx} for \code{d_mixvmf}.
+\itemize{
+  \item \code{mu_ml}: the estimated mean direction, a vector of size
+  \code{q + 1}.
+  \item \code{kappa_ml}: the estimated concentration parameter, a scalar.
+  \item \code{d_mixvmf}: the evaluated mixture density, a vector of size
+  \code{nx}.
+}
 }
 \description{
 Maximum likelihood estimation for the von Mises--Fisher
