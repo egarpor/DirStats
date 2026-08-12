@@ -11,3 +11,4 @@
 TODO.md
 ^\.github$
 ^CRAN-SUBMISSION$
+^DirStats\.code-workspace$
