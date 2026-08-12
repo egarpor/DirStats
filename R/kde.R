@@ -2,20 +2,25 @@
 
 #' @title Directional kernel density estimator
 #'
-#' @description Kernel density estimation with directional data as in
-#' the estimator of Bai et al. (1988).
+#' @description Kernel density estimation with directional data as in the
+#' estimator of Bai et al. (1988).
 #'
 #' @param x evaluation points, a matrix of size \code{c(nx, q + 1)}.
 #' @param data directional data, a matrix of size \code{c(n, q + 1)}.
-#' @param h bandwidth, a scalar for \code{kde_dir}. Can be a vector
-#' for \code{c_h}.
-#' @param L kernel function. Set internally to \code{function(x) exp(-x)}
-#' (von Mises--Fisher kernel) if \code{NULL} (default).
-#' @param q dimension of \eqn{S^q}, \eqn{q\ge 1}.
-#' @return \code{kde_dir} returns a vector of size \code{nx} with the
-#' evaluated kernel density estimator. \code{c_h} returns the normalizing
-#' constant for the kernel, a vector of length \code{length(h)}.
-#' \code{lambda_L}, \code{b_L}, and \code{d_L} return moments of \code{L}.
+#' @param h bandwidth, a scalar for \code{kde_dir}. Can be a vector for
+#' \code{c_h}.
+#' @param L kernel function. Set internally to \code{function(x) exp(-x)} (von
+#' Mises--Fisher kernel) if \code{NULL} (default).
+#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.
+#' @return
+#' \itemize{
+#'   \item \code{kde_dir}: the evaluated kernel density estimator, a vector of
+#'   size \code{nx}.
+#'   \item \code{c_h}: the normalizing constant of the kernel, a vector of size
+#'   \code{length(h)}.
+#'   \item \code{lambda_L}, \code{b_L}, \code{d_L}: the moments
+#'   \eqn{\lambda(L)}, \eqn{b(L)}, and \eqn{d(L)} of \code{L}, each a scalar.
+#' }
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
 #' When \code{L = NULL}, faster FORTRAN code is employed.
@@ -115,9 +120,10 @@ c_h <- function(h, q, L = NULL) {
   # von Mises--Fisher kernel?
   if (is.null(L)) {
 
-    # Analytical expression
-    ch <- (2 * pi)^((q + 1) / 2) * h^(q - 1) *
-      besselI(x = 1 / h^2, nu = (q - 1) / 2, expon.scaled = TRUE)
+    # Analytical expression, evaluated in log scale
+    log_ch <- ((q + 1) / 2) * log(2 * pi) + (q - 1) * log(h) +
+      log_besselI_scaled(nu = (q - 1) / 2, x = 1 / h^2)
+    return(exp(-log_ch))
 
   } else {
 

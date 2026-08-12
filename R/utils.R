@@ -3,15 +3,16 @@
 #' @title Integration routines
 #'
 #' @description Several quadrature rules for integration of functions on
-#' \eqn{S^1}, \eqn{S^2}, and \eqn{S^q}, \eqn{q \ge 3}.
+#' \eqn{\mathbb{S}^1}, \eqn{\mathbb{S}^2}, and \eqn{\mathbb{S}^q},
+#' \eqn{q \ge 3}.
 #'
-#' @param f function to be integrated on \eqn{S^q}. Must be vectorized and
-#' accept matrix inputs of size \code{c(nx, q + 1)}.
+#' @param f function to be integrated on \eqn{\mathbb{S}^q}. Must be vectorized
+#' and accept matrix inputs of size \code{c(nx, q + 1)}.
 #' @param N Defaults to \code{5e2}.
 #' @param na.rm ignore possible \code{NA}s arising from the evaluation of
 #' \code{f}? Defaults to \code{TRUE}.
-#' @param f_vect can \code{f} be called in a vectorized form, with matrix
-#' input? Defaults to \code{TRUE}.
+#' @param f_vect can \code{f} be called in a vectorized form, with matrix input?
+#' Defaults to \code{TRUE}.
 #' @inheritParams kde_dir
 #' @param M number of Monte Carlo replicates. Defaults to \code{1e5}.
 #' @param ... further arguments passed to \code{f}.
@@ -19,8 +20,8 @@
 #' @details
 #' \code{int_cir} is an extension of equation (4.1.11) in Press et al. (1997),
 #' a periodic trapezoidal rule. \code{int_sph} employs the
-#' \link[=lebedev]{Lebedev quadrature} on \eqn{S^2}. \code{int_hypsph}
-#' implements a Monte Carlo integration on \eqn{S^q}.
+#' \link[=lebedev]{Lebedev quadrature} on \eqn{\mathbb{S}^2}. \code{int_hypsph}
+#' implements a Monte Carlo integration on \eqn{\mathbb{S}^q}.
 #' @examples
 #' # S^1, trapezoidal rule
 #' f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 1), kappa = 2)
@@ -86,17 +87,29 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 
 #' @title Convenience functions
 #'
-#' @description Normalization of data in \eqn{R^{q + 1}} to \eqn{S^q}.
-#' Transformations between \eqn{S^1} and \eqn{[0, 2\pi)}, and between
-#' \eqn{S^2} and \eqn{[0, 2\pi) \times [0, \pi]}.
+#' @description Normalization of data in \eqn{\mathbb{R}^{q + 1}} to
+#' \eqn{\mathbb{S}^q}. Transformations between \eqn{\mathbb{S}^1} and
+#' \eqn{[0, 2\pi)}, and between \eqn{\mathbb{S}^2} and
+#' \eqn{[0, 2\pi) \times [0, \pi]}.
 #'
-#' @param x matrix or vector, in \eqn{S^1} for \code{to_cir}.
+#' @param x matrix or vector, in \eqn{\mathbb{S}^1} for \code{to_cir}.
 #' @param th vector of angles in \eqn{[0, 2\pi)}.
 #' @param ph vector of angles in \eqn{[0, \pi]}.
-#' @return Euclidean norm (\code{norm2}) and normalized data (\code{normalize}).
-#' Position in \eqn{S^1} (\code{to_cir}) or in \eqn{[0, 2\pi)} (\code{to_rad}).
-#' Position in \eqn{S^2} (\code{to_sph}) or in \eqn{[0, 2\pi) \times [0, \pi]}
-#' (\code{to_rad}).
+#' @return
+#' \itemize{
+#'   \item \code{norm2}: the Euclidean norms of the rows of \code{x}, a vector
+#'   of size \code{nrow(x)}.
+#'   \item \code{normalize}: the row-normalized \code{x}, a matrix with the
+#'   same size as \code{x}.
+#'   \item \code{to_cir}: the position in \eqn{\mathbb{S}^1}, a matrix of size
+#'   \code{c(length(th), 2)}.
+#'   \item \code{to_sph}: the position in \eqn{\mathbb{S}^2}, a matrix of size
+#'   \code{c(length(th), 3)}.
+#'   \item \code{to_rad}: the angles of \code{x}, a vector of size
+#'   \code{nrow(x)} in \eqn{[0, 2\pi)} if \code{x} is in \eqn{\mathbb{S}^1},
+#'   or a matrix of size \code{c(nrow(x), 2)} in \eqn{[0, 2\pi) \times
+#'   [0, \pi]} if \code{x} is in \eqn{\mathbb{S}^2}.
+#' }
 #' @examples
 #' # Normalization
 #' x <- 1:3
@@ -123,8 +136,8 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 #'               c(ph, ph + 1)))
 #' to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 #' to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
-#' @seealso \code{\link{int}} for integration on \eqn{S^q}, which relies on
-#' these conversions.
+#' @seealso \code{\link{int}} for integration on \eqn{\mathbb{S}^q}, which
+#' relies on these conversions.
 #' @name conv
 
 

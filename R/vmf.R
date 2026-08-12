@@ -14,8 +14,14 @@
 #' @param min_kappa,max_kappa minimum and maximum kappas to look for the maximum
 #' likelihood estimate.
 #' @param ... further parameters passed to \code{\link{uniroot}}.
-#' @return Estimated vector mean (\code{mu_ml}) or concentration parameter
-#' (\code{kappa_ml}). A vector of length \code{nx} for \code{d_mixvmf}.
+#' @return
+#' \itemize{
+#'   \item \code{mu_ml}: the estimated mean direction, a vector of size
+#'   \code{q + 1}.
+#'   \item \code{kappa_ml}: the estimated concentration parameter, a scalar.
+#'   \item \code{d_mixvmf}: the evaluated mixture density, a vector of size
+#'   \code{nx}.
+#' }
 #' @examples
 #' # Sample
 #' n <- 50

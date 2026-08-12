@@ -46,10 +46,14 @@
 #' constant \eqn{C_p(\kappa) = \kappa^{p / 2 - 1} / ((2\pi)^{p / 2}
 #' \mathcal{I}_{p / 2 - 1}(\kappa))}, evaluated stably through
 #' \code{log_besselI_scaled}.
-#' @return \code{log_besselI_scaled} returns a vector, conformable with
-#' \code{nu} and \code{x}, with \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}.
-#' \code{fast_log_c_vMF} returns a vector of length \code{length(kappa)} with
-#' \eqn{\log C_p(\kappa)}.
+#' @return
+#' \itemize{
+#'   \item \code{log_besselI_scaled}: the evaluation of
+#'   \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector conformable with \code{nu}
+#'   and \code{x}.
+#'   \item \code{fast_log_c_vMF}: the evaluation of \eqn{\log C_p(\kappa)}, a
+#'   vector of size \code{length(kappa)}.
+#' }
 #' @references
 #' DLMF (2024). \emph{NIST Digital Library of Mathematical Functions}. Section
 #' 10.41. \url{https://dlmf.nist.gov/10.41}

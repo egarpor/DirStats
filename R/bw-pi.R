@@ -3,32 +3,32 @@
 #' @title Fitting mixtures of von Mises--Fisher distributions
 #'
 #' @description Fitting mixtures of von Mises--Fisher distributions by the
-#' Expectation-Maximization algorithm, with determination of the optimal
-#' number of mixture components.
+#' Expectation-maximization algorithm, with determination of the optimal number
+#' of mixture components.
 #'
 #' @inheritParams kde_dir
 #' @param M_bound bound for the number of components in the mixtures. If it is
-#' not enough, the search for the mixture with minimum \code{crit} will
-#' continue from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
+#' not enough, the search for the mixture with minimum \code{crit} will continue
+#' from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
 #' \code{ceiling(log(nrow(data)))}.
-#' @param M_neig number of neighbors explored around the optimal number
-#' of mixture components. Defaults to \code{3}.
+#' @param M_neig number of neighbors explored around the optimal number of
+#' mixture components. Defaults to \code{3}.
 #' @param crit information criterion employed, either \code{"BIC"} (default),
 #' \code{"AICc"} or \code{"AIC"}.
-#' @param iterative keep exploring higher number of components if the optimum
-#' is attained at \code{M_bound}? Defaults to \code{TRUE}.
+#' @param iterative keep exploring higher number of components if the optimum is
+#' attained at \code{M_bound}? Defaults to \code{TRUE}.
 #' @inheritParams bw_dir_cv
 #' @param verbose display fitting progress? Defaults to \code{FALSE}.
 #' @param kappa_max maximum value of allowed concentrations, to avoid numerical
 #' instabilities. Defaults to \code{250}.
 #' @return A list with entries:
 #' \itemize{
-#'   \item{\code{best_fit}: a list with estimated mixture parameters
+#'   \item \code{best_fit}: a list with estimated mixture parameters
 #'   \code{mu_hat}, \code{kappa_hat}, and \code{p_hat} of the best-fitting
-#'   mixture according to \code{crit}.}
-#'   \item{\code{fits}: a list with the fitted mixtures.}
-#'   \item{\code{BICs}: a vector with the BICs (or other information criterion)
-#'   of the fitted mixtures.}
+#'   mixture according to \code{crit}.
+#'   \item \code{fits}: a list with the fitted mixtures.
+#'   \item \code{BICs}: a vector with the BICs (or other information criterion)
+#'   of the fitted mixtures.
 #' }
 #' @details
 #' See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
@@ -37,7 +37,7 @@
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
 #' Journal of Statistics}, 7:1655--1685.
-#' \doi{10.1214/13-ejs821}
+#' \doi{10.1214/13-EJS821}
 #'
 #' Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 #' von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
@@ -238,15 +238,15 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 
 #' @title Plug-in bandwidth selectors for directional data
 #'
-#' @description Plug-in bandwidth selectors for kernel density estimation
-#' with directional data, including Rule-Of-Thumb (ROT),
-#' Asymptotic MIxtures (AMI), and Exact MIxtures (EMI).
+#' @description Plug-in bandwidth selectors for kernel density estimation with
+#' directional data, including Rule-Of-Thumb (ROT), Asymptotic MIxtures (AMI),
+#' and Exact MIxtures (EMI).
 #'
 #' @inheritParams kde_dir
 #' @inheritParams bic_vmf_mix
 #' @inheritParams bw_dir_cv
-#' @param fit_mix output from \code{\link{bic_vmf_mix}}. Computed internally
-#' if \code{NULL} (default).
+#' @param fit_mix output from \code{\link{bic_vmf_mix}}. Computed internally if
+#' \code{NULL} (default).
 #' @param mu,kappa,p mixture parameters. \code{mu} is the mean matrix of size
 #' \code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
 #' concentration parameters, and \code{p} is the vector of mixture proportions.
@@ -257,11 +257,14 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' @return Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
 #' \code{bw_dir_emi} returns a list with entries:
 #' \itemize{
-#'   \item{\code{h_opt}: selected bandwidth.}
-#'   \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
-#'   \item{\code{MISE_opt}: minimum of the MISE loss.}
-#'   \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if
-#'    used (otherwise \code{NULL}).}
+#'   \item \code{bw_dir_rot}, \code{bw_dir_ami}: the selected bandwidth, a
+#'   scalar.
+#'   \item \code{bw_dir_emi}: a list with entries \code{h_opt} (selected
+#'   bandwidth), \code{h_grid} (\code{h_grid}, if used, otherwise
+#'   \code{NULL}), \code{MISE_opt} (minimum of the MISE loss), and
+#'   \code{MISE_grid} (value of the MISE function at \code{h_grid}, if used,
+#'   otherwise \code{NULL}).
+#'   \item \code{R_Psi_mixvmf}: the curvature term of the mixture, a scalar.
 #' }
 #' @details
 #' See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
@@ -279,10 +282,10 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
 #' Journal of Statistics}, 7:1655--1685.
-#' \doi{10.1214/13-ejs821}
-#' @seealso \code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}}
-#' for cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the
-#' mixture fit these selectors rely on.
+#' \doi{10.1214/13-EJS821}
+#' @seealso \code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}} for
+#' cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the mixture
+#' fit these selectors rely on.
 #' @examples
 #' # Sample
 #' n <- 25
