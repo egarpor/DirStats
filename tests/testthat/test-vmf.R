@@ -1,3 +1,6 @@
+
+## mu_ml()
+
 test_that("mu_ml recovers the mean direction", {
 
   set.seed(42)
@@ -8,18 +11,50 @@ test_that("mu_ml recovers the mean direction", {
 
 })
 
+## kappa_ml()
 
 test_that("kappa_ml recovers the concentration", {
 
   set.seed(42)
   samp <- rotasym::r_vMF(n = 2000, mu = c(0, 0, 1), kappa = 5)
   expect_equal(kappa_ml(samp), 5, tolerance = 0.5)
-  # A search interval that does not bracket the root cannot be solved: the
-  # min_kappa / max_kappa arguments are passed to uniroot()
-  expect_error(kappa_ml(samp, max_kappa = 0.5), "opposite sign")
+  expect_equal(kappa_ml(samp, max_kappa = 0.5), kappa_ml(samp), tolerance = 1e-3)
 
 })
 
+test_that("kappa_ml also work for large kappa and dimension ", {
+
+  for (q in c(1:2, 100)) {
+    for (true_kappa in c(2, 50, 300)) {
+      set.seed(42)
+      samp <- rotasym::r_vMF(n = 1e4, mu = c(1, rep(0, q)), kappa = true_kappa)
+      k_hat <- kappa_ml(samp)
+      expect_true(is.finite(k_hat) && k_hat > 0)
+      expect_equal(k_hat, true_kappa, tolerance = 1e-1)
+    }
+  }
+
+})
+
+test_that("kappa_ml handles degenerate resultant lengths", {
+
+  ident <- matrix(c(0, 0, 1), nrow = 5, ncol = 3, byrow = TRUE)
+  antipodal <- rbind(c(0, 0, 1), c(0, 0, -1))
+  expect_equal(kappa_ml(ident), Inf)
+  expect_equal(kappa_ml(antipodal), 0)
+
+})
+
+test_that("kappa_ml accepts a pre-computed resultant length", {
+
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = 2000, mu = c(0, 0, 1), kappa = 5)
+  R <- norm2(colMeans(samp))
+  expect_equal(kappa_ml(samp), kappa_ml(samp, R = R))
+
+})
+
+## d_mixvmf()
 
 test_that("d_mixvmf integrates to one on the circle", {
 
@@ -30,17 +65,14 @@ test_that("d_mixvmf integrates to one on the circle", {
 
 })
 
-
 test_that("d_mixvmf with a single component equals rotasym::d_vMF", {
 
   x <- to_cir(seq(0, 2 * pi, l = 7))
-  # d_mixvmf returns a plain vector; rotasym::d_vMF returns a column matrix
   expect_equal(d_mixvmf(x = x, mu = rbind(c(1, 0)), kappa = 2, p = 1),
                rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
                ignore_attr = TRUE)
 
 })
-
 
 test_that("d_mixvmf checks the mixture argument dimensions", {
 
@@ -50,22 +82,17 @@ test_that("d_mixvmf checks the mixture argument dimensions", {
 
 })
 
-
-test_that("d_mixvmf handles a single evaluation point, norm and vector inputs", {
+test_that("d_mixvmf handles vector and matrix inputs", {
 
   mu <- rbind(c(-1, 0), c(0, 1))
-  # x given as a plain vector (single point), with norm = TRUE, and a
-  # multi-component mixture (so the density reshape branch is exercised)
   d_vec <- d_mixvmf(x = c(0, 2), mu = mu, kappa = c(1, 2),
                     p = c(0.5, 0.5), norm = TRUE)
   expect_length(d_vec, 1)
-  # Must match the matrix-input evaluation at the normalized point
   d_mat <- d_mixvmf(x = normalize(rbind(c(0, 2))), mu = mu, kappa = c(1, 2),
                     p = c(0.5, 0.5))
   expect_equal(d_vec, d_mat)
 
 })
-
 
 test_that("d_mixvmf accepts a single component given as a vector mu", {
 

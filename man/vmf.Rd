@@ -7,7 +7,7 @@
 \alias{d_mixvmf}
 \title{Von Mises--Fisher distribution utilities}
 \usage{
-kappa_ml(data, min_kappa = 1e-04, max_kappa = 10000, ...)
+kappa_ml(data, min_kappa = 1e-04, max_kappa = 10000, R = NULL, ...)
 
 mu_ml(data)
 
@@ -17,9 +17,11 @@ d_mixvmf(x, mu, kappa, p, norm = FALSE)
 \item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
 
 \item{min_kappa, max_kappa}{initial search interval (in \code{kappa}) for the
-maximum likelihood estimate. The bracket is automatically extended if the
-root lies outside it, so these are \bold{not} hard bounds on the returned
-concentration. Default to \code{1e-4} and \code{1e4}.}
+maximum likelihood estimate. The interval is automatically extended if the
+root lies outside. Default to \code{1e-4} and \code{1e4}.}
+
+\item{R}{resultant length, a scalar. If \code{NULL} (default), it is computed
+from \code{data}.}
 
 \item{...}{further parameters passed to \code{\link{uniroot}}.}
 

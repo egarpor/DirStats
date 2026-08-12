@@ -1,3 +1,6 @@
+
+## int_cir()
+
 test_that("int_cir integrates a circular density to one", {
 
   f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 1), kappa = 2)
@@ -5,6 +8,7 @@ test_that("int_cir integrates a circular density to one", {
 
 })
 
+## int_sph()
 
 test_that("int_sph integrates a spherical density to one", {
 
@@ -13,6 +17,7 @@ test_that("int_sph integrates a spherical density to one", {
 
 })
 
+## int_hypsph()
 
 test_that("int_hypsph integrates a density to one", {
 
@@ -21,7 +26,6 @@ test_that("int_hypsph integrates a density to one", {
   expect_equal(int_hypsph(f = f, q = 3, M = 1e5), 1, tolerance = 5e-2)
 
 })
-
 
 test_that("int_hypsph honors na.rm (regression: was hardcoded to TRUE)", {
 
@@ -39,6 +43,7 @@ test_that("int_hypsph honors na.rm (regression: was hardcoded to TRUE)", {
 
 })
 
+## int_cir(), int_sph(), int_hypsph()
 
 test_that("integration routines also work with non-vectorized f", {
 

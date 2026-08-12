@@ -8,23 +8,25 @@
       Double Precision CV(lenh)
 
       ! Local variables
-      Double Precision mat_L(n, n)
+      Double Precision M(n, n)
       Double Precision aux1, aux2(n, n)
       Integer hi, i
-      Real, parameter :: Pi = 3.1415926536
 
-      ! Computation of kernel matrix
-      mat_L = exp(-1 + matmul(data_dir, transpose(data_dir)))
-      do i = 1, n
-        mat_L(i, i)=0
-      end do
+      ! Log-kernel matrix M = log(exp(-1 + <x_i, x_j>)) to avoid recomputing
+      M = matmul(data_dir, transpose(data_dir)) - 1
 
       ! Computation of CV
       do hi = 1, lenh
 
         aux1 = ch(hi) / (n - 1)
-        aux2 = aux1 * (mat_L ** (h(hi) ** (-2.0)))
-        CV(hi) = -Sum(log(Sum(aux2, dim = 1))) / n
+        aux2 = exp(M / (h(hi) ** 2))
+
+        ! Leave-one-out: drop the self-contributions
+        do i = 1, n
+          aux2(i, i) = 0
+        end do
+
+        CV(hi) = -Sum(log(aux1 * Sum(aux2, dim = 1))) / n
 
       end do
 

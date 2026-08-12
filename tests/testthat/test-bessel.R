@@ -1,3 +1,6 @@
+
+## log_besselI_scaled()
+
 test_that("log_besselI_scaled matches base besselI in the standard regime", {
 
   x <- exp(seq(log(1e-3), log(5e3), length.out = 200))
@@ -8,7 +11,6 @@ test_that("log_besselI_scaled matches base besselI in the standard regime", {
   }
 
 })
-
 
 test_that("log_besselI_scaled spline path matches the direct evaluation", {
 
@@ -21,7 +23,6 @@ test_that("log_besselI_scaled spline path matches the direct evaluation", {
 
 })
 
-
 test_that("log_besselI_scaled joins smoothly to the large-order asymptotic", {
 
   # At the table cutoff (nu = 50) the spline/table value and the large-order
@@ -33,7 +34,6 @@ test_that("log_besselI_scaled joins smoothly to the large-order asymptotic", {
   expect_lt(max(abs(spl - asy)), 1e-8)
 
 })
-
 
 test_that("log_besselI_scaled stays finite for large order and argument", {
 
@@ -48,7 +48,6 @@ test_that("log_besselI_scaled stays finite for large order and argument", {
 
 })
 
-
 test_that("log_besselI_scaled vectorizes and propagates NAs", {
 
   expect_length(log_besselI_scaled(nu = c(0.5, 1.5, 2.5), x = c(1, 2, 3)), 3)
@@ -61,6 +60,7 @@ test_that("log_besselI_scaled vectorizes and propagates NAs", {
 
 })
 
+## fast_log_c_vMF()
 
 test_that("fast_log_c_vMF matches rotasym::c_vMF(log = TRUE)", {
 

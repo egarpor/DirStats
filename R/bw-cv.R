@@ -252,22 +252,23 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
       Cq <- rotasym::c_vMF(p = p, kappa = 1 / h_grid^2, log = FALSE)
       Cq2 <- rotasym::c_vMF(p = p, kappa = 2 / h_grid^2, log = FALSE)
 
-      # Pairwise kernels
-      CV1 <- CV2 <- array(0, dim = c(n, n, length(h_grid)))
+      # Accumulate the pairwise kernel sums directly, avoiding the
+      # n x n x length(h_grid) arrays (memory O(length(h_grid))).
+      sum_CV1 <- sum_CV2 <- numeric(length(h_grid))
       for (i in 2:n) {
         for (j in 1:(i - 1)) {
 
-          CV1[i, j, ] <- exp(drop(t(data[i, ]) %*% data[j, ]) / h_grid^2)
+          sum_CV1 <- sum_CV1 + exp(drop(t(data[i, ]) %*% data[j, ]) / h_grid^2)
           norm_ij <- sqrt(sum((data[i, ] + data[j, ])^2))
-          CV2[i, j, ] <-
+          sum_CV2 <- sum_CV2 +
             1 / rotasym::c_vMF(p = p, kappa = norm_ij / h_grid^2, log = FALSE)
 
         }
       }
 
       # Computation of the CV
-      CV <- (4 * Cq) / (n * (n - 1)) * apply(CV1, 3, sum) -
-        Cq^2 / (n * Cq2) - (2 * Cq^2) / n^2 * apply(CV2, 3, sum)
+      CV <- (4 * Cq) / (n * (n - 1)) * sum_CV1 -
+        Cq^2 / (n * Cq2) - (2 * Cq^2) / n^2 * sum_CV2
       CV <- -CV
 
     }

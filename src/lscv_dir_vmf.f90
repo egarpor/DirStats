@@ -8,45 +8,46 @@
       Double Precision CV(lenh)
 
       ! Local variables
-      Double Precision CV1(n, n, lenh), CV2(n, n, lenh)
-      Double Precision aux1, aux2, aux4, aux5, ALPHA
+      Double Precision sumCV1(lenh), sumCV2(lenh)
+      Double Precision dotij, aux2, aux4, aux5, ALPHA
       Integer hi, i, j, NCALC, IZE
-      Real, parameter :: Pi = 3.1415926536
+      Double Precision, parameter :: Pi = 3.141592653589793d0
 
       ! For calling RIBESL
       ALPHA = 0.5 * (nq - 1) - (kk - 1)
       IZE = 1
 
-      ! Set CV1 and CV2 to zero
-      CV1 = 0
-      CV2 = 0
+      ! Accumulate the pairwise sums directly instead of storing the full
+      ! n x n x lenh arrays (memory O(lenh)).
+      sumCV1 = 0
+      sumCV2 = 0
 
-      ! Computation of CV1 and CV2
+      ! Computation of the CV1 and CV2 sums
       do i = 2, n
         do j = 1, i - 1
 
-           aux1 = exp(dot_product(data_dir(i, :), data_dir(j, :)))
+           dotij = dot_product(data_dir(i, :), data_dir(j, :))
            aux2 = Sqrt(Sum((data_dir(i, :) + data_dir(j, :)) ** 2))
 
            do hi = 1, lenh
 
-                ! CV1
-                CV1(i, j, hi) = aux1 ** (h(hi) ** (-2.0))
+                ! CV1: exp(dotij / h^2), avoiding the exp-then-power round trip
+                sumCV1(hi) = sumCV1(hi) + exp(dotij / (h(hi) ** 2))
 
                 ! CV2
                 aux4 = aux2 / (h(hi) ** 2)
                 call RIBESL(aux4, ALPHA, kk, IZE, B, NCALC)
                 aux5 = ((2 * Pi) ** (0.5 * (nq + 1))) * B(kk)
-                CV2(i, j, hi) = aux5 / (aux4 ** (0.5 * (nq - 1)))
+                sumCV2(hi) = sumCV2(hi) + aux5 / (aux4 ** (0.5 * (nq - 1)))
 
            end do
 
         end do
       end do
 
-      CV = (4 * Cq) / (n * (n - 1)) * Sum(Sum(CV1, dim = 1), dim = 1)
+      CV = (4 * Cq) / (n * (n - 1)) * sumCV1
       CV = CV - (Cq ** 2) / (n * Cq2)
-      CV = CV - (2 * Cq ** 2) / (n ** 2) * Sum(Sum(CV2, dim = 1), dim = 1)
+      CV = CV - (2 * Cq ** 2) / (n ** 2) * sumCV2
       CV = -CV
 
       Return

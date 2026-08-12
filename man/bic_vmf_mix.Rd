@@ -53,7 +53,7 @@ A list with entries:
 }
 \description{
 Fitting mixtures of von Mises--Fisher distributions by the
-Expectation-Maximization algorithm, with determination of the optimal number
+Expectation-maximization algorithm, with determination of the optimal number
 of mixture components.
 }
 \details{

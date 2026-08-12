@@ -19,8 +19,6 @@
 #' attained at \code{M_bound}? Defaults to \code{TRUE}.
 #' @inheritParams bw_dir_cv
 #' @param verbose display fitting progress? Defaults to \code{FALSE}.
-#' @param kappa_max maximum value of allowed concentrations, to avoid numerical
-#' instabilities. Defaults to \code{250}.
 #' @return A list with entries:
 #' \itemize{
 #'   \item \code{best_fit}: a list with estimated mixture parameters
@@ -58,8 +56,7 @@
 #' bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
 #' @export
 bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
-                        crit = "BIC", iterative = TRUE, plot_it = FALSE,
-                        verbose = FALSE, kappa_max = 250) {
+                        crit = "BIC", iterative = TRUE, plot_it = FALSE, verbose = FALSE) {
 
   # Remove NA's
   stopifnot(is.matrix(data))
@@ -105,13 +102,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
                               silent = TRUE, error = function(e) NA)
     BICs[k] <- get_BIC(fit_mixs[[k]])
 
-    # Avoid fitted mixtures with kappas > 250, they only cause problems
-    # exp(250) = 3.746455e+108
     if (is.na(fit_mixs[[k]][1])) {
-
-      BICs[k] <- NA
-
-    } else if (any(norm2(fit_mixs[[k]]$theta) > kappa_max)) {
 
       BICs[k] <- NA
 
@@ -150,10 +141,6 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
         # Compute the new BICs
         BICs_new <- get_BIC(fit_mixs_new)
         if (is.na(fit_mixs_new[1])) {
-
-          BICs_new <- NA
-
-        } else if (any(norm2(fit_mixs_new$theta) > kappa_max)) {
 
           BICs_new <- NA
 
@@ -251,11 +238,10 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' \code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
 #' concentration parameters, and \code{p} is the vector of mixture proportions.
 #' @param optim_par,optim_lower,optim_upper parameters passed to \code{par},
-#' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using
-#' the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
-#' (to avoid numerical instabilities), and \code{10}.
-#' @return Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
-#' \code{bw_dir_emi} returns a list with entries:
+#' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
+#' \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06} (to avoid
+#' numerical instabilities), and \code{10}.
+#' @return
 #' \itemize{
 #'   \item \code{bw_dir_rot}, \code{bw_dir_ami}: the selected bandwidth, a
 #'   scalar.
@@ -323,40 +309,35 @@ bw_dir_rot <- function(data) {
   q <- ncol(data) - 1
   kappa <- kappa_ml(data = data)
 
-  # Cases for different dimensions
-  if (q == 1) {
+  # Degenerate concentrations (uniform data or data collapsed at a single point)
+  if (!is.finite(kappa) || kappa <= 0) {
 
-    num <- 4 * sqrt(pi) * besselI(nu = 0, x = kappa)^2
-    den <- kappa * (2 * besselI(nu = 1, x = 2 * kappa) +
-                      3 * kappa * besselI(nu = 2, x = 2 * kappa)) * n
-
-  } else if (q == 2) {
-
-    e <- exp(-2 * kappa)
-    e2 <- e^2
-    sinh_scaled <- 0.5 * (1 - e)
-    cosh_scaled2 <- 0.5 * (1 + e2)
-    sinh_scaled2 <- 0.5 * (1 - e2)
-    num <- 8 * sinh_scaled^2
-    den <- kappa * (-2 * kappa * cosh_scaled2 +
-                      (1 + 4 * kappa^2) * sinh_scaled2) * n
-    # Caution! Typo in G-P (2013) in equation (6) for q = 2. It displays an
-    # incorrect extra kappa:
-    # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
-    # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
-
-  } else {
-
-    num <- 4 * sqrt(pi) * besselI(nu = (q - 1) / 2, x = kappa,
-                                  expon.scaled = TRUE)^2
-    den <- kappa^((q + 1) / 2) *
-      (2 * q * besselI(nu = (q + 1) / 2, x = 2 * kappa, expon.scaled = TRUE) +
-         (2 + q) * kappa * besselI(nu = (q + 3) / 2, x = 2 * kappa,
-                                   expon.scaled = TRUE)) * n
+    warning(paste0("Degenerate concentration estimate (kappa = ", kappa,
+                   "); returning NA."))
+    return(NA)
 
   }
 
-  return((num / den)^(1 / (q + 4)))
+  # Rule of thumb of Proposition 2 in Garcia-Portugues (2013), evaluated in log
+  # scale for every q at once. Writing L(nu, x) = log(exp(-x) * I_nu(x)), the
+  # exp(2 * kappa) factors of the numerator and denominator cancel, and the sum
+  # in the denominator is accumulated with a log-sum-exp. Relying on
+  # log_besselI_scaled() keeps the selector finite for arbitrarily large
+  # concentrations. There is a typo in Garcia-Portugues (2013) in equation (6)
+  # for q = 2, where it displays an incorrect extra kappa:
+    # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
+    # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
+# This is not relevant for the general case q >= 1 compted here
+log_num <- log(4 * sqrt(pi)) +
+    2 * log_besselI_scaled(nu = (q - 1) / 2, x = kappa)
+  log_1 <- log(2 * q) +
+    log_besselI_scaled(nu = (q + 1) / 2, x = 2 * kappa)
+  log_2 <- log((2 + q) * kappa) +
+    log_besselI_scaled(nu = (q + 3) / 2, x = 2 * kappa)
+  log_max <- pmax(log_1, log_2)
+  log_den <- ((q + 1) / 2) * log(kappa) + log(n) +
+    log_max + log(exp(log_1 - log_max) + exp(log_2 - log_max))
+  return(exp((log_num - log_den) / (q + 4)))
 
 }
 
@@ -422,14 +403,19 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
   # Exact expression
   if (length(p) == 1) {
 
-    const <- kappa^((q + 1) / 2) /
-      (2^(q + 2) * pi^((q + 1) / 2) *
-         besselI(nu = (q - 1) / 2, x = kappa, expon.scaled = TRUE)^2 * q)
-    R <- 2 * q * besselI(nu = (q + 1) / 2, x = 2 * kappa,
-                         expon.scaled = TRUE) +
-      (2 + q) * kappa * besselI(nu = (q + 3) / 2, x = 2 * kappa,
-                                expon.scaled = TRUE)
-    R <- const * R
+    # Evaluated in log scale (with a log-sum-exp for the two-term sum), so that
+    # the curvature stays finite for large concentrations. The exp(2 * kappa)
+    # factors of const and R cancel.
+    log_const <- ((q + 1) / 2) * log(kappa) -
+      ((q + 2) * log(2) + ((q + 1) / 2) * log(pi) + log(q) +
+         2 * log_besselI_scaled(nu = (q - 1) / 2, x = kappa))
+    log_1 <- log(2 * q) +
+      log_besselI_scaled(nu = (q + 1) / 2, x = 2 * kappa)
+    log_2 <- log((2 + q) * kappa) +
+      log_besselI_scaled(nu = (q + 3) / 2, x = 2 * kappa)
+    log_max <- pmax(log_1, log_2)
+    R <- exp(log_const + log_max +
+               log(exp(log_1 - log_max) + exp(log_2 - log_max)))
 
   # Numeric approximation
   } else {
@@ -504,25 +490,26 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
     if (!is.matrix(x)) x <- t(x)
     q <- ncol(x) - 1
 
-    # Constants depending on x and h
+    # Expectation of the estimator, computed in log scale so that neither the
+    # to avoid overflow/underflow for small h.
     h2 <- h^2
-    inv_Cq_x <- sapply(seq_along(p), function(j) {
-      p[j] * rotasym::c_vMF(p = q + 1, kappa = kappa[j]) /
-        rotasym::c_vMF(p = q + 1, kappa =
-                         norm2(sweep(x / h2, 2, mu[j, ] * kappa[j], "+")))
+    log_inv_Cq_x <- sapply(seq_along(p), function(j) {
+      nrm <- norm2(sweep(x / h2, 2, mu[j, ] * kappa[j], "+"))
+      log(p[j]) + fast_log_c_vMF(p = q + 1, kappa = kappa[j]) -
+        fast_log_c_vMF(p = q + 1, kappa = nrm)
     })
-    if (is.null(dim(inv_Cq_x))) {
+    if (is.null(dim(log_inv_Cq_x))) {
 
-      inv_Cq_x <- matrix(inv_Cq_x, nrow = nrow(x), ncol = length(p))
+      log_inv_Cq_x <- matrix(log_inv_Cq_x, nrow = nrow(x), ncol = length(p))
 
     }
 
-    # Save time in computing quotients of ch
-    bb <- besselI(x = 1 / h2, nu = (q - 1) / 2)
-    Eq <- (2 * pi)^((q + 1) / 2) * h^(q - 1) * bb
+    # log(Eq) with the exponentially scaled Bessel
+    log_Eq <- ((q + 1) / 2) * log(2 * pi) + (q - 1) * log(h) +
+      log_besselI_scaled(nu = (q - 1) / 2, x = 1 / h2) + 1 / h2
 
     # Expectation of the estimator
-    Ef <- rowSums(inv_Cq_x) / Eq
+    Ef <- rowSums(exp(log_inv_Cq_x - log_Eq))
 
     # Mixture of von Mises--Fisher
     f_mix <- d_mixvmf(x = x, mu = mu, kappa = kappa, p = p)
@@ -557,13 +544,14 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
     }
 
-    # Save time in computing quotients of ch
-    bb <- besselI(x = 1 / h^2, nu = (q - 1) / 2, expon.scaled = TRUE)
-    Eq <- (2 * pi)^((q + 1) / 2) * h^(q - 1) * bb
-    Dq <- Eq * bb /
-      besselI(x = 2 / h^2, nu = (q - 1) / 2, expon.scaled = TRUE) *
-      2^((q - 1) / 2)
-    int <- int + 1 / (Dq * n)
+    # Save time in computing quotients of ch. Done in log scale, and with the
+    # exponentially scaled Bessel: the exp(1 / h^2) factors of Eq and of the
+    # Bessel at 1 / h^2 cancel with the exp(2 / h^2) of the Bessel at 2 / h^2.
+    log_b1 <- log_besselI_scaled(nu = (q - 1) / 2, x = 1 / h^2)
+    log_b2 <- log_besselI_scaled(nu = (q - 1) / 2, x = 2 / h^2)
+    log_Eq <- ((q + 1) / 2) * log(2 * pi) + (q - 1) * log(h) + log_b1
+    log_Dq <- log_Eq + log_b1 - log_b2 + ((q - 1) / 2) * log(2)
+    int <- int + exp(-log_Dq) / n
     return(int)
 
   }
