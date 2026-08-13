@@ -82,9 +82,8 @@ log_besselI_scaled(nu = 0.5, x = 2, spline = FALSE)
 # Stable where besselI() is not
 log_besselI_scaled(nu = 400, x = 20)
 
-# (Log) von Mises--Fisher normalizing constant matches rotasym::c_vMF
+# (Log) von Mises--Fisher normalizing constant, uniform case included
 fast_log_c_vMF(p = 3, kappa = c(0, 1, 10))
-rotasym::c_vMF(p = 3, kappa = c(0, 1, 10), log = TRUE)
 }
 \references{
 DLMF (2024). \emph{NIST Digital Library of Mathematical Functions}. Section

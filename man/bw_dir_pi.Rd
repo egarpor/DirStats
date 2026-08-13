@@ -21,7 +21,7 @@ bw_dir_emi(
   h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   plot_it = TRUE,
   optim_par = 0.25,
-  optim_lower = 0.06,
+  optim_lower = sqrt(.Machine$double.eps),
   optim_upper = 10
 )
 }
@@ -51,8 +51,8 @@ Defaults to \code{FALSE}.}
 
 \item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
 \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-\code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06} (to avoid
-numerical instabilities), and \code{10}.}
+\code{"L-BFGS-B"} method. Default to \code{0.25},
+\code{sqrt(.Machine$double.eps)}, and \code{10}.}
 }
 \value{
 \itemize{

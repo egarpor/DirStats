@@ -10,7 +10,7 @@
 \usage{
 kde_dir(x, data, h, L = NULL)
 
-c_h(h, q, L = NULL)
+c_h(h, q, L = NULL, log = FALSE)
 
 lambda_L(L = NULL, q)
 
@@ -30,6 +30,9 @@ d_L(L = NULL, q)
 Mises--Fisher kernel) if \code{NULL} (default).}
 
 \item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
+
+\item{log}{return the normalizing constant in log scale? Defaults to
+\code{FALSE}.}
 }
 \value{
 \itemize{

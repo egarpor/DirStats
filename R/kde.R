@@ -12,6 +12,8 @@
 #' @param L kernel function. Set internally to \code{function(x) exp(-x)} (von
 #' Mises--Fisher kernel) if \code{NULL} (default).
 #' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.
+#' @param log return the normalizing constant in log scale? Defaults to
+#' \code{FALSE}.
 #' @return
 #' \itemize{
 #'   \item \code{kde_dir}: the evaluated kernel density estimator, a vector of
@@ -115,19 +117,18 @@ kde_dir <- function(x, data, h, L = NULL) {
 
 #' @rdname kde_dir
 #' @export
-c_h <- function(h, q, L = NULL) {
+c_h <- function(h, q, L = NULL, log = FALSE) {
 
   # von Mises--Fisher kernel?
   if (is.null(L)) {
 
-    # Analytical expression, evaluated in log scale
-    log_ch <- ((q + 1) / 2) * log(2 * pi) + (q - 1) * log(h) +
-      log_besselI_scaled(nu = (q - 1) / 2, x = 1 / h^2)
-    return(exp(-log_ch))
+    # Exponentially scaled von Mises--Fisher normalizing constant:
+    # c_h(h, q) = exp(1 / h^2) * C_{q + 1}(1 / h^2)
+    log_ch <- fast_log_c_vMF(p = q + 1, kappa = 1 / h^2) + 1 / h^2
 
   } else {
 
-    # Log-area of Omega_{q - 1}
+    # Log-area of S^{q - 1}
     w_q <- exp(log(2) + q / 2 * log(pi) - lgamma(q / 2))
 
     # Numerical integration
@@ -137,11 +138,12 @@ c_h <- function(h, q, L = NULL) {
         }, lower = -1 + 1e-5, upper = 1 - 1e-5, rel.tol = 1e-5,
         subdivisions = 200, stop.on.error = FALSE)$value * w_q
       })
+    log_ch <- -log(ch)
 
   }
 
   # Normalizing constant
-  return(1 / ch)
+  return(switch(log + 1, exp(log_ch), log_ch))
 
 }
 

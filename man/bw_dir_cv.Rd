@@ -5,13 +5,6 @@
 \alias{bw_dir_lcv}
 \alias{bw_dir_lscv}
 \title{Cross-validation bandwidth selectors for directional data}
-\source{
-The function \code{bw_dir_lscv} employs Netlib's subroutine
-\href{https://www.netlib.org/specfun/ribesl}{\code{ribesl}} for evaluating
-the modified Bessel function of the first kind. The subroutine is based on a
-program by Sookne (1973) and was modified by W. J. Cody and L. Stoltz. An
-earlier version was published in Cody (1983).
-}
 \usage{
 bw_dir_lcv(
   data,
@@ -20,7 +13,7 @@ bw_dir_lcv(
   plot_it = FALSE,
   optim = TRUE,
   optim_par = 0.25,
-  optim_lower = 0.06,
+  optim_lower = sqrt(.Machine$double.eps),
   optim_upper = 10
 )
 
@@ -30,9 +23,8 @@ bw_dir_lscv(
   L = NULL,
   plot_it = FALSE,
   optim = TRUE,
-  R_code = FALSE,
   optim_par = 0.25,
-  optim_lower = 0.06,
+  optim_lower = sqrt(.Machine$double.eps),
   optim_upper = 10
 )
 }
@@ -53,11 +45,8 @@ search on \code{h} is done. Only effective if \code{L = NULL}.}
 
 \item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
 \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-\code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06} (to avoid
-numerical instabilities), and \code{10}.}
-
-\item{R_code}{use slower R code when \code{L = NULL}? Defaults to
-\code{FALSE}.}
+\code{"L-BFGS-B"} method. Default to \code{0.25},
+\code{sqrt(.Machine$double.eps)}, and \code{10}.}
 }
 \value{
 A list with entries:
@@ -75,7 +64,8 @@ selectors for kernel density estimation with directional data.
 }
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.
-When \code{L = NULL}, faster FORTRAN code is employed.
+When \code{L = NULL}, faster vectorized expressions specific to the von
+Mises--Fisher kernel are employed.
 
 \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
@@ -96,21 +86,12 @@ bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
 set.seed(42)
 bw_dir_lscv(data = samp, optim = TRUE)$h_opt
 bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
-bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
 bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt
 }
 \references{
-Cody, W. J. (1983). Algorithm 597: Sequence of modified Bessel functions of
-the first kind. \emph{ACM Transactions on Mathematical Software},
-9(2):242--245. \doi{10.1145/357456.357462}
-
 Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 with spherical data. \emph{Biometrika}, 74(4):751--762.
 \doi{10.1093/biomet/74.4.751}
-
-Sookne, D. J. (1973). Bessel functions of real argument and integer order.
-\emph{Journal of Research of the National Bureau of Standards},
-77B:125--132.
 }
 \seealso{
 \code{\link{kde_dir}} for the kernel density estimator these

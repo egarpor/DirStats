@@ -12,7 +12,7 @@ bic_vmf_mix(
   iterative = TRUE,
   plot_it = FALSE,
   verbose = FALSE,
-  kappa_max = 250
+  kappa_max = 10000
 )
 }
 \arguments{
@@ -37,8 +37,11 @@ Defaults to \code{FALSE}.}
 
 \item{verbose}{display fitting progress? Defaults to \code{FALSE}.}
 
-\item{kappa_max}{maximum value of allowed concentrations, to avoid numerical
-instabilities. Defaults to \code{250}.}
+\item{kappa_max}{maximum concentration allowed in a fitted mixture. Mixtures
+with a component above it are discarded, as the likelihood of a mixture of
+von Mises--Fisher densities is unbounded as the concentration of a component
+explaining a handful of observations grows. Set to \code{Inf} to disable the
+screening. Defaults to \code{1e4}.}
 }
 \value{
 A list with entries:
@@ -59,6 +62,12 @@ of mixture components.
 \details{
 See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
 fit is performed with \code{\link[movMF]{movMF}}.
+
+The \code{kappa_max} screening is a statistical safeguard, not a numerical
+one: a component collapsing onto a few observations drives the likelihood up
+without bound, and \code{crit} then favors it. A very concentrated mixture
+may therefore be discarded; if no mixture survives, a single von
+Mises--Fisher fit is returned with a warning.
 }
 \examples{
 # Sample
