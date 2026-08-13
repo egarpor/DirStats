@@ -1,29 +1,26 @@
 
 
-#' @title Stable evaluation of scaled log-Bessel functions and the von
-#' Mises--Fisher normalizing constant
+#' @title Stable evaluation of the scaled log-Bessel function
 #'
 #' @description Numerically stable evaluation of the logarithm of the
 #' exponentially scaled modified Bessel function of the first kind,
-#' \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, and of the (log) von Mises--Fisher
-#' normalizing constant that builds on it. Both remain finite and accurate for
+#' \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}. It remains finite and accurate for
 #' large orders \eqn{\nu} and large arguments \eqn{x}, where a direct call to
 #' \code{\link[base]{besselI}} would overflow, underflow, or lose precision.
 #'
 #' @param nu order of the Bessel function. A scalar or a vector conformable
 #' with \code{x}.
 #' @param x vector of non-negative evaluation points.
-#' @param p dimension of the ambient space \eqn{R^p} (so the data lies on
-#' \eqn{S^{p-1}}).
-#' @param kappa vector of non-negative concentration parameters.
 #' @param spline if \code{TRUE} (default), evaluate the scaled log-Bessel with a
 #' fast cubic-spline interpolation for orders \code{nu} in
 #' \code{seq(0, 50, by = 0.5)}, and fall back to \code{\link[base]{besselI}} for
 #' any other order. If \code{FALSE}, always use \code{\link[base]{besselI}}
 #' together with the asymptotic expansions. The spline is only effective when
 #' \code{nu} is a single value on that grid.
-#' @details \code{log_besselI_scaled} combines four regimes so that the result
-#' is finite and accurate over the whole \eqn{(\nu, x)} plane:
+#' @return The evaluation of \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector
+#' conformable with \code{nu} and \code{x}.
+#' @details The function combines four regimes so that the result is finite and
+#' accurate over the whole \eqn{(\nu, x)} plane:
 #' \itemize{
 #'   \item \eqn{x < 10^{-5}}: the exact leading small-argument series
 #'   \eqn{\nu \log(x / 2) - \log\Gamma(\nu + 1) - x}.
@@ -40,22 +37,10 @@
 #' The cutoff \eqn{\nu = 50} is where \code{besselI.nuAsym(k.max = 5)} is
 #' accurate to below \eqn{10^{-10}}, so it takes over from the tabulated orders
 #' with a smooth join.
-#'
-#' \code{log_c_vmf} returns \eqn{\log C_p(\kappa)}, the logarithm of the von
-#' Mises--Fisher normalizing constant \eqn{C_p(\kappa) = \kappa^{p / 2 - 1} /
-#' ((2\pi)^{p / 2} \mathcal{I}_{p / 2 - 1}(\kappa))}, evaluated stably through
-#' \code{log_besselI_scaled}.
-#' @return
-#' \itemize{
-#'   \item \code{log_besselI_scaled}: the evaluation of
-#'   \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector conformable with \code{nu}
-#'   and \code{x}.
-#'   \item \code{log_c_vmf}: the evaluation of \eqn{\log C_p(\kappa)}, a vector
-#'   of size \code{length(kappa)}.
-#' }
 #' @references
 #' DLMF (2024). \emph{NIST Digital Library of Mathematical Functions}. Section
 #' 10.41. \url{https://dlmf.nist.gov/10.41}
+#' @seealso \code{\link{log_c_vmf}}, \code{\link[base]{besselI}}.
 #' @examples
 #' # Scaled log-Bessel across regimes
 #' log_besselI_scaled(nu = 0.5, x = c(1e-6, 1, 1e5))
@@ -65,14 +50,6 @@
 #'
 #' # Stable where besselI() is not
 #' log_besselI_scaled(nu = 400, x = 20)
-#'
-#' # (Log) von Mises--Fisher normalizing constant, uniform case included
-#' log_c_vmf(p = 3, kappa = c(0, 1, 10))
-#' @name bessel
-NULL
-
-
-#' @rdname bessel
 #' @export
 log_besselI_scaled <- function(nu, x, spline = TRUE) {
 
@@ -198,21 +175,5 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
 
   out[ok] <- res
   return(out)
-
-}
-
-
-#' @rdname bessel
-#' @export
-log_c_vmf <- function(p, kappa, spline = TRUE) {
-
-  log_bessel <- log_besselI_scaled(nu = 0.5 * (p - 2), x = kappa,
-                                   spline = spline)
-  log_c_vMF <- (0.5 * (p - 2)) * log(kappa) - (0.5 * p) * log(2 * pi) -
-    kappa - log_bessel
-
-  # Uniform density limit (kappa = 0): the reciprocal surface area of S^{p - 1}
-  log_c_vMF[kappa == 0] <- -rotasym::w_p(p = p, log = TRUE)
-  return(log_c_vMF)
 
 }

@@ -120,12 +120,50 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 
   # Density components
   dens <- sapply(seq_along(p), function(i) {
-    p[i] * exp(log_c_vmf(p = q + 1, kappa = kappa[i]) +
+    p[i] * exp(log_c_vmf(q = q, kappa = kappa[i]) +
                  kappa[i] * x %*% mu[i, ])
   })
 
   # Add components
   if (!is.matrix(dens)) dens <- t(dens)
   return(rowSums(dens))
+
+}
+
+
+#' @title (Log) von Mises--Fisher normalizing constant
+#'
+#' @description Numerically stable evaluation of \eqn{\log c_q(\kappa)}, the
+#' logarithm of the von Mises--Fisher normalizing constant
+#' \eqn{c_q(\kappa) = \kappa^{(q - 1) / 2} / ((2\pi)^{(q + 1) / 2}
+#' \mathcal{I}_{(q - 1) / 2}(\kappa))}, computed through
+#' \code{\link{log_besselI_scaled}}.
+#'
+#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.
+#' @param kappa vector of non-negative concentration parameters.
+#' @inheritParams log_besselI_scaled
+#' @return The evaluation of \eqn{\log c_q(\kappa)}, a vector of size
+#' \code{length(kappa)}.
+#' @details The uniform limit \eqn{\kappa = 0} is returned as the reciprocal
+#' surface area of \eqn{\mathbb{S}^q}, avoiding the \eqn{\log(0)} of the general
+#' expression.
+#' @seealso \code{\link{log_besselI_scaled}}, \code{\link{vmf}}.
+#' @examples
+#' # Normalizing constant, uniform case included
+#' log_c_vmf(q = 2, kappa = c(0, 1, 10))
+#'
+#' # Agrees with rotasym::c_vMF() for moderate concentrations
+#' rotasym::c_vMF(p = 3, kappa = c(0, 1, 10), log = TRUE)
+#' @export
+log_c_vmf <- function(q, kappa, spline = TRUE) {
+
+  log_bessel <- log_besselI_scaled(nu = 0.5 * (q - 1), x = kappa,
+                                   spline = spline)
+  log_cq <- (0.5 * (q - 1)) * log(kappa) - (0.5 * (q + 1)) * log(2 * pi) -
+    kappa - log_bessel
+
+  # Uniform density limit (kappa = 0): the reciprocal surface area of S^q
+  log_cq[kappa == 0] <- -rotasym::w_p(p = q + 1, log = TRUE)
+  return(log_cq)
 
 }

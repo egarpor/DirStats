@@ -74,6 +74,25 @@ test_that("d_mixvmf with a single component equals rotasym::d_vMF", {
 
 })
 
+test_that("d_mixvmf stays finite for large concentrations", {
+
+  for (q in 1:3) {
+
+    mu <- rbind(c(rep(0, q), 1))
+    x <- rbind(c(rep(0, q), 1), c(1, rep(0, q)))
+    dens <- sapply(c(1e4, 1e5, 1e6, 1e8), function(k)
+      d_mixvmf(x = x, mu = mu, kappa = k, p = 1))
+    expect_true(all(is.finite(dens)))
+
+    # The density at the mean direction grows with the concentration, and
+    # vanishes away from it
+    expect_true(all(diff(dens[1, ]) > 0))
+    expect_equal(dens[2, ], rep(0, 4))
+
+  }
+
+})
+
 test_that("d_mixvmf checks the mixture argument dimensions", {
 
   x <- to_cir(c(0, 1))
@@ -100,5 +119,27 @@ test_that("d_mixvmf accepts a single component given as a vector mu", {
   expect_equal(d_mixvmf(x = x, mu = c(1, 0), kappa = 2, p = 1),
                rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
                ignore_attr = TRUE)
+
+})
+
+## log_c_vmf()
+
+test_that("log_c_vmf normalizes the von Mises--Fisher density", {
+
+  # Tangent-normal decomposition of the vMF density integral:
+  # 1 = c_q(kappa) * w_q *
+  #     int_0^pi exp(kappa * cos(th)) * sin(th)^(q - 1) dth
+  for (q in c(1, 2, 4, 9)) {
+    for (kappa in c(0, 0.5, 5, 50, 300)) {
+
+      int <- integrate(function(th) {
+        exp(kappa * (cos(th) - 1)) * sin(th)^(q - 1)
+        }, lower = 0, upper = pi, rel.tol = 1e-10)$value
+      expect_equal(log_c_vmf(q = q, kappa = kappa) +
+                     rotasym::w_p(p = q, log = TRUE) + kappa + log(int),
+                   0, tolerance = 1e-8)
+
+    }
+  }
 
 })
