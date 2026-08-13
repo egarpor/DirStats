@@ -12,12 +12,10 @@
 #' Defaults to \code{FALSE}.
 #' @param optim run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
 #' search on \code{h} is done. Only effective if \code{L = NULL}.
-#' @param R_code use slower R code when \code{L = NULL}? Defaults to
-#' \code{FALSE}.
 #' @param optim_par,optim_lower,optim_upper parameters passed to \code{par},
 #' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-#' \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06} (to avoid
-#' numerical instabilities), and \code{10}.
+#' \code{"L-BFGS-B"} method. Default to \code{0.25},
+#' \code{sqrt(.Machine$double.eps)}, and \code{10}.
 #' @return A list with entries:
 #' \itemize{
 #'   \item \code{h_opt}: selected bandwidth.
@@ -28,27 +26,15 @@
 #' }
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
-#' When \code{L = NULL}, faster FORTRAN code is employed.
+#' When \code{L = NULL}, faster vectorized expressions specific to the von
+#' Mises--Fisher kernel are employed.
 #'
 #' \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 #' results in a random output. Use \code{set.seed} before to avoid it.
-#' @source The function \code{bw_dir_lscv} employs Netlib's subroutine
-#' \href{https://www.netlib.org/specfun/ribesl}{\code{ribesl}} for evaluating
-#' the modified Bessel function of the first kind. The subroutine is based on a
-#' program by Sookne (1973) and was modified by W. J. Cody and L. Stoltz. An
-#' earlier version was published in Cody (1983).
 #' @references
-#' Cody, W. J. (1983). Algorithm 597: Sequence of modified Bessel functions of
-#' the first kind. \emph{ACM Transactions on Mathematical Software},
-#' 9(2):242--245. \doi{10.1145/357456.357462}
-#'
 #' Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 #' with spherical data. \emph{Biometrika}, 74(4):751--762.
 #' \doi{10.1093/biomet/74.4.751}
-#'
-#' Sookne, D. J. (1973). Bessel functions of real argument and integer order.
-#' \emph{Journal of Research of the National Bureau of Standards},
-#' 77B:125--132.
 #' @seealso \code{\link{kde_dir}} for the kernel density estimator these
 #' bandwidths are intended for, and \code{\link{bw_dir_pi}} for plug-in
 #' alternatives.
@@ -68,7 +54,6 @@
 #' set.seed(42)
 #' bw_dir_lscv(data = samp, optim = TRUE)$h_opt
 #' bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
-#' bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
 #' bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt
 #' @name bw_dir_cv
 
@@ -77,8 +62,8 @@
 #' @export
 bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                        L = NULL, plot_it = FALSE, optim = TRUE,
-                       optim_par = 0.25, optim_lower = 0.06,
-                       optim_upper = 10) {
+                       optim_par = 0.25, optim_lower =
+                         sqrt(.Machine$double.eps), optim_upper = 10) {
 
   # Remove NA's
   stopifnot(is.matrix(data))
@@ -108,7 +93,7 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
       }
 
       # Optimization of CV
-      opt <- optim(fn = CV, par = optim_par, lower = optim_lower,
+      opt <- optim(fn = CV_vmf, par = optim_par, lower = optim_lower,
                    upper = optim_upper, method = "L-BFGS-B")
 
       # Result
@@ -117,16 +102,7 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
     } else {
 
-      # Normalizing constant
-      ch <- c_h(h = h_grid, q = q, L = L)
-
-      # Ensure data types for lcv_dir
-      h_grid <- as.double(h_grid)
-      lh_grid <- as.integer(length(h_grid))
-
-      # Call to lcv_dir_vmf
-      CV <- .Fortran("lcv_dir_vmf", data_dir = data_dir, h = h_grid, ch = ch,
-                     n = n, nq = q, lenh = lh_grid, CV = double(lh_grid))$CV
+      CV <- CV_vmf(h = h_grid)
 
     }
 
@@ -160,7 +136,7 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   # Plot?
   if (plot_it) {
 
-    plot(h_grid, CV, xlab = "h", ylab = "CV")
+    plot(h_grid, CV, xlab = "h", ylab = "LCV", type = "o")
     rug(h_grid)
     abline(v = h_grid[ind_min], col = 2)
 
@@ -183,9 +159,9 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 #' @rdname bw_dir_cv
 #' @export
 bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
-                        L = NULL, plot_it = FALSE, optim = TRUE, R_code = FALSE,
-                        optim_par = 0.25, optim_lower = 0.06,
-                        optim_upper = 10) {
+                        L = NULL, plot_it = FALSE, optim = TRUE,
+                        optim_par = 0.25, optim_lower =
+                          sqrt(.Machine$double.eps), optim_upper = 10) {
 
   # Remove NA's
   stopifnot(is.matrix(data))
@@ -193,8 +169,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
   # Dimensions of data
   n <- nrow(data)
-  p <- ncol(data)
-  q <- p - 1
+  q <- ncol(data) - 1
 
   # Type of approach
   if (is.null(L)) {
@@ -211,19 +186,8 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
       # Optimize versus grid search
       if (optim) {
 
-        # CV function calling lscv_dir_vmf
-        CV <- function(h) {
-          .Fortran("lscv_dir_vmf", data_dir = data_dir, h = as.double(h),
-                   Cq = as.double(rotasym::c_vMF(p = p, kappa = 1 / h^2,
-                                                 log = FALSE)),
-                   Cq2 = as.double(rotasym::c_vMF(p = p, kappa = 2 / h^2,
-                                                  log = FALSE)),
-                   n = n, nq = q, lenh = as.integer(length(h)), kk = km1,
-                   B = B, CV = double(length(h)))$CV
-        }
-
         # Optimization
-        opt <- optim(fn = CV, par = optim_par, lower = optim_lower,
+      opt <- optim(fn = CV_vmf, par = optim_par, lower = optim_lower,
                      upper = optim_upper, method = "L-BFGS-B")
 
         # Result
@@ -232,44 +196,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
       } else {
 
-        # Ensure data types for lscv_dir_vmf
-        lenh <- as.integer(length(h_grid))
-        Cq <- as.double(rotasym::c_vMF(p = p, kappa = 1 / h_grid^2,
-                                       log = FALSE))
-        Cq2 <- as.double(rotasym::c_vMF(p = p, kappa = 2 / h_grid^2,
-                                        log = FALSE))
-
-        # CV function calling lscv_dir_vmf
-        CV <- .Fortran("lscv_dir_vmf", data_dir = data_dir,
-                       h = as.double(h_grid), Cq = Cq, Cq2 = Cq2, n = n, nq = q,
-                       lenh = lenh, kk = km1, B = B, CV = double(lenh))$CV
-
-      }
-
-    } else {
-
-      # Normalizing constants
-      Cq <- rotasym::c_vMF(p = p, kappa = 1 / h_grid^2, log = FALSE)
-      Cq2 <- rotasym::c_vMF(p = p, kappa = 2 / h_grid^2, log = FALSE)
-
-      # Accumulate the pairwise kernel sums directly, avoiding the
-      # n x n x length(h_grid) arrays (memory O(length(h_grid))).
-      sum_CV1 <- sum_CV2 <- numeric(length(h_grid))
-      for (i in 2:n) {
-        for (j in 1:(i - 1)) {
-
-          sum_CV1 <- sum_CV1 + exp(drop(t(data[i, ]) %*% data[j, ]) / h_grid^2)
-          norm_ij <- sqrt(sum((data[i, ] + data[j, ])^2))
-          sum_CV2 <- sum_CV2 +
-            1 / rotasym::c_vMF(p = p, kappa = norm_ij / h_grid^2, log = FALSE)
-
-        }
-      }
-
-      # Computation of the CV
-      CV <- (4 * Cq) / (n * (n - 1)) * sum_CV1 -
-        Cq^2 / (n * Cq2) - (2 * Cq^2) / n^2 * sum_CV2
-      CV <- -CV
+      CV <- CV_vmf(h = h_grid)
 
     }
 
@@ -289,21 +216,23 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
     if (q == 1) {
 
       int <- sapply(seq_along(h_grid), function(hi) {
-        int_cir(f = function(x) kde_dir(x = x, data = data, h = h_grid[hi])^2,
+        int_cir(f = function(x) kde_dir(x = x, data = data, h = h_grid[hi],
+                                        L = L)^2,
                 N = 500)
       })
 
     } else if (q == 2) {
 
       int <- sapply(seq_along(h_grid), function(hi) {
-        int_sph(f = function(x) kde_dir(x = x, data = data, h = h_grid[hi])^2)
+        int_sph(f = function(x) kde_dir(x = x, data = data, h = h_grid[hi],
+                                        L = L)^2)
       })
 
     } else {
 
       int <- sapply(seq_along(h_grid), function(hi) {
-        int_hypsph(f = function(x) kde_dir(x = x, data = data,
-                                           h = h_grid[hi])^2,
+        int_hypsph(f = function(x) kde_dir(x = x, data = data, h = h_grid[hi],
+                                           L = L)^2,
                    q = q, M = 1e4)
       })
 
@@ -321,7 +250,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   # Plot?
   if (plot_it) {
 
-    plot(h_grid, CV, xlab = "h", ylab = "CV")
+    plot(h_grid, CV, xlab = "h", ylab = "LSCV", type = "o")
     rug(h_grid)
     abline(v = h_grid[ind_min], col = 2)
 

@@ -60,16 +60,43 @@ test_that("bw_dir_rot warns and returns NA for degenerate concentrations", {
 
 ## bw_dir_lcv()
 
-test_that("bw_dir_lcv Fortran and R (custom vMF kernel) paths agree on a grid", {
+# Naive reference for the von Mises-Fisher LCV
+lcv_naive <- function(data, h) {
+
+  n <- nrow(data)
+  p <- ncol(data)
+  f <- sapply(h, function(hh) sapply(seq_len(n), function(i) {
+    rotasym::c_vMF(p = p, kappa = 1 / hh^2) / (n - 1) *
+      sum(exp(data[-i, ] %*% data[i, ] / hh^2))
+  }))
+  return(-colMeans(log(f)))
+
+}
+
+test_that("bw_dir_lcv and the naive likelihood CV loss agree", {
+
+  h_grid <- exp(seq(log(0.4), log(1.2), l = 5))
+  for (q in 1:3) {
+
+    set.seed(7)
+    samp <- rotasym::r_vMF(n = 12, mu = c(1, rep(0, q)), kappa = 2)
+    lcv <- suppressWarnings(bw_dir_lcv(data = samp, h_grid = h_grid,
+                                       optim = FALSE))
+    expect_equal(lcv$CV_grid, lcv_naive(data = samp, h = h_grid),
+                 tolerance = 1e-8)
+
+  }
+
+})
+
+test_that("bw_dir_lcv von Mises-Fisher and custom kernel paths agree", {
 
   set.seed(42)
   samp <- rotasym::r_vMF(n = 30, mu = c(1, 0, 0), kappa = 2)
   h_grid <- exp(seq(log(0.1), log(1.2), l = 15))
-
   cv_f <- bw_dir_lcv(data = samp, h_grid = h_grid, optim = FALSE)
   cv_r <- bw_dir_lcv(data = samp, h_grid = h_grid, optim = FALSE,
                      L = function(z) exp(-z))
-
   expect_equal(cv_f$CV_grid, cv_r$CV_grid, tolerance = 1e-3)
   expect_equal(cv_f$h_opt, cv_r$h_opt)
 
@@ -85,33 +112,61 @@ test_that("bw_dir_lcv optim and grid search give consistent bandwidths", {
 
 })
 
-test_that("bw selectors warn when the optimum is at the grid boundary", {
+test_that("bw_dir_lcv warns when the optimum is at the grid boundary", {
 
   set.seed(42)
   samp <- rotasym::r_vMF(n = 20, mu = c(1, 0, 0), kappa = 2)
-  # A tiny grid of large bandwidths forces the optimum to a boundary
-  expect_warning(bw_dir_lcv(data = samp, h_grid = c(1.4, 1.5), optim = FALSE),
+    expect_warning(bw_dir_lcv(data = samp, h_grid = c(1.4, 1.5), optim = FALSE),
                  "extreme")
 
 })
 
+
 ## bw_dir_lscv()
 
-test_that("bw_dir_lscv Fortran and R paths agree on a grid", {
+# Naive reference for the von Mises-Fisher LSCV
+lscv_naive <- function(data, h) {
 
-  set.seed(42)
-  samp <- rotasym::r_vMF(n = 25, mu = c(1, 0, 0), kappa = 2)
-  h_grid <- exp(seq(log(0.2), log(1.2), l = 12))
+  n <- nrow(data)
+  p <- ncol(data)
+  return(sapply(h, function(hh) {
 
-  lscv_f <- bw_dir_lscv(data = samp, h_grid = h_grid, optim = FALSE)
-  lscv_r <- bw_dir_lscv(data = samp, h_grid = h_grid, optim = FALSE,
-                        R_code = TRUE)
+    ck <- rotasym::c_vMF(p = p, kappa = 1 / hh^2)
+    ck2 <- rotasym::c_vMF(p = p, kappa = 2 / hh^2)
+    s1 <- s2 <- 0
+    for (i in 2:n) {
+      for (j in 1:(i - 1)) {
 
-  expect_equal(lscv_f$CV_grid, lscv_r$CV_grid, tolerance = 1e-8)
+        s1 <- s1 + exp(sum(data[i, ] * data[j, ]) / hh^2)
+        s2 <- s2 + 1 / rotasym::c_vMF(p = p,
+                                      kappa = norm2(data[i, ] + data[j, ]) /
+                                        hh^2)
+
+      }
+    }
+    -(4 * ck / (n * (n - 1)) * s1 - ck^2 / (n * ck2) - 2 * ck^2 / n^2 * s2)
+
+  }))
+
+}
+
+test_that("bw_dir_lscv and the naive least squares CV loss agree", {
+
+  h_grid <- exp(seq(log(0.4), log(1.2), l = 5))
+  for (q in 1:3) {
+
+    set.seed(7)
+    samp <- rotasym::r_vMF(n = 12, mu = c(1, rep(0, q)), kappa = 2)
+    lscv <- suppressWarnings(bw_dir_lscv(data = samp, h_grid = h_grid,
+                                         optim = FALSE))
+    expect_equal(lscv$CV_grid, lscv_naive(data = samp, h = h_grid),
+                 tolerance = 1e-7)
+
+  }
 
 })
 
-test_that("bw_dir_lscv optimizes over the Fortran vMF path", {
+test_that("bw_dir_lscv optimizes over the von Mises-Fisher path", {
 
   set.seed(42)
   samp <- rotasym::r_vMF(n = 25, mu = c(1, 0, 0), kappa = 2)
@@ -126,7 +181,6 @@ test_that("bw_dir_lscv with a custom kernel works on the circle (q = 1)", {
   set.seed(42)
   samp <- rotasym::r_vMF(n = 20, mu = c(1, 0), kappa = 2)
   h_grid <- exp(seq(log(0.2), log(1.2), l = 8))
-  # A boundary warning may fire depending on the sample; not what is tested here
   lscv <- suppressWarnings(bw_dir_lscv(data = samp, h_grid = h_grid,
                                        optim = FALSE, L = function(z) exp(-z)))
   expect_length(lscv$CV_grid, length(h_grid))

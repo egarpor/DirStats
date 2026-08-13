@@ -65,6 +65,15 @@ test_that("c_h is positive and accepts vectors of bandwidths", {
 
 })
 
+test_that("c_h with log = TRUE is the logarithm of c_h", {
+
+  h <- c(0.05, 0.2, 0.5, 1)
+  expect_equal(c_h(h = h, q = 3, log = TRUE), log(c_h(h = h, q = 3)))
+  expect_equal(c_h(h = h, q = 3, L = function(z) exp(-z), log = TRUE),
+               log(c_h(h = h, q = 3, L = function(z) exp(-z))))
+
+})
+
 test_that("c_h stays finite for small bandwidths", {
 
   for (q in 1:4) {

@@ -123,8 +123,8 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
   if (is.null(L)) {
 
     # Exponentially scaled von Mises--Fisher normalizing constant:
-    # c_h(h, q) = exp(1 / h^2) * C_{q + 1}(1 / h^2)
-    log_ch <- log_c_vmf(p = q + 1, kappa = 1 / h^2) + 1 / h^2
+    # c_h(h, q) = exp(1 / h^2) * c_q(1 / h^2)
+    log_ch <- log_c_vmf(q = q, kappa = 1 / h^2) + 1 / h^2
 
   } else {
 
