@@ -20,9 +20,9 @@ Depends:
     R (>= 3.6.0)
 Imports:
     Bessel,
-    movMF,
-    rotasym
+    movMF
 Suggests:
+    rotasym,
     testthat (>= 3.0.0),
     viridisLite
 URL: https://github.com/egarpor/DirStats

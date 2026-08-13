@@ -47,15 +47,15 @@ implements a Monte Carlo integration on \eqn{\mathbb{S}^q}.
 }
 \examples{
 # S^1, trapezoidal rule
-f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 1), kappa = 2)
+f <- function(x) d_mixvmf(x = x, mu = c(0, 1), kappa = 2, p = 1)
 int_cir(f = f)
 
 # S^2, Lebedev rule
-f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 0, 1), kappa = 2)
+f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
 int_sph(f = f)
 
 # S^2, Monte Carlo
-f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 0, 1), kappa = 2)
+f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
 int_hypsph(f = f, q = 2)
 }
 \references{

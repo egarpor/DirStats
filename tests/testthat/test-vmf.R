@@ -136,7 +136,7 @@ test_that("log_c_vmf normalizes the von Mises--Fisher density", {
         exp(kappa * (cos(th) - 1)) * sin(th)^(q - 1)
         }, lower = 0, upper = pi, rel.tol = 1e-10)$value
       expect_equal(log_c_vmf(q = q, kappa = kappa) +
-                     rotasym::w_p(p = q, log = TRUE) + kappa + log(int),
+                     w_q(q = q - 1, log = TRUE) + kappa + log(int),
                    0, tolerance = 1e-8)
 
     }

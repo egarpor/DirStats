@@ -24,15 +24,15 @@
 #' implements a Monte Carlo integration on \eqn{\mathbb{S}^q}.
 #' @examples
 #' # S^1, trapezoidal rule
-#' f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 1), kappa = 2)
+#' f <- function(x) d_mixvmf(x = x, mu = c(0, 1), kappa = 2, p = 1)
 #' int_cir(f = f)
 #'
 #' # S^2, Lebedev rule
-#' f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 0, 1), kappa = 2)
+#' f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
 #' int_sph(f = f)
 #'
 #' # S^2, Monte Carlo
-#' f <- function(x) rotasym::d_vMF(x = x, mu = c(0, 0, 1), kappa = 2)
+#' f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
 #' int_hypsph(f = f, q = 2)
 #' @references
 #' Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
@@ -77,10 +77,11 @@ int_sph <- function(f, na.rm = TRUE, f_vect = TRUE, ...) {
 #' @export
 int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, ...) {
 
-  # Monte Carlo approximation
-  sims <- rotasym::r_unif_sphere(n = M, p = q + 1)
+  # Monte Carlo approximation, with uniform draws obtained by projecting a
+  # N(0, I_{q + 1}) onto S^q
+  sims <- normalize(matrix(rnorm(n = M * (q + 1)), nrow = M, ncol = q + 1))
   f_evals <- switch(f_vect + 1, apply(sims, 1, f, ...), f(sims, ...))
-  return(mean(f_evals, na.rm = na.rm) * rotasym::w_p(p = q + 1, log = FALSE))
+  return(mean(f_evals, na.rm = na.rm) * w_q(q = q))
 
 }
 

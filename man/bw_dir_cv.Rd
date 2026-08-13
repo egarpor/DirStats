@@ -71,11 +71,13 @@ Mises--Fisher kernel are employed.
 results in a random output. Use \code{set.seed} before to avoid it.
 }
 \examples{
-# Sample
+# Sample on S^q, from a normal centered at mu projected onto the sphere
 n <- 25
 q <- 2
+mu <- c(1, rep(0, q))
 set.seed(42)
-samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+samp <- normalize(matrix(rnorm(n * (q + 1), mean = 2 * mu), nrow = n,
+                         ncol = q + 1, byrow = TRUE))
 
 # bw_dir_lcv
 bw_dir_lcv(data = samp, optim = TRUE)$h_opt

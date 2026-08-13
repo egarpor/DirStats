@@ -13,12 +13,17 @@
 #' \code{ceiling(log(nrow(data)))}.
 #' @param M_neig number of neighbors explored around the optimal number of
 #' mixture components. Defaults to \code{3}.
-#' @param crit information criterion employed, either \code{"BIC"} (default),
-#' \code{"AICc"} or \code{"AIC"}.
+#' @param crit information criterion to be minimized, given as the name of a
+#' function or as a function itself. It must take a fitted mixture and return a
+#' single number. Defaults to \code{"BIC"}; see the examples for a custom
+#' criterion.
 #' @param iterative keep exploring higher number of components if the optimum is
 #' attained at \code{M_bound}? Defaults to \code{TRUE}.
 #' @inheritParams bw_dir_cv
 #' @param verbose display fitting progress? Defaults to \code{FALSE}.
+#' @param kappa_max maximum concentration allowed in a fitted mixture. Mixtures
+#' with a component above it are discarded. Set to \code{Inf} to disable the
+#' screening. Defaults to \code{1e4}.
 #' @return A list with entries:
 #' \itemize{
 #'   \item \code{best_fit}: a list with estimated mixture parameters
@@ -31,6 +36,9 @@
 #' @details
 #' See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
 #' fit is performed with \code{\link[movMF]{movMF}}.
+#'
+#' The \code{kappa_max} screening allows discarding fits with spurious
+#' components featuring high concentration.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
@@ -54,9 +62,20 @@
 #'
 #' # Mixture fit
 #' bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
+#'
+#' # Custom criterion: the AIC with the finite-sample correction
+#' # 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations
+#' AICc <- function(object) {
+#'   ll <- logLik(object)
+#'   k <- attr(ll, "df")
+#'   n <- attr(ll, "nobs")
+#'   AIC(object) + ifelse(n - k - 1 > 0, 2 * k * (k + 1) / (n - k - 1), Inf)
+#' }
+#' bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs
 #' @export
 bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
-                        crit = "BIC", iterative = TRUE, plot_it = FALSE, verbose = FALSE) {
+                        crit = "BIC", iterative = TRUE, plot_it = FALSE,
+                        verbose = FALSE, kappa_max = 1e4) {
 
   # Remove NA's
   stopifnot(is.matrix(data))
@@ -68,23 +87,17 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   # Create vector for BICs
   BICs <- rep(NA, M_bound)
 
-  # For computing the information criterion. "AICc" is not a standard
-  # stats generic, so it is computed from AIC() with the finite-sample
-  # correction 2 * k * (k + 1) / (n - k - 1)
+  # For computing the information criterion, given as a function name or as a
+  # function itself. The name is only kept for labeling the plot.
+  crit_name <- if (is.character(crit)) crit else deparse(substitute(crit))[1]
+  crit <- match.fun(crit)
   get_BIC <- function(x) {
-    if (is.na(x[1])) {
-      return(NA)
-    }
-    if (crit == "AICc") {
-      ll <- stats::logLik(x)
-      k <- attr(ll, "df")
-      n_obs <- attr(ll, "nobs")
-      if (n_obs - k - 1 <= 0) {
-        return(NA)
-      }
-      return(stats::AIC(x) + (2 * k * (k + 1)) / (n_obs - k - 1))
-    }
-    get(crit, mode = "function")(x)
+    if (is.na(x[1])) NA else crit(x)
+  }
+
+  # Screening of degenerate mixtures
+  over_kappa_max <- function(x) {
+    !is.na(x[1]) && any(norm2(x$theta) > kappa_max)
   }
 
   # Mixture fitting for 1:M_bound
@@ -102,7 +115,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
                               silent = TRUE, error = function(e) NA)
     BICs[k] <- get_BIC(fit_mixs[[k]])
 
-    if (is.na(fit_mixs[[k]][1])) {
+    if (is.na(fit_mixs[[k]][1]) || over_kappa_max(fit_mixs[[k]])) {
 
       BICs[k] <- NA
 
@@ -115,8 +128,10 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   # Seek for the minimum. Note that NA and NaN values are discarded
   M_opt <- which.min(BICs)
 
-  # What if M_opt is near the maximum of the grid? Run the iterative procedure
-  if (iterative) {
+  # What if M_opt is near the maximum of the grid? Run the iterative procedure.
+  # M_opt is empty if no mixture could be fitted, in which case the single von
+  # Mises--Fisher fallback below takes over.
+  if (iterative && length(M_opt) == 1) {
 
     if (verbose) cat("\nComputing iterative procedure...")
 
@@ -140,7 +155,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 
         # Compute the new BICs
         BICs_new <- get_BIC(fit_mixs_new)
-        if (is.na(fit_mixs_new[1])) {
+        if (is.na(fit_mixs_new[1]) || over_kappa_max(fit_mixs_new)) {
 
           BICs_new <- NA
 
@@ -177,7 +192,8 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   if (length(M_opt) == 0) {
 
     # Maximum likelihood fit of a vMF if everything fails
-    mu_hat <- mu_ml(data = data)
+warning("No mixture could be fitted; returning a single vMF fit.")
+    mu_hat <- rbind(mu_ml(data = data))
     kappa_hat <- kappa_ml(data = data)
     p_hat <- 1
 
@@ -188,14 +204,18 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
                                              maxiter = 300, start = "S"),
                                 silent = TRUE, error = function(e) NULL)
 
-    # Return fit_mixs_better if there are no convergence issues
-    if (is.null(fit_mixs_better)) {
-
+    # Take fit_mixs_better only if there are no convergence issues, it does not
+    # worsen crit, and it is not degenerate, as a longer run may land on a
+    # spiked mixture
       fit_mix <- fit_mixs[[M_opt]]
+if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
 
-    } else {
+    BIC_better <- get_BIC(fit_mixs_better)
+      if (!is.na(BIC_better) && BIC_better <= BICs[M_opt]) {
 
       fit_mix <- fit_mixs_better
+
+}
 
     }
 
@@ -209,8 +229,8 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   # Display a graph?
   if (plot_it) {
 
-    plot(1:ifelse(iterative, new_M_bound, M_bound), BICs, xlab = "M",
-         ylab = crit, main = paste("Min", crit), pch = 19, cex = 1.5)
+    plot(seq_len(ifelse(iterative, new_M_bound, M_bound)), BICs, xlab = "M",
+         ylab = crit_name, main = paste("Min", crit_name), pch = 19, cex = 1.5)
     points(M_opt, BICs[M_opt], pch = 19, cex = 1.5, col = 2)
 
   }
@@ -239,8 +259,8 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' concentration parameters, and \code{p} is the vector of mixture proportions.
 #' @param optim_par,optim_lower,optim_upper parameters passed to \code{par},
 #' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-#' \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06} (to avoid
-#' numerical instabilities), and \code{10}.
+#' \code{"L-BFGS-B"} method. Default to \code{0.25},
+#' \code{sqrt(.Machine$double.eps)}, and \code{10}.
 #' @return
 #' \itemize{
 #'   \item \code{bw_dir_rot}, \code{bw_dir_ami}: the selected bandwidth, a
@@ -393,7 +413,7 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
   Psi_vmf <- function(x, mu, kappa) {
 
     q <- length(mu) - 1
-    log_const <- rotasym::c_vMF(p = q + 1, kappa = kappa, log = TRUE)
+    log_const <- log_c_vmf(q = q, kappa = kappa)
     Psi <- drop(kappa * exp(log_const + kappa * x %*% mu) *
                   (-x %*% mu + kappa / q * (1 - (x %*% mu)^2)))
     return(Psi)
@@ -462,7 +482,8 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 #' @export
 bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
                        h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
-                       plot_it = TRUE, optim_par = 0.25, optim_lower = 0.06,
+                       plot_it = TRUE, optim_par = 0.25,
+                       optim_lower = sqrt(.Machine$double.eps),
                        optim_upper = 10) {
 
   # Remove NA's
@@ -495,8 +516,8 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
     h2 <- h^2
     log_inv_Cq_x <- sapply(seq_along(p), function(j) {
       nrm <- norm2(sweep(x / h2, 2, mu[j, ] * kappa[j], "+"))
-      log(p[j]) + fast_log_c_vMF(p = q + 1, kappa = kappa[j]) -
-        fast_log_c_vMF(p = q + 1, kappa = nrm)
+      log(p[j]) + log_c_vmf(q = q, kappa = kappa[j]) -
+        log_c_vmf(q = q, kappa = nrm)
     })
     if (is.null(dim(log_inv_Cq_x))) {
 
@@ -585,7 +606,7 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
     # Plot?
     if (plot_it) {
 
-      plot(h_grid, MISE, type = "l", xlab = "h", ylab = "MISE")
+      plot(h_grid, MISE, xlab = "h", ylab = "MISE", type = "o")
       rug(h_grid)
       abline(v = h_grid[ind_min], col = 2)
 

@@ -26,8 +26,10 @@ from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
 \item{M_neig}{number of neighbors explored around the optimal number of
 mixture components. Defaults to \code{3}.}
 
-\item{crit}{information criterion employed, either \code{"BIC"} (default),
-\code{"AICc"} or \code{"AIC"}.}
+\item{crit}{information criterion to be minimized, given as the name of a
+function or as a function itself. It must take a fitted mixture and return a
+single number. Defaults to \code{"BIC"}; see the examples for a custom
+criterion.}
 
 \item{iterative}{keep exploring higher number of components if the optimum is
 attained at \code{M_bound}? Defaults to \code{TRUE}.}
@@ -38,9 +40,7 @@ Defaults to \code{FALSE}.}
 \item{verbose}{display fitting progress? Defaults to \code{FALSE}.}
 
 \item{kappa_max}{maximum concentration allowed in a fitted mixture. Mixtures
-with a component above it are discarded, as the likelihood of a mixture of
-von Mises--Fisher densities is unbounded as the concentration of a component
-explaining a handful of observations grows. Set to \code{Inf} to disable the
+with a component above it are discarded. Set to \code{Inf} to disable the
 screening. Defaults to \code{1e4}.}
 }
 \value{
@@ -63,23 +63,37 @@ of mixture components.
 See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
 fit is performed with \code{\link[movMF]{movMF}}.
 
-The \code{kappa_max} screening is a statistical safeguard, not a numerical
-one: a component collapsing onto a few observations drives the likelihood up
-without bound, and \code{crit} then favors it. A very concentrated mixture
-may therefore be discarded; if no mixture survives, a single von
-Mises--Fisher fit is returned with a warning.
+The \code{kappa_max} screening allows discarding fits with spurious
+components featuring high concentration.
 }
 \examples{
-# Sample
+# Sampler on S^q: a normal centered at sqrt(kappa) * mu, projected onto the
+# sphere, which mimics the spread of a von Mises--Fisher
+r_samp <- function(n, mu, kappa) {
+  normalize(matrix(rnorm(n * length(mu), mean = sqrt(kappa) * mu), nrow = n,
+                   ncol = length(mu), byrow = TRUE))
+}
+
+# Sample from a three-component mixture
 q <- 2
 n <- 300
 set.seed(42)
-samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-              rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
-              rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
+samp <- rbind(r_samp(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
+              r_samp(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+              r_samp(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
 
 # Mixture fit
 bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
+
+# Custom criterion: the AIC with the finite-sample correction
+# 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations
+AICc <- function(object) {
+  ll <- logLik(object)
+  k <- attr(ll, "df")
+  n <- attr(ll, "nobs")
+  AIC(object) + ifelse(n - k - 1 > 0, 2 * k * (k + 1) / (n - k - 1), Inf)
+}
+bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors

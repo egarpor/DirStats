@@ -39,7 +39,11 @@ expression.
 log_c_vmf(q = 2, kappa = c(0, 1, 10))
 
 # Agrees with rotasym::c_vMF() for moderate concentrations
-rotasym::c_vMF(p = 3, kappa = c(0, 1, 10), log = TRUE)
+if (requireNamespace("rotasym", quietly = TRUE)) {
+
+  rotasym::c_vMF(p = 3, kappa = c(0, 1, 10), log = TRUE)
+
+}
 }
 \seealso{
 \code{\link{log_besselI_scaled}}, \code{\link{vmf}}.

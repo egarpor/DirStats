@@ -128,15 +128,13 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
 
   } else {
 
-    # Log-area of S^{q - 1}
-    w_q <- exp(log(2) + q / 2 * log(pi) - lgamma(q / 2))
-
-    # Numerical integration
+    # Numerical integration, with the area of S^{q - 1} coming from the
+    # tangent-normal change of variables
     ch <- sapply(h, function(hh) {
       integrate(function(t) {
         L((1 - t) / hh^2) * (1 - t^2)^(q / 2 - 1)
         }, lower = -1 + 1e-5, upper = 1 - 1e-5, rel.tol = 1e-5,
-        subdivisions = 200, stop.on.error = FALSE)$value * w_q
+        subdivisions = 200, stop.on.error = FALSE)$value * w_q(q = q - 1)
       })
     log_ch <- -log(ch)
 

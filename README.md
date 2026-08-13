@@ -72,7 +72,7 @@ bws <- c("ROT" = bw_dir_rot(data = samp),
          "LCV" = bw_dir_lcv(data = samp)$h_opt,
          "LSCV" = bw_dir_lscv(data = samp)$h_opt)
 round(bws, 4)
-#>    ROT    AMI    EMI    LCV   LSCV 
+#>    ROT    AMI    EMI    LCV   LSCV
 #> 0.4144 0.2127 0.2353 0.2426 0.2345
 ```
 
@@ -109,7 +109,7 @@ ise <- sapply(bws, function(h) {
   int_sph(f = function(x) (kde_dir(x = x, data = samp, h = h) - f(x))^2)
 })
 signif(ise, 3)
-#>     ROT     AMI     EMI     LCV    LSCV 
+#>     ROT     AMI     EMI     LCV    LSCV
 #> 0.01670 0.00604 0.00609 0.00621 0.00608
 ```
 

@@ -163,7 +163,7 @@ log_c_vmf <- function(q, kappa, spline = TRUE) {
     kappa - log_bessel
 
   # Uniform density limit (kappa = 0): the reciprocal surface area of S^q
-  log_cq[kappa == 0] <- -rotasym::w_p(p = q + 1, log = TRUE)
+  log_cq[kappa == 0] <- -w_q(q = q, log = TRUE)
   return(log_cq)
 
 }

@@ -53,10 +53,13 @@ estimator of Bai et al. (1988).
 When \code{L = NULL}, faster FORTRAN code is employed.
 }
 \examples{
-# Sample
+# Sample on S^q, from a normal centered at mu projected onto the sphere
 n <- 50
 q <- 3
-samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+mu <- c(1, rep(0, q))
+set.seed(42)
+samp <- normalize(matrix(rnorm(n * (q + 1), mean = 2 * mu), nrow = n,
+                         ncol = q + 1, byrow = TRUE))
 
 # Evaluation points
 x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
