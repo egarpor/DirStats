@@ -120,7 +120,7 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 
   # Density components
   dens <- sapply(seq_along(p), function(i) {
-    p[i] * exp(fast_log_c_vMF(p = q + 1, kappa = kappa[i]) +
+    p[i] * exp(log_c_vmf(p = q + 1, kappa = kappa[i]) +
                  kappa[i] * x %*% mu[i, ])
   })
 

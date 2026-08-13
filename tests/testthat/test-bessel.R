@@ -60,15 +60,24 @@ test_that("log_besselI_scaled vectorizes and propagates NAs", {
 
 })
 
-## fast_log_c_vMF()
+## log_c_vmf()
 
-test_that("fast_log_c_vMF matches rotasym::c_vMF(log = TRUE)", {
+test_that("log_c_vmf normalizes the von Mises--Fisher density", {
 
+  # Tangent-normal decomposition of the vMF density integral:
+  # 1 = C_p(kappa) * w_{p - 1} *
+  #     int_0^pi exp(kappa * cos(th)) * sin(th)^(p - 2) dth
   for (p in c(2, 3, 5, 10)) {
-    kappa <- c(0, 0.5, 5, 50, 300)
-    expect_equal(fast_log_c_vMF(p = p, kappa = kappa),
-                 rotasym::c_vMF(p = p, kappa = kappa, log = TRUE),
-                 tolerance = 1e-8)
+    for (kappa in c(0, 0.5, 5, 50, 300)) {
+
+      int <- integrate(function(th) {
+        exp(kappa * (cos(th) - 1)) * sin(th)^(p - 2)
+        }, lower = 0, upper = pi, rel.tol = 1e-10)$value
+      expect_equal(log_c_vmf(p = p, kappa = kappa) +
+                     rotasym::w_p(p = p - 1, log = TRUE) + kappa + log(int),
+                   0, tolerance = 1e-8)
+
+    }
   }
 
 })

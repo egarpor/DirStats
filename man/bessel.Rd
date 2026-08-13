@@ -3,13 +3,13 @@
 \name{bessel}
 \alias{bessel}
 \alias{log_besselI_scaled}
-\alias{fast_log_c_vMF}
+\alias{log_c_vmf}
 \title{Stable evaluation of scaled log-Bessel functions and the von
 Mises--Fisher normalizing constant}
 \usage{
 log_besselI_scaled(nu, x, spline = TRUE)
 
-fast_log_c_vMF(p, kappa, spline = TRUE)
+log_c_vmf(p, kappa, spline = TRUE)
 }
 \arguments{
 \item{nu}{order of the Bessel function. A scalar or a vector conformable
@@ -34,8 +34,8 @@ together with the asymptotic expansions. The spline is only effective when
   \item \code{log_besselI_scaled}: the evaluation of
   \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector conformable with \code{nu}
   and \code{x}.
-  \item \code{fast_log_c_vMF}: the evaluation of \eqn{\log C_p(\kappa)}, a
-  vector of size \code{length(kappa)}.
+  \item \code{log_c_vmf}: the evaluation of \eqn{\log C_p(\kappa)}, a vector
+  of size \code{length(kappa)}.
 }
 }
 \description{
@@ -66,10 +66,9 @@ The cutoff \eqn{\nu = 50} is where \code{besselI.nuAsym(k.max = 5)} is
 accurate to below \eqn{10^{-10}}, so it takes over from the tabulated orders
 with a smooth join.
 
-\code{fast_log_c_vMF} returns
-\eqn{\log C_p(\kappa)}, the logarithm of the von Mises--Fisher normalizing
-constant \eqn{C_p(\kappa) = \kappa^{p / 2 - 1} / ((2\pi)^{p / 2}
-\mathcal{I}_{p / 2 - 1}(\kappa))}, evaluated stably through
+\code{log_c_vmf} returns \eqn{\log C_p(\kappa)}, the logarithm of the von
+Mises--Fisher normalizing constant \eqn{C_p(\kappa) = \kappa^{p / 2 - 1} /
+((2\pi)^{p / 2} \mathcal{I}_{p / 2 - 1}(\kappa))}, evaluated stably through
 \code{log_besselI_scaled}.
 }
 \examples{
@@ -83,7 +82,7 @@ log_besselI_scaled(nu = 0.5, x = 2, spline = FALSE)
 log_besselI_scaled(nu = 400, x = 20)
 
 # (Log) von Mises--Fisher normalizing constant, uniform case included
-fast_log_c_vMF(p = 3, kappa = c(0, 1, 10))
+log_c_vmf(p = 3, kappa = c(0, 1, 10))
 }
 \references{
 DLMF (2024). \emph{NIST Digital Library of Mathematical Functions}. Section

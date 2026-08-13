@@ -124,7 +124,7 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
 
     # Exponentially scaled von Mises--Fisher normalizing constant:
     # c_h(h, q) = exp(1 / h^2) * C_{q + 1}(1 / h^2)
-    log_ch <- fast_log_c_vMF(p = q + 1, kappa = 1 / h^2) + 1 / h^2
+    log_ch <- log_c_vmf(p = q + 1, kappa = 1 / h^2) + 1 / h^2
 
   } else {
 
