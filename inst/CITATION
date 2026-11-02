@@ -12,8 +12,9 @@ bibentry(
   year         = year,
   note         = note,
   url          = "https://CRAN.R-project.org/package=DirStats",
+  doi          = "10.32614/CRAN.package.DirStats",
   textVersion  =
   paste(paste0("García-Portugués, E. (", year, ")."),
         "DirStats: Nonparametric Methods for Directional Data.",
-        paste0(note, "."), "https://CRAN.R-project.org/package=DirStats")
+        paste0(note, "."), "https://doi.org/10.32614/CRAN.package.DirStats")
 )

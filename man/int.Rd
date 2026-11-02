@@ -11,7 +11,16 @@ int_cir(f, N = 500, na.rm = TRUE, f_vect = TRUE, ...)
 
 int_sph(f, na.rm = TRUE, f_vect = TRUE, ...)
 
-int_hypsph(f, q, M = 1e+05, na.rm = TRUE, f_vect = TRUE, ...)
+int_hypsph(
+  f,
+  q,
+  M = 1e+05,
+  na.rm = TRUE,
+  f_vect = TRUE,
+  sim = NULL,
+  f_sim = NULL,
+  ...
+)
 }
 \arguments{
 \item{f}{function to be integrated on \eqn{\mathbb{S}^q}. Must be vectorized
@@ -30,6 +39,18 @@ Defaults to \code{TRUE}.}
 \item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
 
 \item{M}{number of Monte Carlo replicates. Defaults to \code{1e5}.}
+
+\item{sim}{proposal for the Monte Carlo integration in \code{int_hypsph}:
+either a function of \code{M} returning a matrix of size
+\code{c(M, q + 1)}, or a matrix of draws on \eqn{\mathbb{S}^q}. Passing a
+matrix reuses the same sample across several integrations, which is required
+if the integral is to be a deterministic function of other parameters (as in
+an optimization). \code{M} is ignored if \code{sim} is a matrix. Defaults to
+\code{NULL}, which draws uniformly on \eqn{\mathbb{S}^q}.}
+
+\item{f_sim}{density of \code{sim} with respect to the surface measure, used
+as the importance weights. Defaults to \code{NULL}, which assumes that
+\code{sim} is uniform on \eqn{\mathbb{S}^q}.}
 }
 \value{
 A scalar approximating the integral.
@@ -44,6 +65,15 @@ Several quadrature rules for integration of functions on
 a periodic trapezoidal rule. \code{int_sph} employs the
 \link[=lebedev]{Lebedev quadrature} on \eqn{\mathbb{S}^2}. \code{int_hypsph}
 implements a Monte Carlo integration on \eqn{\mathbb{S}^q}.
+
+Uniform draws spread the Monte Carlo effort evenly over
+\eqn{\mathbb{S}^q}, and therefore miss integrands that concentrate their
+mass on a small region: the estimate then collapses to (almost) zero. In that
+situation, supply through \code{sim} a proposal that charges the region where
+the integrand lives, together with its density \code{f_sim}, and
+\code{int_hypsph} performs importance sampling instead. Mixing the proposal
+with a uniform component is advisable, as it bounds the importance weights
+wherever the proposal is negligible but the integrand is not.
 }
 \examples{
 # S^1, trapezoidal rule
@@ -57,6 +87,21 @@ int_sph(f = f)
 # S^2, Monte Carlo
 f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
 int_hypsph(f = f, q = 2)
+
+# S^2, Monte Carlo with a concentrated integrand. Uniform draws underestimate
+# the integral, while importance sampling from a proposal that mixes the
+# concentrated density with a uniform component recovers it
+mu <- rbind(c(0, 0, 1))
+kappa <- 500
+f <- function(x) d_mixvmf(x = x, mu = mu, kappa = kappa, p = 1)^2
+int_hypsph(f = f, q = 2, M = 1e4)
+M_mix <- 5e3
+sim <- rbind(movMF::rmovMF(n = M_mix, theta = kappa * mu, alpha = 1),
+             normalize(matrix(rnorm(n = M_mix * 3), nrow = M_mix, ncol = 3)))
+f_sim <- function(x) {
+  0.5 * d_mixvmf(x = x, mu = mu, kappa = kappa, p = 1) + 0.5 / w_q(q = 2)
+}
+int_hypsph(f = f, q = 2, sim = sim, f_sim = f_sim)
 }
 \references{
 Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the

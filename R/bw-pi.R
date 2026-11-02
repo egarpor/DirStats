@@ -52,17 +52,6 @@
 #' build on this mixture fit, and \code{\link{vmf}} for the single-component
 #' estimators used as a fallback.
 #' @examples
-#' # Sample
-#' q <- 2
-#' n <- 300
-#' set.seed(42)
-#' samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-#'               rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
-#'               rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
-#'
-#' # Mixture fit
-#' bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
-#'
 #' # Custom criterion: the AIC with the finite-sample correction
 #' # 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations
 #' AICc <- function(object) {
@@ -71,7 +60,22 @@
 #'   n <- attr(ll, "nobs")
 #'   AIC(object) + ifelse(n - k - 1 > 0, 2 * k * (k + 1) / (n - k - 1), Inf)
 #' }
-#' bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs
+#'
+#' # Sample from a mixture of three von Mises--Fisher distributions
+#' q <- 2
+#' n <- 300
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
+#'
+#'   set.seed(42)
+#'   samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
+#'                 rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+#'                 rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
+#'
+#'   # Mixture fit
+#'   print(bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE))
+#'   print(bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs)
+#'
+#' }
 #' @export
 bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
                         crit = "BIC", iterative = TRUE, plot_it = FALSE,
@@ -192,7 +196,7 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   if (length(M_opt) == 0) {
 
     # Maximum likelihood fit of a vMF if everything fails
-warning("No mixture could be fitted; returning a single vMF fit.")
+    warning("No mixture could be fitted; returning a single vMF fit.")
     mu_hat <- rbind(mu_ml(data = data))
     kappa_hat <- kappa_ml(data = data)
     p_hat <- 1
@@ -207,15 +211,15 @@ warning("No mixture could be fitted; returning a single vMF fit.")
     # Take fit_mixs_better only if there are no convergence issues, it does not
     # worsen crit, and it is not degenerate, as a longer run may land on a
     # spiked mixture
-      fit_mix <- fit_mixs[[M_opt]]
-if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
+    fit_mix <- fit_mixs[[M_opt]]
+    if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
 
-    BIC_better <- get_BIC(fit_mixs_better)
+      BIC_better <- get_BIC(fit_mixs_better)
       if (!is.na(BIC_better) && BIC_better <= BICs[M_opt]) {
 
-      fit_mix <- fit_mixs_better
+        fit_mix <- fit_mixs_better
 
-}
+      }
 
     }
 
@@ -296,23 +300,27 @@ if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
 #' # Sample
 #' n <- 25
 #' q <- 2
-#' set.seed(42)
-#' samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
 #'
-#' # Mixture fit
-#' fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
+#'   set.seed(42)
+#'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 #'
-#' # ROT
-#' bw_dir_rot(samp)
+#'   # Mixture fit
+#'   fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
 #'
-#' # AMI
-#' bw_dir_ami(samp)
-#' bw_dir_ami(samp, fit_mix = fit_mix)
-#' bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x))
+#'   # ROT
+#'   print(bw_dir_rot(samp))
 #'
-#' # EMI
-#' bw_dir_emi(samp)
-#' bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
+#'   # AMI
+#'   print(bw_dir_ami(samp))
+#'   print(bw_dir_ami(samp, fit_mix = fit_mix))
+#'   print(bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x)))
+#'
+#'   # EMI
+#'   print(bw_dir_emi(samp))
+#'   print(bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE))
+#'
+#' }
 #' @name bw_dir_pi
 
 
@@ -345,10 +353,10 @@ bw_dir_rot <- function(data) {
   # log_besselI_scaled() keeps the selector finite for arbitrarily large
   # concentrations. There is a typo in Garcia-Portugues (2013) in equation (6)
   # for q = 2, where it displays an incorrect extra kappa:
-    # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
-    # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
-# This is not relevant for the general case q >= 1 compted here
-log_num <- log(4 * sqrt(pi)) +
+  # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
+  # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
+  # This is not relevant for the general case q >= 1 compted here
+  log_num <- log(4 * sqrt(pi)) +
     2 * log_besselI_scaled(nu = (q - 1) / 2, x = kappa)
   log_1 <- log(2 * q) +
     log_besselI_scaled(nu = (q + 1) / 2, x = 2 * kappa)
@@ -462,7 +470,11 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 
     } else if (q > 2) {
 
-      R <- tryCatch(int_hypsph(f = integrand, q = q, M = 1e4),
+      # Importance sampling: uniform draws miss the mass of the integrand
+      # when the mixture is concentrated
+      prop <- r_defensive_vmf(q = q, mu = mu, kappa = kappa, p = p, M = 1e4)
+      R <- tryCatch(int_hypsph(f = integrand, q = q, sim = prop$sim,
+                               f_sim = prop$f_sim),
                     silent = TRUE, error = function(e) NULL)
 
     }
@@ -547,6 +559,11 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
   }
 
+  # Common random numbers: drawing the sample once makes mise_star()
+  # deterministic in h, so optim() does not difference noise
+  prop <- switch((q > 2) + 1, NULL,
+                 r_defensive_vmf(q = q, mu = mu, kappa = kappa, p = p, M = 1e4))
+
   # Definition of mise_star
   mise_star <- function(h) {
 
@@ -561,7 +578,8 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
     } else {
 
-      int <- int_hypsph(f = integrand, q = q, M = 1e4, h = h)
+      int <- int_hypsph(f = integrand, q = q, sim = prop$sim,
+                        f_sim = prop$f_sim, h = h)
 
     }
 

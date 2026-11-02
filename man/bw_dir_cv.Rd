@@ -65,30 +65,35 @@ selectors for kernel density estimation with directional data.
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.
 When \code{L = NULL}, faster vectorized expressions specific to the von
-Mises--Fisher kernel are employed.
+Mises--Fisher kernel are employed. The pairwise sums are accumulated in row
+blocks of at most 2.5e5 inner products, so the memory footprint stays flat
+in \eqn{n}, except that \code{bw_dir_lcv} caches the whole \eqn{n \times n}
+matrix for \eqn{n \le 5000} for speed.
 
 \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
 }
 \examples{
-# Sample on S^q, from a normal centered at mu projected onto the sphere
+# Sample
 n <- 25
 q <- 2
-mu <- c(1, rep(0, q))
-set.seed(42)
-samp <- normalize(matrix(rnorm(n * (q + 1), mean = 2 * mu), nrow = n,
-                         ncol = q + 1, byrow = TRUE))
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# bw_dir_lcv
-bw_dir_lcv(data = samp, optim = TRUE)$h_opt
-bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
-bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
-# bw_dir_lscv
-set.seed(42)
-bw_dir_lscv(data = samp, optim = TRUE)$h_opt
-bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
-bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt
+  # bw_dir_lcv
+  print(bw_dir_lcv(data = samp, optim = TRUE)$h_opt)
+  print(bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt)
+  print(bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt)
+
+  # bw_dir_lscv
+  set.seed(42)
+  print(bw_dir_lscv(data = samp, optim = TRUE)$h_opt)
+  print(bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt)
+  print(bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt)
+
+}
 }
 \references{
 Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation

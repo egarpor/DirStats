@@ -59,3 +59,31 @@ test_that("log_besselI_scaled vectorizes and propagates NAs", {
   expect_length(log_besselI_scaled(nu = 0.5, x = numeric(0)), 0)
 
 })
+
+test_that("The fast path of log_besselI_scaled() matches the general path", {
+
+  # An NA in x forces the general path, which must give identical values for
+  # the non-NA entries. besselI() warns where it underflows (nu = 50 and
+  # x = 1e-5), which both paths fill with the small-argument series
+  x <- c(1e-5, 1e-4, 0.5, 3, 40, 900, 9999)
+  for (spline in c(TRUE, FALSE)) {
+
+    for (nu in list(0, 1.5, 7, 50, -0.5, 0:6, rep(1.5, 7))) {
+
+      fast <- suppressWarnings(log_besselI_scaled(nu = nu, x = x,
+                                                  spline = spline))
+      nu_na <- if (length(nu) > 1) c(nu, nu[1]) else nu
+      general <- suppressWarnings(log_besselI_scaled(nu = nu_na, x = c(x, NA),
+                                                     spline = spline))
+      expect_identical(fast, general[seq_along(x)])
+
+    }
+
+  }
+
+  # Matrix input gives a plain vector in both paths
+  expect_identical(log_besselI_scaled(nu = 1, x = matrix(1:4, 2),
+                                      spline = FALSE),
+                   log_besselI_scaled(nu = 1, x = 1:4, spline = FALSE))
+
+})

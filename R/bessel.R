@@ -65,6 +65,51 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
 
   }
 
+  # Largest tabulated order; beyond it the large-order asymptotic takes over,
+  # so spline = TRUE meets the asymptotic regime smoothly
+  nu_max <- max(bessel_nus)
+
+  # Fast path for the common case, returning the same values as the general
+  # path below while skipping its broadcasting and partitioning, which dominate
+  # the cost of short inputs: no NAs and all x in [bessel_x_lo, bessel_x_hi)
+  if (length(x) > 0 && length(nu) > 0 && !anyNA(x) &&
+      min(x) >= bessel_x_lo && max(x) < bessel_x_hi) {
+
+    # A single tabulated order goes to its spline (same grid test as below)
+    if (spline && length(nu) == 1) {
+
+      j <- round(2 * nu) + 1
+      if (nu <= nu_max && j >= 1 && abs(2 * nu + 1 - j) < 2e-8) {
+
+        return(bessel_splines[[j]](log(x)))
+
+      }
+
+    }
+
+    # Orders up to nu_max go to besselI(), returned as a plain vector as in
+    # the general path, with any underflow filled by the same series. A
+    # vector of equal orders with spline = TRUE is left to the general path,
+    # which splines it
+    if (all(nu <= nu_max) &&
+        (!spline || length(nu) == 1 || any(nu != nu[1L]))) {
+
+      res <- log(besselI(x = x, nu = nu, expon.scaled = TRUE))
+      if (!is.null(attributes(res))) attributes(res) <- NULL
+      if (!all(is.finite(res))) {
+
+        bad <- which(!is.finite(res))
+        xs <- rep_len(x, length(res))[bad]
+        ns <- rep_len(nu, length(res))[bad]
+        res[bad] <- ifelse(ns == 0, -xs, ns * log(xs / 2) - lgamma(ns + 1) - xs)
+
+      }
+      return(res)
+
+    }
+
+  }
+
   # Zero-length input gives zero-length output, as in besselI()
   if (length(x) == 0 || length(nu) == 0) {
 
@@ -87,10 +132,6 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
   nuo <- nu[ok]
   res <- rep(NA_real_, length(xo))
 
-  # Largest tabulated order; beyond it the large-order asymptotic takes over,
-  # so spline = TRUE meets the asymptotic regime smoothly
-  nu_max <- max(bessel_nus)
-
   # Spline path: requires a single tabulated order (the von Mises--Fisher orders
   # (p - 2) / 2 are half-integers, hence on the grid); otherwise fall back to
   # the direct/asymptotic evaluation
@@ -105,9 +146,7 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
     # Cubic spline in u = log(x) over [x_lo, x_hi)
     if (any(ind_spl)) {
 
-      key <- sprintf("%03d", round(10 * nu1))
-      res[ind_spl] <- get(paste0("log_besselI_scaled_spline_", key))(
-        log(xo[ind_spl]))
+      res[ind_spl] <- bessel_splines[[round(2 * nu1) + 1]](log(xo[ind_spl]))
 
     }
 

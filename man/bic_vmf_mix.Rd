@@ -67,24 +67,6 @@ The \code{kappa_max} screening allows discarding fits with spurious
 components featuring high concentration.
 }
 \examples{
-# Sampler on S^q: a normal centered at sqrt(kappa) * mu, projected onto the
-# sphere, which mimics the spread of a von Mises--Fisher
-r_samp <- function(n, mu, kappa) {
-  normalize(matrix(rnorm(n * length(mu), mean = sqrt(kappa) * mu), nrow = n,
-                   ncol = length(mu), byrow = TRUE))
-}
-
-# Sample from a three-component mixture
-q <- 2
-n <- 300
-set.seed(42)
-samp <- rbind(r_samp(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-              r_samp(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
-              r_samp(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
-
-# Mixture fit
-bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
-
 # Custom criterion: the AIC with the finite-sample correction
 # 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations
 AICc <- function(object) {
@@ -93,7 +75,22 @@ AICc <- function(object) {
   n <- attr(ll, "nobs")
   AIC(object) + ifelse(n - k - 1 > 0, 2 * k * (k + 1) / (n - k - 1), Inf)
 }
-bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs
+
+# Sample from a mixture of three von Mises--Fisher distributions
+q <- 2
+n <- 300
+if (requireNamespace("rotasym", quietly = TRUE)) {
+
+  set.seed(42)
+  samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
+                rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+                rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
+
+  # Mixture fit
+  print(bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE))
+  print(bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs)
+
+}
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors

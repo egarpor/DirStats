@@ -7,7 +7,7 @@
 log_c_vmf(q, kappa, spline = TRUE)
 }
 \arguments{
-\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 0}.}
 
 \item{kappa}{vector of non-negative concentration parameters.}
 
@@ -19,8 +19,8 @@ together with the asymptotic expansions. The spline is only effective when
 \code{nu} is a single value on that grid.}
 }
 \value{
-The evaluation of \eqn{\log c_q(\kappa)}, a vector of size
-\code{length(kappa)}.
+The evaluation of \eqn{\log c_q(\kappa)}, a vector conformable with
+\code{q} and \code{kappa}.
 }
 \description{
 Numerically stable evaluation of \eqn{\log c_q(\kappa)}, the

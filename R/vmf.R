@@ -29,11 +29,16 @@
 #' # Sample
 #' n <- 50
 #' q <- 2
-#' samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
 #'
-#' # Estimates
-#' mu_ml(samp)
-#' kappa_ml(samp)
+#'   set.seed(42)
+#'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#'
+#'   # Estimates
+#'   print(mu_ml(samp))
+#'   print(kappa_ml(samp))
+#'
+#' }
 #'
 #' # Mixture
 #' x <- to_cir(seq(0, 2 * pi, l = 200))
@@ -139,11 +144,11 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 #' \mathcal{I}_{(q - 1) / 2}(\kappa))}, computed through
 #' \code{\link{log_besselI_scaled}}.
 #'
-#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.
+#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 0}.
 #' @param kappa vector of non-negative concentration parameters.
 #' @inheritParams log_besselI_scaled
-#' @return The evaluation of \eqn{\log c_q(\kappa)}, a vector of size
-#' \code{length(kappa)}.
+#' @return The evaluation of \eqn{\log c_q(\kappa)}, a vector conformable with
+#' \code{q} and \code{kappa}.
 #' @details The uniform limit \eqn{\kappa = 0} is returned as the reciprocal
 #' surface area of \eqn{\mathbb{S}^q}, avoiding the \eqn{\log(0)} of the general
 #' expression.
@@ -153,7 +158,11 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 #' log_c_vmf(q = 2, kappa = c(0, 1, 10))
 #'
 #' # Agrees with rotasym::c_vMF() for moderate concentrations
-#' rotasym::c_vMF(p = 3, kappa = c(0, 1, 10), log = TRUE)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
+#'
+#'   rotasym::c_vMF(p = 3, kappa = c(0, 1, 10), log = TRUE)
+#'
+#' }
 #' @export
 log_c_vmf <- function(q, kappa, spline = TRUE) {
 
@@ -162,8 +171,15 @@ log_c_vmf <- function(q, kappa, spline = TRUE) {
   log_cq <- (0.5 * (q - 1)) * log(kappa) - (0.5 * (q + 1)) * log(2 * pi) -
     kappa - log_bessel
 
-  # Uniform density limit (kappa = 0): the reciprocal surface area of S^q
-  log_cq[kappa == 0] <- -w_q(q = q, log = TRUE)
+  # Uniform density limit (kappa = 0): the reciprocal surface area of S^q,
+  # indexed on the common length of q and kappa
+  if (any(kappa == 0, na.rm = TRUE)) {
+
+    n <- length(log_cq)
+    ind_0 <- which(rep_len(kappa, n) == 0)
+    log_cq[ind_0] <- -w_q(q = rep_len(q, n)[ind_0], log = TRUE)
+
+  }
   return(log_cq)
 
 }

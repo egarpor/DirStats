@@ -38,14 +38,19 @@
 #' # Sample
 #' n <- 50
 #' q <- 3
-#' samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
 #'
-#' # Evaluation points
-#' x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
+#'   set.seed(42)
+#'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 #'
-#' # kde_dir
-#' kde_dir(x = x, data = samp, h = 0.5, L = NULL)
-#' kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x))
+#'   # Evaluation points
+#'   x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
+#'
+#'   # kde_dir
+#'   print(kde_dir(x = x, data = samp, h = 0.5, L = NULL))
+#'   print(kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x)))
+#'
+#' }
 #'
 #' # c_h
 #' c_h(h = 0.5, q = q, L = NULL)
