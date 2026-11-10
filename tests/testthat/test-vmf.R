@@ -5,7 +5,7 @@ test_that("mu_ml recovers the mean direction", {
 
   set.seed(42)
   mu <- normalize(c(1, 2, -1))
-  samp <- rotasym::r_vMF(n = 1000, mu = mu, kappa = 20)
+  samp <- r_proj_norm(n = 1000, mu = mu, kappa = 20)
   expect_equal(mu_ml(samp), mu, tolerance = 5e-2)
   expect_equal(norm2(mu_ml(samp)), 1)
 
@@ -15,6 +15,7 @@ test_that("mu_ml recovers the mean direction", {
 
 test_that("kappa_ml recovers the concentration", {
 
+  skip_if_not_installed("rotasym")
   set.seed(42)
   samp <- rotasym::r_vMF(n = 2000, mu = c(0, 0, 1), kappa = 5)
   expect_equal(kappa_ml(samp), 5, tolerance = 0.5)
@@ -24,6 +25,7 @@ test_that("kappa_ml recovers the concentration", {
 
 test_that("kappa_ml also work for large kappa and dimension ", {
 
+  skip_if_not_installed("rotasym")
   for (q in c(1:2, 100)) {
     for (true_kappa in c(2, 50, 300)) {
       set.seed(42)
@@ -48,7 +50,7 @@ test_that("kappa_ml handles degenerate resultant lengths", {
 test_that("kappa_ml accepts a pre-computed resultant length", {
 
   set.seed(42)
-  samp <- rotasym::r_vMF(n = 2000, mu = c(0, 0, 1), kappa = 5)
+  samp <- r_proj_norm(n = 2000, mu = c(0, 0, 1), kappa = 5)
   R <- norm2(colMeans(samp))
   expect_equal(kappa_ml(samp), kappa_ml(samp, R = R))
 
@@ -67,6 +69,7 @@ test_that("d_mixvmf integrates to one on the circle", {
 
 test_that("d_mixvmf with a single component equals rotasym::d_vMF", {
 
+  skip_if_not_installed("rotasym")
   x <- to_cir(seq(0, 2 * pi, l = 7))
   expect_equal(d_mixvmf(x = x, mu = rbind(c(1, 0)), kappa = 2, p = 1),
                rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
@@ -85,7 +88,7 @@ test_that("d_mixvmf stays finite for large concentrations", {
     expect_true(all(is.finite(dens)))
 
     # The density at the mean direction grows with the concentration, and
-    # vanishes away from it
+    # vanishes away from it.
     expect_true(all(diff(dens[1, ]) > 0))
     expect_equal(dens[2, ], rep(0, 4))
 
@@ -115,6 +118,7 @@ test_that("d_mixvmf handles vector and matrix inputs", {
 
 test_that("d_mixvmf accepts a single component given as a vector mu", {
 
+  skip_if_not_installed("rotasym")
   x <- to_cir(c(0, 1, 2))
   expect_equal(d_mixvmf(x = x, mu = c(1, 0), kappa = 2, p = 1),
                rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
@@ -141,5 +145,16 @@ test_that("log_c_vmf normalizes the von Mises--Fisher density", {
 
     }
   }
+
+})
+
+test_that("log_c_vmf() handles a vector q with some zero kappa", {
+
+  q <- 1:3
+  kappa <- c(0, 1, 0)
+  expect_equal(log_c_vmf(q = q, kappa = kappa),
+               sapply(seq_along(q), function(i)
+                 log_c_vmf(q = q[i], kappa = kappa[i])))
+  expect_equal(log_c_vmf(q = q, kappa = 0), -w_q(q = q, log = TRUE))
 
 })

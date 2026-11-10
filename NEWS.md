@@ -22,14 +22,30 @@
 
 * Fix 'Fortran 2018 deleted feature' warning.
 
-# DirStats 0.2.0
+# DirStats 1.0.0
 
-* Fixed `to_rad()` mapping the \eqn{S^2} south pole to the wrong polar angle
-  (`acos()` result was wrapped with `%% pi`, sending \eqn{\pi} to \eqn{0}).
-* `int_hypsph()` now honors its `na.rm` argument (it was hardcoded to `TRUE`).
-* `bic_vmf_mix()` now supports `crit = "AICc"` (previously errored).
-* Efficiency: `kde_dir()` no longer computes the normalizing constant twice
-  for user-defined kernels; `bw_dir_lcv()` avoids allocating a large
-  three-dimensional array in the non-von Mises--Fisher branch.
-* Documentation fixes and added `\link`/`\seealso` cross-references.
-* Added a `testthat` unit-test suite.
+* Add `log_besselI_scaled()` and `log_c_vmf()` for the stable evaluation of the
+  scaled log-Bessel function and the log von Mises--Fisher normalizing constant.
+* Add `Bessel` to `Imports` and move `rotasym` to `Suggests`.
+* Remove all FORTRAN code in favor of vectorized R, so the package no longer
+  needs compilation and `bw_dir_lscv()` drops its `R_code` argument. With the
+  default kernel, `bw_dir_lscv()` is 6--10 times faster. Both `bw_dir_lscv()`
+  and `bw_dir_lcv()` keep memory flat in `n`, and `bw_dir_lcv()` no longer
+  allocates a large three-dimensional array for non-von Mises--Fisher kernels.
+* Fix `bw_dir_lscv()` ignoring `L`, which gave the von Mises--Fisher loss for
+  any kernel.
+* Fix `d_mixvmf()`, `R_Psi_mixvmf()`, `kappa_ml()`, and `bw_dir_rot()` for large
+  concentrations. `kappa_ml()` now defaults to `max_kappa = 1e4`, and
+  `bw_dir_rot()` warns and returns `NA` for degenerate concentrations.
+* Add `sim` and `f_sim` to `int_hypsph()` for importance sampling, which fixes
+  `bw_dir_emi()`, `bw_dir_ami()`, and `bw_dir_lscv()` for concentrated data with
+  `q > 2`. `bw_dir_emi()` also computes its MISE integrand in log scale,
+  avoiding over/underflow for small bandwidths.
+* Add `kappa_max` to `bic_vmf_mix()` to discard mixtures with a collapsed
+  component. When no mixture can be fitted, `bic_vmf_mix()` now warns and
+  returns the single von Mises--Fisher fit; a refined fit that worsens `crit` is
+  discarded.
+* Fix `to_rad()` mapping the S^2 south pole to the wrong polar angle, and
+  `int_hypsph()` ignoring `na.rm`.
+* Fix documentation and add `\link`/`\seealso` cross-references and a `testthat`
+  unit-test suite.
