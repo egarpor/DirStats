@@ -25,7 +25,6 @@
 #' }
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
-#' When \code{L = NULL}, faster FORTRAN code is employed.
 #' @references
 #' Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
 #' density function of directional data. \emph{Journal of Multivariate
@@ -38,14 +37,19 @@
 #' # Sample
 #' n <- 50
 #' q <- 3
-#' samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
 #'
-#' # Evaluation points
-#' x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
+#'   set.seed(42)
+#'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 #'
-#' # kde_dir
-#' kde_dir(x = x, data = samp, h = 0.5, L = NULL)
-#' kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x))
+#'   # Evaluation points
+#'   x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
+#'
+#'   # kde_dir
+#'   print(kde_dir(x = x, data = samp, h = 0.5, L = NULL))
+#'   print(kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x)))
+#'
+#' }
 #'
 #' # c_h
 #' c_h(h = 0.5, q = q, L = NULL)
@@ -81,31 +85,24 @@ kde_dir <- function(x, data, h, L = NULL) {
   }
   nx <- nrow(x)
   stopifnot(ncol(x) == q + 1)
-
-  # von Mises--Fisher kernel?
-  is_vm <- is.null(L)
   stopifnot(length(h) == 1)
 
   # Normalizing constant (L = NULL triggers the closed-form vMF expression)
   ch <- c_h(h = h, q = q, L = L)
 
-  # Approach type
-  if (is_vm) {
+  # Von Mises--Fisher kernel?
+  if (is.null(L)) {
 
-    # Ensure data types for kde_dir
-    x <- matrix(as.double(x), nrow = nx, ncol = q + 1)
-    data_dir <- matrix(as.double(data), nrow = n, ncol = q + 1)
+    L <- function(z) exp(-z)
 
-    # Call to kde_dir
-    kde <- .Fortran("kde_dir_vmf", x = x, data_dir = data_dir,
-                    h = as.double(h), ch = as.double(ch),
-                    n = as.integer(n), q = as.integer(q),
-                    nx = as.integer(nx), kde = double(nx))$kde
+  }
 
-  } else {
+  # Kernel sums over blocks of evaluation points, so the memory stays flat in n
+  kde <- numeric(nx)
+  for (ind in row_blocks(n = nx, m = n)) {
 
-    kde <- (1 - data %*% t(x)) / h^2
-    kde <- ch * colMeans(L(kde))
+    mat_L <- 1 - tcrossprod(x = data, y = x[ind, , drop = FALSE])
+    kde[ind] <- ch * colMeans(L(mat_L / h^2))
 
   }
 
@@ -119,7 +116,7 @@ kde_dir <- function(x, data, h, L = NULL) {
 #' @export
 c_h <- function(h, q, L = NULL, log = FALSE) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Exponentially scaled von Mises--Fisher normalizing constant:
@@ -129,7 +126,7 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
   } else {
 
     # Numerical integration, with the area of S^{q - 1} coming from the
-    # tangent-normal change of variables
+    # tangent-normal change of variables.
     ch <- sapply(h, function(hh) {
       integrate(function(t) {
         L((1 - t) / hh^2) * (1 - t^2)^(q / 2 - 1)
@@ -150,7 +147,7 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
 #' @export
 lambda_L <- function(L = NULL, q) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Analytical expression
@@ -159,7 +156,7 @@ lambda_L <- function(L = NULL, q) {
   } else {
 
     # Numerical integration
-    lambda <- 2^(q / 2 - 1) * 2 * pi^(q / 2) / gamma(q / 2) *
+    lambda <- 2^(q / 2 - 1) * w_q(q = q - 1) *
       integrate(function(r) L(r) * r^(q / 2 - 1), lower = 0, upper = 100,
                 rel.tol = 1e-5, subdivisions = 200, stop.on.error = FALSE)$value
 
@@ -175,7 +172,7 @@ lambda_L <- function(L = NULL, q) {
 #' @export
 b_L <- function(L = NULL, q) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Analytical expression
@@ -203,7 +200,7 @@ b_L <- function(L = NULL, q) {
 #' @export
 d_L <- function(L = NULL, q) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Analytical expression
@@ -223,5 +220,42 @@ d_L <- function(L = NULL, q) {
 
   # Moment
   return(d)
+
+}
+
+
+#' @title Leave-one-out kernel density estimates
+#'
+#' @description Leave-one-out kernel density estimator evaluated at each
+#' observation, for a kernel \code{L} and a grid of bandwidths.
+#'
+#' @inheritParams kde_dir
+#' @inheritParams bw_dir_cv
+#' @return A matrix of size \code{c(nrow(data), length(h_grid))}.
+#' @noRd
+loo_kde <- function(data, h_grid, L) {
+
+  # Normalizing constants
+  n <- nrow(data)
+  ch <- c_h(h = h_grid, q = ncol(data) - 1, L = L)
+
+  # Leave-one-out kernel sums, accumulated over the row blocks with the
+  # bandwidths inside, so the memory is O(n * b).
+  f_hi <- matrix(nrow = n, ncol = length(h_grid))
+  for (ind in row_blocks(n = n)) {
+
+    mat_L <- 1 - tcrossprod(x = data[ind, , drop = FALSE], y = data)
+    for (hi in seq_along(h_grid)) {
+
+      L_hi <- (ch[hi] / (n - 1)) * L(mat_L / h_grid[hi]^2)
+      L_hi[cbind(seq_along(ind), ind)] <- 0
+      f_hi[ind, hi] <- rowSums(L_hi)
+
+    }
+
+  }
+
+  # Result
+  return(f_hi)
 
 }

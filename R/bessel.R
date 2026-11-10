@@ -65,6 +65,19 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
 
   }
 
+  # Largest tabulated order, beyond which the large-order asymptotic takes over
+  nu_max <- max(bessel_nus)
+
+  # Fast path for a single tabulated order with no NAs and all x in
+  # [bessel_x_lo, bessel_x_hi) skipping the partitioning below.
+  if (spline && length(nu) == 1 && length(x) > 0 && !anyNA(x) &&
+      min(x) >= bessel_x_lo && max(x) < bessel_x_hi && nu <= nu_max &&
+      any(abs(bessel_nus - nu) < 1e-8)) {
+
+    return(bessel_splines[[round(2 * nu) + 1]](log(x)))
+
+  }
+
   # Zero-length input gives zero-length output, as in besselI()
   if (length(x) == 0 || length(nu) == 0) {
 
@@ -87,13 +100,9 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
   nuo <- nu[ok]
   res <- rep(NA_real_, length(xo))
 
-  # Largest tabulated order; beyond it the large-order asymptotic takes over,
-  # so spline = TRUE meets the asymptotic regime smoothly
-  nu_max <- max(bessel_nus)
-
   # Spline path: requires a single tabulated order (the von Mises--Fisher orders
   # (p - 2) / 2 are half-integers, hence on the grid); otherwise fall back to
-  # the direct/asymptotic evaluation
+  # the direct/asymptotic evaluation.
   if (spline && all(nuo == nuo[1L]) && nuo[1L] <= nu_max &&
         any(abs(bessel_nus - nuo[1L]) < 1e-8)) {
 
@@ -105,19 +114,14 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
     # Cubic spline in u = log(x) over [x_lo, x_hi)
     if (any(ind_spl)) {
 
-      key <- sprintf("%03d", round(10 * nu1))
-      res[ind_spl] <- get(paste0("log_besselI_scaled_spline_", key))(
-        log(xo[ind_spl]))
+      res[ind_spl] <- bessel_splines[[round(2 * nu1) + 1]](log(xo[ind_spl]))
 
     }
 
-    # Small-argument series below x_lo (exact leading term; the nu = 0 branch
-    # avoids 0 * log(0) = NaN)
+    # Small-argument series below x_lo
     if (any(ind_small)) {
 
-      xs <- xo[ind_small]
-      res[ind_small] <- if (nu1 == 0) -xs else
-        nu1 * log(xs / 2) - lgamma(nu1 + 1) - xs
+      res[ind_small] <- log_besselI_series(x = xo[ind_small], nu = nu1)
 
     }
 
@@ -133,7 +137,7 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
 
     # Direct evaluation with asymptotic fallbacks. The large-order expansion
     # (DLMF 10.41) takes precedence over the large-argument one (the latter is
-    # only valid for x >> nu^2)
+    # only valid for x >> nu^2).
     ind_nu <- nuo > nu_max
     ind_x <- !ind_nu & (xo >= bessel_x_hi)
     ind_std <- !ind_nu & !ind_x
@@ -158,13 +162,12 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
                        expon.scaled = TRUE))
 
       # Fill any underflow (large order + small x) with the exact leading
-      # small-argument series, so the result is finite for all tabulated orders
+      # small-argument series, so the result is finite for all tabulated orders.
       bad <- !is.finite(v)
       if (any(bad)) {
 
-        xs <- xo[ind_std][bad]
-        ns <- nuo[ind_std][bad]
-        v[bad] <- ifelse(ns == 0, -xs, ns * log(xs / 2) - lgamma(ns + 1) - xs)
+        v[bad] <- log_besselI_series(x = xo[ind_std][bad],
+                                     nu = nuo[ind_std][bad])
 
       }
       res[ind_std] <- v
@@ -175,5 +178,24 @@ log_besselI_scaled <- function(nu, x, spline = TRUE) {
 
   out[ok] <- res
   return(out)
+
+}
+
+
+#' @title Small-argument series of the scaled log-Bessel function
+#'
+#' @description Leading term of \eqn{\log(e^{-x} \mathcal{I}_\nu(x))} as
+#' \eqn{x \to 0}, \eqn{\nu \log(x / 2) - \log\Gamma(\nu + 1) - x}.
+#'
+#' @inheritParams log_besselI_scaled
+#' @return A vector of length \code{length(x)}.
+#' @noRd
+log_besselI_series <- function(x, nu) {
+
+  nu <- rep_len(nu, length(x))
+  res <- nu * log(x / 2) - lgamma(nu + 1) - x
+  ind_0 <- nu == 0
+  res[ind_0] <- -x[ind_0]
+  return(res)
 
 }

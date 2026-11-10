@@ -48,17 +48,19 @@ Maximum likelihood estimation for the von Mises--Fisher
 distribution and evaluation of density mixtures.
 }
 \examples{
-# Sample on S^q, from a normal centered at mu projected onto the sphere
+# Sample
 n <- 50
 q <- 2
-mu <- c(1, rep(0, q))
-set.seed(42)
-samp <- normalize(matrix(rnorm(n * (q + 1), mean = 2 * mu), nrow = n,
-                         ncol = q + 1, byrow = TRUE))
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# Estimates
-mu_ml(samp)
-kappa_ml(samp)
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+
+  # Estimates
+  print(mu_ml(samp))
+  print(kappa_ml(samp))
+
+}
 
 # Mixture
 x <- to_cir(seq(0, 2 * pi, l = 200))

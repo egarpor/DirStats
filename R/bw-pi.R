@@ -52,26 +52,30 @@
 #' build on this mixture fit, and \code{\link{vmf}} for the single-component
 #' estimators used as a fallback.
 #' @examples
-#' # Sample
-#' q <- 2
-#' n <- 300
-#' set.seed(42)
-#' samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-#'               rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
-#'               rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
-#'
-#' # Mixture fit
-#' bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
-#'
 #' # Custom criterion: the AIC with the finite-sample correction
-#' # 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations
+#' # 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations.
 #' AICc <- function(object) {
 #'   ll <- logLik(object)
 #'   k <- attr(ll, "df")
 #'   n <- attr(ll, "nobs")
 #'   AIC(object) + ifelse(n - k - 1 > 0, 2 * k * (k + 1) / (n - k - 1), Inf)
 #' }
-#' bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs
+#'
+#' # Sample from a mixture of three von Mises--Fisher distributions
+#' q <- 2
+#' n <- 300
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
+#'
+#'   set.seed(42)
+#'   samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
+#'                 rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+#'                 rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
+#'
+#'   # Mixture fit
+#'   print(bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE))
+#'   print(bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs)
+#'
+#' }
 #' @export
 bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
                         crit = "BIC", iterative = TRUE, plot_it = FALSE,
@@ -91,13 +95,17 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   # function itself. The name is only kept for labeling the plot.
   crit_name <- if (is.character(crit)) crit else deparse(substitute(crit))[1]
   crit <- match.fun(crit)
-  get_BIC <- function(x) {
-    if (is.na(x[1])) NA else crit(x)
+
+  # Mixture fit with k components, NA if movMF() fails
+  fit_k <- function(k, maxiter = 100) {
+    tryCatch(movMF::movMF(x = data, k = k, maxiter = maxiter, start = "S"),
+             error = function(e) NA)
   }
 
-  # Screening of degenerate mixtures
-  over_kappa_max <- function(x) {
-    !is.na(x[1]) && any(norm2(x$theta) > kappa_max)
+  # Information criterion of a fit, NA if the fit failed or if it is degenerate
+  # (a component above kappa_max).
+  get_BIC <- function(x) {
+    if (is.na(x[1]) || any(norm2(x$theta) > kappa_max)) NA else crit(x)
   }
 
   # Mixture fitting for 1:M_bound
@@ -110,17 +118,8 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   for (k in 1:M_bound) {
 
     # Fit mixture
-    fit_mixs[[k]] <- tryCatch(movMF::movMF(x = data, k = k,
-                                            maxiter = 100, start = "S"),
-                              silent = TRUE, error = function(e) NA)
+    fit_mixs[[k]] <- fit_k(k = k)
     BICs[k] <- get_BIC(fit_mixs[[k]])
-
-    if (is.na(fit_mixs[[k]][1]) || over_kappa_max(fit_mixs[[k]])) {
-
-      BICs[k] <- NA
-
-    }
-
     if (verbose) setTxtProgressBar(pb, k / M_bound)
 
   }
@@ -145,28 +144,16 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
       # Loop until ensuring the minimum is within the new extended range
       repeat {
 
-        # New estimation
-        fit_mixs_new <- tryCatch(movMF::movMF(x = data, k = new_M_bound,
-                                               maxiter = 100, start = "S"),
-                                 silent = TRUE, error = function(e) NA)
-
-        # Add to the previous estimation
+        # New estimation, added to the previous ones
+        fit_mixs_new <- fit_k(k = new_M_bound)
         fit_mixs <- c(fit_mixs, list(fit_mixs_new))
-
-        # Compute the new BICs
-        BICs_new <- get_BIC(fit_mixs_new)
-        if (is.na(fit_mixs_new[1]) || over_kappa_max(fit_mixs_new)) {
-
-          BICs_new <- NA
-
-        }
-        BICs <- c(BICs, BICs_new)
+        BICs <- c(BICs, get_BIC(fit_mixs_new))
 
         # Seek for the minimum. Note that NA and NaN values are discarded
         M_opt <- which.min(BICs)
 
         # Stop iteration if M_opt < new_M_bound - M_neig + 1; otherwise
-        # increase the bound
+        # increase the bound.
         if (M_opt < (new_M_bound - M_neig + 1)) {
 
           break
@@ -192,30 +179,22 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
   if (length(M_opt) == 0) {
 
     # Maximum likelihood fit of a vMF if everything fails
-warning("No mixture could be fitted; returning a single vMF fit.")
+    warning("No mixture could be fitted; returning a single vMF fit.")
     mu_hat <- rbind(mu_ml(data = data))
     kappa_hat <- kappa_ml(data = data)
     p_hat <- 1
 
   } else {
 
-    # Compute a more precise solution for the optimum
-    fit_mixs_better <- tryCatch(movMF::movMF(x = data, k = M_opt,
-                                             maxiter = 300, start = "S"),
-                                silent = TRUE, error = function(e) NULL)
-
-    # Take fit_mixs_better only if there are no convergence issues, it does not
-    # worsen crit, and it is not degenerate, as a longer run may land on a
-    # spiked mixture
-      fit_mix <- fit_mixs[[M_opt]]
-if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
-
+    # Compute a more precise solution for the optimum, taken only if there are
+    # no convergence issues, it does not worsen crit, and it is not degenerate,
+    # as a longer run may land on a spiked mixture.
+    fit_mix <- fit_mixs[[M_opt]]
+    fit_mixs_better <- fit_k(k = M_opt, maxiter = 300)
     BIC_better <- get_BIC(fit_mixs_better)
-      if (!is.na(BIC_better) && BIC_better <= BICs[M_opt]) {
+    if (!is.na(BIC_better) && BIC_better <= BICs[M_opt]) {
 
       fit_mix <- fit_mixs_better
-
-}
 
     }
 
@@ -226,11 +205,12 @@ if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
 
   }
 
-  # Display a graph?
-  if (plot_it) {
+  # Display a graph? Not if no mixture could be fitted, as there is nothing to
+  # plot.
+  if (plot_it && any(is.finite(BICs))) {
 
-    plot(seq_len(ifelse(iterative, new_M_bound, M_bound)), BICs, xlab = "M",
-         ylab = crit_name, main = paste("Min", crit_name), pch = 19, cex = 1.5)
+    plot(seq_along(BICs), BICs, xlab = "M", ylab = crit_name,
+         main = paste("Min", crit_name), pch = 19, cex = 1.5)
     points(M_opt, BICs[M_opt], pch = 19, cex = 1.5, col = 2)
 
   }
@@ -252,15 +232,9 @@ if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
 #' @inheritParams kde_dir
 #' @inheritParams bic_vmf_mix
 #' @inheritParams bw_dir_cv
+#' @inheritParams vmf
 #' @param fit_mix output from \code{\link{bic_vmf_mix}}. Computed internally if
 #' \code{NULL} (default).
-#' @param mu,kappa,p mixture parameters. \code{mu} is the mean matrix of size
-#' \code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
-#' concentration parameters, and \code{p} is the vector of mixture proportions.
-#' @param optim_par,optim_lower,optim_upper parameters passed to \code{par},
-#' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-#' \code{"L-BFGS-B"} method. Default to \code{0.25},
-#' \code{sqrt(.Machine$double.eps)}, and \code{10}.
 #' @return
 #' \itemize{
 #'   \item \code{bw_dir_rot}, \code{bw_dir_ami}: the selected bandwidth, a
@@ -296,23 +270,27 @@ if (!is.null(fit_mixs_better) && !over_kappa_max(fit_mixs_better)) {
 #' # Sample
 #' n <- 25
 #' q <- 2
-#' set.seed(42)
-#' samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
 #'
-#' # Mixture fit
-#' fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
+#'   set.seed(42)
+#'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 #'
-#' # ROT
-#' bw_dir_rot(samp)
+#'   # Mixture fit
+#'   fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
 #'
-#' # AMI
-#' bw_dir_ami(samp)
-#' bw_dir_ami(samp, fit_mix = fit_mix)
-#' bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x))
+#'   # ROT
+#'   print(bw_dir_rot(samp))
 #'
-#' # EMI
-#' bw_dir_emi(samp)
-#' bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
+#'   # AMI
+#'   print(bw_dir_ami(samp))
+#'   print(bw_dir_ami(samp, fit_mix = fit_mix))
+#'   print(bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x)))
+#'
+#'   # EMI
+#'   print(bw_dir_emi(samp))
+#'   print(bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE))
+#'
+#' }
 #' @name bw_dir_pi
 
 
@@ -324,9 +302,7 @@ bw_dir_rot <- function(data) {
   stopifnot(is.matrix(data))
   data <- na.omit(data)
 
-  # Set parameters
-  n <- nrow(data)
-  q <- ncol(data) - 1
+  # Concentration
   kappa <- kappa_ml(data = data)
 
   # Degenerate concentrations (uniform data or data collapsed at a single point)
@@ -338,26 +314,19 @@ bw_dir_rot <- function(data) {
 
   }
 
-  # Rule of thumb of Proposition 2 in Garcia-Portugues (2013), evaluated in log
-  # scale for every q at once. Writing L(nu, x) = log(exp(-x) * I_nu(x)), the
-  # exp(2 * kappa) factors of the numerator and denominator cancel, and the sum
-  # in the denominator is accumulated with a log-sum-exp. Relying on
-  # log_besselI_scaled() keeps the selector finite for arbitrarily large
-  # concentrations. There is a typo in Garcia-Portugues (2013) in equation (6)
-  # for q = 2, where it displays an incorrect extra kappa:
-    # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
-    # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
-# This is not relevant for the general case q >= 1 compted here
-log_num <- log(4 * sqrt(pi)) +
-    2 * log_besselI_scaled(nu = (q - 1) / 2, x = kappa)
-  log_1 <- log(2 * q) +
-    log_besselI_scaled(nu = (q + 1) / 2, x = 2 * kappa)
-  log_2 <- log((2 + q) * kappa) +
-    log_besselI_scaled(nu = (q + 3) / 2, x = 2 * kappa)
-  log_max <- pmax(log_1, log_2)
-  log_den <- ((q + 1) / 2) * log(kappa) + log(n) +
-    log_max + log(exp(log_1 - log_max) + exp(log_2 - log_max))
-  return(exp((log_num - log_den) / (q + 4)))
+  # Rule of thumb of Proposition 2 in Garcia-Portugues (2013): the AMI selector
+  # with a single von Mises--Fisher as reference, whose curvature
+  # R_Psi_mixvmf() evaluates in log scale for arbitrarily large concentrations.
+  # There is a typo in Garcia-Portugues (2013) in equation (6) for q = 2, where
+  # it displays an incorrect extra kappa:
+  # * WRONG:    kappa * (1 + 4 * kappa^2) * sinh(2 * kappa)
+  # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
+  # This is not relevant for the general case q >= 1 computed here.
+  fit_mix <- list(best_fit = list(mu_hat = rbind(mu_ml(data = data)),
+                                  kappa_hat = kappa, p_hat = 1))
+
+  # Result
+  return(bw_dir_ami(data = data, fit_mix = fit_mix))
 
 }
 
@@ -402,8 +371,7 @@ bw_dir_ami <- function(data, fit_mix = NULL, L = NULL) {
 R_Psi_mixvmf <- function(q, mu, kappa, p) {
 
   # Dimension checks
-  if (length(p) != nrow(mu) || length(p) != length(kappa) ||
-      length(kappa) != nrow(mu)) {
+  if (length(p) != nrow(mu) || length(p) != length(kappa)) {
 
     stop("Check the dimension of the arguments")
 
@@ -412,11 +380,10 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
   # Psi operator for a single vMF(mu, kappa)
   Psi_vmf <- function(x, mu, kappa) {
 
-    q <- length(mu) - 1
+    x_mu <- drop(x %*% mu)
     log_const <- log_c_vmf(q = q, kappa = kappa)
-    Psi <- drop(kappa * exp(log_const + kappa * x %*% mu) *
-                  (-x %*% mu + kappa / q * (1 - (x %*% mu)^2)))
-    return(Psi)
+    return(kappa * exp(log_const + kappa * x_mu) *
+             (-x_mu + kappa / q * (1 - x_mu^2)))
 
   }
 
@@ -449,26 +416,17 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 
     }
 
-    # Integration
-    if (q == 1) {
+    # Integration, by importance sampling for q > 2. The proposal is a
+    # defensive mixture of the mixture itself with a uniform, which keeps the
+    # importance weights bounded where the mixture is close to zero
+    prop <- switch((q > 2) + 1, NULL,
+                   safe_mixvmf(q = q, mu = mu, kappa = kappa, p = p, M = 1e4))
+    R <- tryCatch(int_dir(f = integrand, q = q, sim = prop$sim,
+                          f_sim = prop$f_sim),
+                  error = function(e) NULL)
 
-      R <- tryCatch(int_cir(f = integrand, N = 500),
-                    silent = TRUE, error = function(e) NULL)
-
-    } else if (q == 2) {
-
-      R <- tryCatch(int_sph(f = integrand),
-                    silent = TRUE, error = function(e) NULL)
-
-    } else if (q > 2) {
-
-      R <- tryCatch(int_hypsph(f = integrand, q = q, M = 1e4),
-                    silent = TRUE, error = function(e) NULL)
-
-    }
-
-    # To avoid numeric(0) result
-    R <- ifelse(length(R) == 0, NA, R)
+    # NA if the integration failed
+    if (is.null(R)) R <- NA
 
   }
 
@@ -482,7 +440,7 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 #' @export
 bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
                        h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
-                       plot_it = TRUE, optim_par = 0.25,
+                       plot_it = FALSE, optim_par = 0.25,
                        optim_lower = sqrt(.Machine$double.eps),
                        optim_upper = 10) {
 
@@ -509,25 +467,17 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
     # Startup
     if (!is.matrix(x)) x <- t(x)
-    q <- ncol(x) - 1
 
-    # Expectation of the estimator, computed in log scale so that neither the
-    # to avoid overflow/underflow for small h.
+    # Expectation of the estimator, computed in log scale to avoid overflow and
+    # underflow for small h. Eq is the inverse of the vMF normalizing constant
+    # at 1 / h^2.
     h2 <- h^2
-    log_inv_Cq_x <- sapply(seq_along(p), function(j) {
+    log_inv_Cq_x <- matrix(sapply(seq_along(p), function(j) {
       nrm <- norm2(sweep(x / h2, 2, mu[j, ] * kappa[j], "+"))
       log(p[j]) + log_c_vmf(q = q, kappa = kappa[j]) -
         log_c_vmf(q = q, kappa = nrm)
-    })
-    if (is.null(dim(log_inv_Cq_x))) {
-
-      log_inv_Cq_x <- matrix(log_inv_Cq_x, nrow = nrow(x), ncol = length(p))
-
-    }
-
-    # log(Eq) with the exponentially scaled Bessel
-    log_Eq <- ((q + 1) / 2) * log(2 * pi) + (q - 1) * log(h) +
-      log_besselI_scaled(nu = (q - 1) / 2, x = 1 / h2) + 1 / h2
+    }), nrow = nrow(x))
+    log_Eq <- -log_c_vmf(q = q, kappa = 1 / h2)
 
     # Expectation of the estimator
     Ef <- rowSums(exp(log_inv_Cq_x - log_Eq))
@@ -547,75 +497,27 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
 
   }
 
-  # Definition of mise_star
+  # Drawing the sample once makes mise_star() deterministic in h. For q > 2, the
+  # proposal is a defensive mixture of the fitted mixture with a uniform, as
+  # in R_Psi_mixvmf().
+  prop <- switch((q > 2) + 1, NULL,
+                 safe_mixvmf(q = q, mu = mu, kappa = kappa, p = p, M = 1e4))
+
+  # Definition of mise_star: the integral plus the exactly integrated first
+  # variance term, c_h(h)^2 / (n * c_h(h / sqrt(2))) as in bw_dir_lscv().
   mise_star <- function(h) {
 
-    # Integral
-    if (q == 1) {
-
-      int <- int_cir(f = integrand, N = 500, h = h)
-
-    } else if (q == 2) {
-
-      int <- int_sph(f = integrand, h = h)
-
-    } else {
-
-      int <- int_hypsph(f = integrand, q = q, M = 1e4, h = h)
-
-    }
-
-    # Save time in computing quotients of ch. Done in log scale, and with the
-    # exponentially scaled Bessel: the exp(1 / h^2) factors of Eq and of the
-    # Bessel at 1 / h^2 cancel with the exp(2 / h^2) of the Bessel at 2 / h^2.
-    log_b1 <- log_besselI_scaled(nu = (q - 1) / 2, x = 1 / h^2)
-    log_b2 <- log_besselI_scaled(nu = (q - 1) / 2, x = 2 / h^2)
-    log_Eq <- ((q + 1) / 2) * log(2 * pi) + (q - 1) * log(h) + log_b1
-    log_Dq <- log_Eq + log_b1 - log_b2 + ((q - 1) / 2) * log(2)
-    int <- int + exp(-log_Dq) / n
-    return(int)
+    int <- int_dir(f = integrand, q = q, sim = prop$sim, f_sim = prop$f_sim,
+                   h = h)
+    return(int + exp(2 * c_h(h = h, q = q, log = TRUE) -
+                       c_h(h = h / sqrt(2), q = q, log = TRUE)) / n)
 
   }
 
-  # Optimize versus grid search
-  if (optim) {
-
-    # Search for the minimum
-    opt <- optim(fn = function(x) mise_star(h = x), par = optim_par,
-                 lower = optim_lower, upper = optim_upper, method = "L-BFGS-B")
-
-    # Result
-    return(list(h_opt = opt$par, h_grid = NULL, MISE_opt = opt$value,
-                MISE_grid = NULL))
-
-  } else {
-
-    # Grid search
-    MISE <- sapply(h_grid, mise_star)
-
-    # Index of the minimun CV
-    ind_min <- which.min(MISE)
-
-    # Warning if extreme
-    if (h_grid[ind_min] == max(h_grid) || h_grid[ind_min] == min(h_grid)) {
-
-      warning("h_opt at the extreme of h_grid")
-
-    }
-
-    # Plot?
-    if (plot_it) {
-
-      plot(h_grid, MISE, xlab = "h", ylab = "MISE", type = "o")
-      rug(h_grid)
-      abline(v = h_grid[ind_min], col = 2)
-
-    }
-
-    # Result
-    return(list(h_opt = h_grid[ind_min], h_grid = h_grid,
-                MISE_opt = MISE[ind_min], MISE_grid = MISE))
-
-  }
+  # Result
+  return(bw_select(loss = function(h) sapply(h, mise_star), optim = optim,
+                   h_grid = h_grid, optim_par = optim_par,
+                   optim_lower = optim_lower, optim_upper = optim_upper,
+                   plot_it = plot_it, ylab = "MISE", name = "MISE"))
 
 }

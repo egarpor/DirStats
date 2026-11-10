@@ -21,6 +21,7 @@ cat(
   badger::badge_github_actions(action = "test-coverage"),
   badger::badge_codecov(),
   badger::badge_cran_release(color = "green"),
+  badger::badge_doi(doi = "10.32614/CRAN.package.DirStats", color = "blue"),
   badger::badge_cran_download(pkg = NULL, type = "grand-total"),
   badger::badge_cran_download(pkg = NULL, type = "last-month")
 )

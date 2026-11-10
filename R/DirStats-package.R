@@ -15,6 +15,5 @@
 #' @name DirStats-package
 #' @aliases DirStats
 #' @import graphics stats utils grDevices
-#' @useDynLib DirStats, .registration = TRUE
 #' @keywords internal
 "_PACKAGE"

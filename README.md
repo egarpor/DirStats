@@ -8,6 +8,7 @@ status](https://github.com/egarpor/DirStats/workflows/R-CMD-check/badge.svg)](ht
 status](https://github.com/egarpor/DirStats/workflows/test-coverage/badge.svg)](https://github.com/egarpor/DirStats/actions)
 [![](https://codecov.io/gh/egarpor/DirStats/branch/master/graph/badge.svg)](https://app.codecov.io/gh/egarpor/DirStats)
 [![](https://www.r-pkg.org/badges/version/DirStats?color=green)](https://cran.r-project.org/package=DirStats)
+[![](https://img.shields.io/badge/doi-10.32614/CRAN.package.DirStats-blue.svg)](https://doi.org/10.32614/CRAN.package.DirStats)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/DirStats)](https://cran.r-project.org/package=DirStats)
 [![](http://cranlogs.r-pkg.org/badges/last-month/DirStats)](https://cran.r-project.org/package=DirStats)
 

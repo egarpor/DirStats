@@ -5,19 +5,32 @@
 \alias{int_cir}
 \alias{int_sph}
 \alias{int_hypsph}
+\alias{int_dir}
 \title{Integration routines}
 \usage{
 int_cir(f, N = 500, na.rm = TRUE, f_vect = TRUE, ...)
 
 int_sph(f, na.rm = TRUE, f_vect = TRUE, ...)
 
-int_hypsph(f, q, M = 1e+05, na.rm = TRUE, f_vect = TRUE, ...)
+int_hypsph(
+  f,
+  q,
+  M = 1e+05,
+  na.rm = TRUE,
+  f_vect = TRUE,
+  sim = NULL,
+  f_sim = NULL,
+  ...
+)
+
+int_dir(f, q, sim = NULL, f_sim = NULL, ...)
 }
 \arguments{
 \item{f}{function to be integrated on \eqn{\mathbb{S}^q}. Must be vectorized
 and accept matrix inputs of size \code{c(nx, q + 1)}.}
 
-\item{N}{Defaults to \code{5e2}.}
+\item{N}{number of grid points of the trapezoidal rule. Defaults to
+\code{5e2}.}
 
 \item{na.rm}{ignore possible \code{NA}s arising from the evaluation of
 \code{f}? Defaults to \code{TRUE}.}
@@ -25,11 +38,22 @@ and accept matrix inputs of size \code{c(nx, q + 1)}.}
 \item{f_vect}{can \code{f} be called in a vectorized form, with matrix input?
 Defaults to \code{TRUE}.}
 
-\item{...}{further arguments passed to \code{f}.}
+\item{...}{further arguments passed to \code{f}. For \code{int_dir}, passed
+to the routine it dispatches to, and from there to \code{f}.}
 
 \item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
 
 \item{M}{number of Monte Carlo replicates. Defaults to \code{1e5}.}
+
+\item{sim}{proposal for the Monte Carlo integration in \code{int_hypsph}, and
+in \code{int_dir} if \eqn{q > 2}: either a function of \code{M} returning a
+matrix of size \code{c(M, q + 1)}, or a matrix of draws on
+\eqn{\mathbb{S}^q}. Passing a matrix reuses the same sample across several
+integrations. \code{M} is ignored if \code{sim} is a matrix. Defaults to
+\code{NULL}, which draws uniformly on \eqn{\mathbb{S}^q}.}
+
+\item{f_sim}{density of \code{sim}, used as the importance weights. Defaults
+to \code{NULL}, which assumes that \code{sim} is uniform.}
 }
 \value{
 A scalar approximating the integral.
@@ -43,7 +67,14 @@ Several quadrature rules for integration of functions on
 \code{int_cir} is an extension of equation (4.1.11) in Press et al. (1997),
 a periodic trapezoidal rule. \code{int_sph} employs the
 \link[=lebedev]{Lebedev quadrature} on \eqn{\mathbb{S}^2}. \code{int_hypsph}
-implements a Monte Carlo integration on \eqn{\mathbb{S}^q}.
+implements a Monte Carlo integration on \eqn{\mathbb{S}^q}. \code{int_dir}
+dispatches to \code{int_cir} if \eqn{q = 1}, to \code{int_sph} if
+\eqn{q = 2}, and to \code{int_hypsph} otherwise.
+
+Uniform Monte Carlo misses integrands concentrated on a small region of
+\eqn{\mathbb{S}^q}, yielding estimates close to zero. For them, pass in
+\code{sim} a proposal that covers that region, and its density in
+\code{f_sim}, to perform importance-sampling Monte Carlo.
 }
 \examples{
 # S^1, trapezoidal rule
@@ -57,6 +88,23 @@ int_sph(f = f)
 # S^2, Monte Carlo
 f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
 int_hypsph(f = f, q = 2)
+
+# Dispatch according to q, here to the Lebedev rule
+int_dir(f = f, q = 2)
+
+# S^2, importance-sampling Monte Carlo on a concentrated integrand, using
+# a proposal that mixes the concentrated density with a uniform.
+mu <- rbind(c(0, 0, 1))
+kappa <- 500
+f <- function(x) d_mixvmf(x = x, mu = mu, kappa = kappa, p = 1)^2
+int_sph(f = f)
+M_mix <- 5e3
+sim <- rbind(movMF::rmovMF(n = M_mix, theta = kappa * mu, alpha = 1),
+             normalize(matrix(rnorm(n = M_mix * 3), nrow = M_mix, ncol = 3)))
+f_sim <- function(x) {
+  0.5 * d_mixvmf(x = x, mu = mu, kappa = kappa, p = 1) + 0.5 / w_q(q = 2)
+}
+int_hypsph(f = f, q = 2, sim = sim, f_sim = f_sim)
 }
 \references{
 Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the

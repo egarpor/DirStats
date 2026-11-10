@@ -19,7 +19,7 @@ bw_dir_emi(
   fit_mix = NULL,
   optim = TRUE,
   h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
-  plot_it = TRUE,
+  plot_it = FALSE,
   optim_par = 0.25,
   optim_lower = sqrt(.Machine$double.eps),
   optim_upper = 10
@@ -41,7 +41,8 @@ Mises--Fisher kernel) if \code{NULL} (default).}
 concentration parameters, and \code{p} is the vector of mixture proportions.}
 
 \item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
-search on \code{h} is done. Only effective if \code{L = NULL}.}
+search on \code{h} is done. For \code{bw_dir_lcv} and \code{bw_dir_lscv},
+only effective if \code{L = NULL}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
 to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
@@ -85,28 +86,30 @@ term of a mixture of von Mises--Fisher densities.
 results in a random output. Use \code{set.seed} before to avoid it.
 }
 \examples{
-# Sample on S^q, from a normal centered at mu projected onto the sphere
+# Sample
 n <- 25
 q <- 2
-mu <- c(1, rep(0, q))
-set.seed(42)
-samp <- normalize(matrix(rnorm(n * (q + 1), mean = 2 * mu), nrow = n,
-                         ncol = q + 1, byrow = TRUE))
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# Mixture fit
-fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
-# ROT
-bw_dir_rot(samp)
+  # Mixture fit
+  fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
 
-# AMI
-bw_dir_ami(samp)
-bw_dir_ami(samp, fit_mix = fit_mix)
-bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x))
+  # ROT
+  print(bw_dir_rot(samp))
 
-# EMI
-bw_dir_emi(samp)
-bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
+  # AMI
+  print(bw_dir_ami(samp))
+  print(bw_dir_ami(samp, fit_mix = fit_mix))
+  print(bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x)))
+
+  # EMI
+  print(bw_dir_emi(samp))
+  print(bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE))
+
+}
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
