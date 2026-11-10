@@ -57,11 +57,11 @@ test_that("to_sph and to_rad are inverses on the sphere", {
 
 ## w_q()
 
-test_that("w_q matches rotasym::w_p and its log", {
+test_that("w_q gives the known areas and its log", {
 
-  skip_if_not_installed("rotasym")
   q <- 0:10
-  expect_equal(w_q(q = q), rotasym::w_p(p = q + 1))
+  expect_equal(w_q(q = 0:3), c(2, 2 * pi, 4 * pi, 2 * pi^2))
+  expect_equal(w_q(q = q + 2), 2 * pi * w_q(q = q) / (q + 1))
   expect_equal(w_q(q = q, log = TRUE), log(w_q(q = q)))
 
 })

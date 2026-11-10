@@ -15,9 +15,8 @@ test_that("mu_ml recovers the mean direction", {
 
 test_that("kappa_ml recovers the concentration", {
 
-  skip_if_not_installed("rotasym")
   set.seed(42)
-  samp <- rotasym::r_vMF(n = 2000, mu = c(0, 0, 1), kappa = 5)
+  samp <- movMF::rmovMF(n = 2000, theta = rbind(c(0, 0, 5)))
   expect_equal(kappa_ml(samp), 5, tolerance = 0.5)
   expect_equal(kappa_ml(samp, max_kappa = 0.5), kappa_ml(samp), tolerance = 1e-3)
 
@@ -25,11 +24,10 @@ test_that("kappa_ml recovers the concentration", {
 
 test_that("kappa_ml also work for large kappa and dimension ", {
 
-  skip_if_not_installed("rotasym")
   for (q in c(1:2, 100)) {
     for (true_kappa in c(2, 50, 300)) {
       set.seed(42)
-      samp <- rotasym::r_vMF(n = 1e4, mu = c(1, rep(0, q)), kappa = true_kappa)
+      samp <- movMF::rmovMF(n = 1e4, theta = rbind(c(true_kappa, rep(0, q))))
       k_hat <- kappa_ml(samp)
       expect_true(is.finite(k_hat) && k_hat > 0)
       expect_equal(k_hat, true_kappa, tolerance = 1e-1)
@@ -67,12 +65,11 @@ test_that("d_mixvmf integrates to one on the circle", {
 
 })
 
-test_that("d_mixvmf with a single component equals rotasym::d_vMF", {
+test_that("d_mixvmf with a single component equals the von Mises density", {
 
-  skip_if_not_installed("rotasym")
   x <- to_cir(seq(0, 2 * pi, l = 7))
   expect_equal(d_mixvmf(x = x, mu = rbind(c(1, 0)), kappa = 2, p = 1),
-               rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
+               exp(2 * x[, 1]) / (2 * pi * besselI(x = 2, nu = 0)),
                ignore_attr = TRUE)
 
 })
@@ -118,10 +115,9 @@ test_that("d_mixvmf handles vector and matrix inputs", {
 
 test_that("d_mixvmf accepts a single component given as a vector mu", {
 
-  skip_if_not_installed("rotasym")
   x <- to_cir(c(0, 1, 2))
   expect_equal(d_mixvmf(x = x, mu = c(1, 0), kappa = 2, p = 1),
-               rotasym::d_vMF(x = x, mu = c(1, 0), kappa = 2),
+               exp(2 * x[, 1]) / (2 * pi * besselI(x = 2, nu = 0)),
                ignore_attr = TRUE)
 
 })
