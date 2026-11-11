@@ -2,7 +2,7 @@ Package: DirStats
 Type: Package
 Title: Nonparametric Methods for Directional Data
 Version: 1.0.0
-Date: 2026-08-13
+Date: 2026-10-11
 Authors@R: person(given = "Eduardo", family = "García-Portugués",
                   role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
                   comment = c(ORCID = "0000-0002-9224-4111"))
