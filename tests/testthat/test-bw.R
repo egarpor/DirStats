@@ -51,7 +51,7 @@ test_that("bw_dir_rot reproduces the closed forms", {
 
 })
 
-test_that("bw_dir_rot is finite for large kappa and NA for degenerate data", {
+test_that("bw_dir_rot is finite for large concentrations", {
 
   set.seed(5)
   for (true_kappa in c(1e5, 1e6)) {
@@ -64,7 +64,10 @@ test_that("bw_dir_rot is finite for large kappa and NA for degenerate data", {
     }
   }
 
-  # Identical observations have an infinite concentration
+})
+
+test_that("bw_dir_rot warns and returns NA for identical observations", {
+
   ident <- matrix(c(0, 0, 1), nrow = 5, ncol = 3, byrow = TRUE)
   expect_warning(h <- bw_dir_rot(ident), "[Dd]egenerate")
   expect_true(is.na(h))
@@ -140,9 +143,8 @@ test_that("The CV losses agree with their naive references", {
 
 })
 
-test_that("The CV losses honor L and match vMF for L = exp(-z)", {
+test_that("bw_dir_lcv with L = exp(-z) matches the vMF kernel", {
 
-  # Likelihood CV
   set.seed(42)
   samp <- r_proj_norm(n = 30, mu = c(1, 0, 0), kappa = 2)
   h_grid <- exp(seq(log(0.1), log(1.2), l = 15))
@@ -152,7 +154,10 @@ test_that("The CV losses honor L and match vMF for L = exp(-z)", {
   expect_equal(cv_f$CV_grid, cv_r$CV_grid, tolerance = 1e-3)
   expect_equal(cv_f$h_opt, cv_r$h_opt)
 
-  # Least squares CV
+})
+
+test_that("bw_dir_lscv honors L and matches vMF for L = exp(-z)", {
+
   set.seed(42)
   samp <- r_proj_norm(n = 20, mu = c(1, 0, 0), kappa = 2)
   h_grid <- c(0.4, 0.7, 1)
@@ -185,10 +190,8 @@ test_that("bw_dir_lscv with a custom kernel is finite for q = 1, 2, 3", {
 
 })
 
-test_that("The CV losses accumulate the pairwise sums over several blocks", {
+test_that("bw_dir_lscv accumulates its pairwise sums over several blocks", {
 
-  # n = 1001 splits bw_dir_lscv() into blocks, and n = 5001 > 5000 also stops
-  # bw_dir_lcv() from caching the whole matrix of inner products.
   set.seed(7)
   samp <- r_proj_norm(n = 1001, mu = c(1, 0, 0), kappa = 4)
   h_grid <- c(0.1, 0.3, 0.8)
@@ -198,6 +201,11 @@ test_that("The CV losses accumulate the pairwise sums over several blocks", {
                                          optim = FALSE,
                                          L = function(z) exp(-z)))
   expect_equal(lscv$CV_grid, lscv_r$CV_grid, tolerance = 1e-4)
+
+})
+
+test_that("bw_dir_lcv avoids caching the inner products for n > 5000", {
+
   set.seed(7)
   samp <- r_proj_norm(n = 5001, mu = c(1, 0, 0), kappa = 4)
   h_grid <- c(0.2, 0.5, 1)
@@ -209,9 +217,8 @@ test_that("The CV losses accumulate the pairwise sums over several blocks", {
 
 })
 
-test_that("The CV selectors optimize consistently, also below h = 0.06", {
+test_that("The CV selectors agree between optim() and the grid search", {
 
-  # optim() and the grid search agree
   set.seed(42)
   samp <- r_proj_norm(n = 40, mu = c(1, 0, 0), kappa = 2)
   expect_equal(bw_dir_lcv(data = samp, optim = TRUE)$h_opt,
@@ -219,7 +226,10 @@ test_that("The CV selectors optimize consistently, also below h = 0.06", {
   expect_equal(bw_dir_lscv(data = samp, optim = TRUE)$h_opt,
                bw_dir_lscv(data = samp, optim = FALSE)$h_opt, tolerance = 0.1)
 
-  # Concentrated data, with bandwidths below the old h = 0.06 lower bound
+})
+
+test_that("The CV selectors reach bandwidths below the old h = 0.06 bound", {
+
   set.seed(123)
   samp <- r_proj_norm(n = 500, mu = c(1, 0), kappa = 5000)
   h_rot <- bw_dir_rot(data = samp)
@@ -229,10 +239,9 @@ test_that("The CV selectors optimize consistently, also below h = 0.06", {
 
 })
 
-test_that("The CV losses are finite for n = 2, antipodal pairs, and tiny h", {
+test_that("The CV losses are finite for n = 2 and antipodal pairs", {
 
-  # Two observations leave a single leave-one-out term; an antipodal pair gives
-  # a dangerous ||X_i + X_j|| = 0, which old code divided by.
+  # An antipodal pair gives ||X_i + X_j|| = 0, which old code divided by
   samp2 <- rbind(c(1, 0, 0), c(0, 1, 0))
   anti <- rbind(c(1, 0, 0), c(-1, 0, 0), c(0, 1, 0), c(0, 0, 1))
   h_grid <- c(0.5, 1)
@@ -243,8 +252,11 @@ test_that("The CV losses are finite for n = 2, antipodal pairs, and tiny h", {
   expect_true(all(is.finite(suppressWarnings(
     bw_dir_lscv(data = anti, h_grid = h_grid, optim = FALSE)$CV_grid))))
 
-  # Bandwidths down to sqrt(.Machine$double.eps)
-  h_grid <- c(sqrt(.Machine$double.eps), 1e-6, 1e-3, 0.01, 0.05, 0.5)
+})
+
+test_that("The CV losses are finite for tiny bandwidths", {
+
+  h_grid <-c(sqrt(.Machine$double.eps), 1e-6, 1e-3, 0.01, 0.05, 0.5)
   for (q in 1:3) {
 
     set.seed(7)
@@ -319,10 +331,9 @@ test_that("bic_vmf_mix runs the iterative extension of the search", {
 
 ## Resistance to degenerate mixtures
 
-test_that("kappa_max screens collapsed components only", {
+test_that("kappa_max screens a collapsed component unless it is Inf", {
 
-  # A component collapsing onto a few of the thirty observations reaches a
-  # concentration above 1e4 and gets selected.
+  # A component collapses onto a few observations, with kappa above 1e4
   set.seed(57)
   samp <- r_proj_norm(n = 30, mu = c(1, 0), kappa = 3)
   set.seed(1)
@@ -331,22 +342,20 @@ test_that("kappa_max screens collapsed components only", {
   # bw_dir_ami inherits the component names of movMF's alpha, hence ignore_attr
   expect_equal(bw_dir_ami(data = samp, fit_mix = fit), bw_dir_rot(data = samp),
                tolerance = 1e-4, ignore_attr = TRUE)
-
-  # kappa_max = Inf disables the screening, recovering the degenerate mixture
   set.seed(1)
   fit_inf <- bic_vmf_mix(data = samp, kappa_max = Inf)
   expect_true(any(fit_inf$best_fit$kappa_hat > 1e4))
 
-  # A genuinely concentrated sample is kept: its single-component fit has kappa
-  # about 5000, well below kappa_max.
+})
+
+test_that("kappa_max keeps concentrated and multimodal fits", {
+
   set.seed(123)
   samp <- r_proj_norm(n = 500, mu = c(1, 0), kappa = 5000)
   set.seed(1)
   fit <- suppressWarnings(bic_vmf_mix(data = samp))
   expect_true(all(is.finite(fit$best_fit$kappa_hat)))
   expect_gt(max(fit$best_fit$kappa_hat), 1e3)
-
-  # So is a multimodal one, whose pooled resultant length is nearly zero
   set.seed(1)
   samp <- rbind(r_proj_norm(n = 50, mu = c(1, 0, 0), kappa = 20),
                 r_proj_norm(n = 50, mu = c(-1, 0, 0), kappa = 20))
@@ -357,11 +366,8 @@ test_that("kappa_max screens collapsed components only", {
 
 })
 
-test_that("bic_vmf_mix falls back to a single vMF and discards worse refits", {
+test_that("bic_vmf_mix falls back to a single vMF if all fits fail", {
 
-  # All the movMF() fits failing leaves no criterion to minimize. The fallback
-  # returns mu_hat as a one-row matrix, as the plug-in selectors expect, also
-  # when plotting the criterion.
   set.seed(1)
   samp <- r_proj_norm(n = 20, mu = c(1, 0, 0), kappa = 2)
   fail <- function(...) stop("no fit")
@@ -378,8 +384,11 @@ test_that("bic_vmf_mix falls back to a single vMF and discards worse refits", {
   expect_equal(bw_dir_ami(data = samp, fit_mix = fit),
                bw_dir_rot(data = samp))
 
-  # The last movMF() call refines the selected mixture. Forcing it to return a
-  # single component makes it worse than the selected two, so it is discarded.
+})
+
+test_that("bic_vmf_mix discards a refit that worsens the criterion", {
+
+  # The refit is the movMF() call after the M_bound fits, forced to k = 1
   set.seed(1)
   samp <- rbind(r_proj_norm(n = 15, mu = c(1, 0, 0), kappa = 10),
                 r_proj_norm(n = 15, mu = c(-1, 0, 0), kappa = 10))
@@ -400,9 +409,8 @@ test_that("bic_vmf_mix falls back to a single vMF and discards worse refits", {
 
 })
 
-test_that("The plug-in selectors survive extreme mixture concentrations", {
+test_that("R_Psi_mixvmf is finite and increasing in kappa up to 1e8", {
 
-  # The curvature is finite and increasing in the concentration up to 1e8
   for (q in 1:3) {
 
     mu <- rbind(c(rep(0, q), 1))
@@ -413,8 +421,11 @@ test_that("The plug-in selectors survive extreme mixture concentrations", {
 
   }
 
-  # A mixture with a component of concentration 1.2e5
-  mu <- rbind(c(1, 0, 0), c(0, 1, 0))
+})
+
+test_that("The plug-in selectors are finite for a component of kappa = 1.2e5", {
+
+  mu <-rbind(c(1, 0, 0), c(0, 1, 0))
   kappa <- c(4, 1.2e5)
   p <- c(0.9, 0.1)
   R <- R_Psi_mixvmf(q = 2, mu = mu, kappa = kappa, p = p)
@@ -430,7 +441,10 @@ test_that("The plug-in selectors survive extreme mixture concentrations", {
                                       h_grid = c(0.2, 0.5, 1))$MISE_grid)
   expect_true(all(is.finite(mise)))
 
-  # A collapsed component of concentration 1e18, capped in the proposal
+})
+
+test_that("bw_dir_emi caps a collapsed component in its proposal", {
+
   set.seed(987202226)
   q <- 6
   data <- normalize(matrix(rnorm(n = 300 * (q + 1)), nrow = 300, ncol = q + 1))

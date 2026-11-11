@@ -29,9 +29,8 @@ test_that("int_hypsph integrates a vMF density to one", {
 
 })
 
-test_that("int_hypsph honors na.rm, sim functions, and the uniform default", {
+test_that("int_hypsph honors na.rm", {
 
-  # A function returning NAs
   f_na <- function(x) {
 
     v <- d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
@@ -44,7 +43,10 @@ test_that("int_hypsph honors na.rm, sim functions, and the uniform default", {
   set.seed(1)
   expect_true(is.finite(int_hypsph(f = f_na, q = 2, M = 1e3, na.rm = TRUE)))
 
-  # A sampler function, and a sample of the wrong dimension
+})
+
+test_that("int_hypsph accepts a sampler and checks the dimension of sim", {
+
   set.seed(42)
   r_unif <- function(M) normalize(matrix(rnorm(n = M * 3), nrow = M, ncol = 3))
   f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
@@ -53,7 +55,10 @@ test_that("int_hypsph honors na.rm, sim functions, and the uniform default", {
   expect_error(int_hypsph(f = f, q = 5, sim = matrix(0, nrow = 10, ncol = 3)),
                "ncol")
 
-  # Without a proposal, the plain uniform estimator
+})
+
+test_that("int_hypsph defaults to the plain uniform estimator", {
+
   q <- 3
   f <- function(x) d_mixvmf(x = x, mu = c(1, rep(0, q)), kappa = 2, p = 1)
   set.seed(42)
@@ -64,9 +69,10 @@ test_that("int_hypsph honors na.rm, sim functions, and the uniform default", {
 
 })
 
-test_that("safe_mixvmf proposals recover concentrated integrals", {
+## safe_mixvmf()
 
-  # Concentrated integrand
+test_that("safe_mixvmf recovers concentrated integrals, unlike uniform draws", {
+
   q <- 10
   mu <- rbind(c(1, rep(0, q)))
   kappa <- 500
@@ -76,24 +82,23 @@ test_that("safe_mixvmf proposals recover concentrated integrals", {
   #  = c(kappa)^2 / c(2 * kappa)
   exact <- exp(2 * log_c_vmf(q = q, kappa = kappa) -
                  log_c_vmf(q = q, kappa = 2 * kappa))
-
-  # Uniform draws understate the integral by many orders of magnitude
   set.seed(42)
   expect_lt(int_hypsph(f = f2, q = q, M = 1e4), 1e-6 * exact)
-
-  # Importance sampling from the defensive mixture with the uniform recovers it
   set.seed(42)
   prop <- safe_mixvmf(q = q, mu = mu, kappa = kappa, p = 1, M = 1e4)
   expect_equal(int_hypsph(f = f2, q = q, sim = prop$sim, f_sim = prop$f_sim),
                exact, tolerance = 5e-2)
-
-  # The density itself must integrate to one under the same proposal
   f1 <- function(x) d_mixvmf(x = x, mu = mu, kappa = kappa, p = 1)
   expect_equal(int_hypsph(f = f1, q = q, sim = prop$sim, f_sim = prop$f_sim),
                1, tolerance = 1e-2)
 
-  # A constant is recovered whatever the proposal, but only if the density of
-  # the proposal matches its draws, which capping kappa must preserve.
+})
+
+test_that("safe_mixvmf density matches its draws, also when kappa is capped", {
+
+  # A constant is recovered only if the proposal density matches its draws
+  q <- 10
+  mu <- rbind(c(1, rep(0, q)))
   f <- function(x) rep(1, nrow(x))
   set.seed(42)
   expect_silent(prop <- safe_mixvmf(q = q, mu = mu, kappa = 4547, p = 1,

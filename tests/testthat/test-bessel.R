@@ -47,7 +47,7 @@ test_that("log_besselI_scaled stays finite for large order and argument", {
 
 })
 
-test_that("log_besselI_scaled vectorizes and propagates NAs on both paths", {
+test_that("log_besselI_scaled vectorizes and propagates NAs", {
 
   expect_length(log_besselI_scaled(nu = c(0.5, 1.5, 2.5), x = c(1, 2, 3)), 3)
   expect_length(log_besselI_scaled(nu = 0.5, x = 1:4), 4)
@@ -55,9 +55,15 @@ test_that("log_besselI_scaled vectorizes and propagates NAs on both paths", {
   expect_true(is.na(out[2]) && all(is.finite(out[-2])))
   expect_error(log_besselI_scaled(nu = c(1, 2), x = c(1, 2, 3)), "scalar")
   expect_length(log_besselI_scaled(nu = 0.5, x = numeric(0)), 0)
+  expect_identical(log_besselI_scaled(nu = 1, x = matrix(1:4, 2),
+                                      spline = FALSE),
+                   log_besselI_scaled(nu = 1, x = 1:4, spline = FALSE))
 
-  # Appending an NA routes the evaluation through the general path, which must
-  # give the same values as the fast path.
+})
+
+test_that("log_besselI_scaled fast path matches the general one", {
+
+  # Appending an NA routes the evaluation through the general path
   x <- c(1e-5, 1e-4, 0.5, 3, 40, 900, 9999)
   for (spline in c(TRUE, FALSE)) {
     for (nu in list(0, 1.5, 7, 50, -0.5, 0:6, rep(1.5, 7))) {
@@ -71,8 +77,5 @@ test_that("log_besselI_scaled vectorizes and propagates NAs on both paths", {
 
     }
   }
-  expect_identical(log_besselI_scaled(nu = 1, x = matrix(1:4, 2),
-                                      spline = FALSE),
-                   log_besselI_scaled(nu = 1, x = 1:4, spline = FALSE))
 
 })

@@ -68,9 +68,8 @@ test_that("d_mixvmf integrates to one on the circle", {
 
 })
 
-test_that("d_mixvmf matches the von Mises density and handles vector inputs", {
+test_that("d_mixvmf matches the von Mises density for matrix or vector mu", {
 
-  # A single component, with mu as a matrix or as a vector
   x <- to_cir(seq(0, 2 * pi, l = 7))
   d_vm <- exp(2 * x[, 1]) / (2 * pi * besselI(x = 2, nu = 0))
   expect_equal(d_mixvmf(x = x, mu = rbind(c(1, 0)), kappa = 2, p = 1), d_vm,
@@ -78,7 +77,10 @@ test_that("d_mixvmf matches the von Mises density and handles vector inputs", {
   expect_equal(d_mixvmf(x = x, mu = c(1, 0), kappa = 2, p = 1), d_vm,
                ignore_attr = TRUE)
 
-  # An unnormalized vector x
+})
+
+test_that("d_mixvmf normalizes a vector x if norm = TRUE", {
+
   mu <- rbind(c(-1, 0), c(0, 1))
   d_vec <- d_mixvmf(x = c(0, 2), mu = mu, kappa = c(1, 2),
                     p = c(0.5, 0.5), norm = TRUE)

@@ -34,6 +34,16 @@ test_that("kde_dir accepts a vector x and removes NAs in data", {
 
 })
 
+test_that("kde_dir stays finite at the bandwidth of concentrated data", {
+
+  set.seed(5)
+  samp <- r_proj_norm(n = 50, mu = c(0, 0, 1), kappa = 1e6)
+  dens <- kde_dir(x = rbind(c(0, 0, 1), c(1, 0, 0)), data = samp,
+                  h = bw_dir_rot(samp))
+  expect_true(all(is.finite(dens)) && all(dens >= 0))
+
+})
+
 ## c_h()
 
 test_that("c_h is positive, vectorized, and consistent across L and log", {
@@ -51,7 +61,7 @@ test_that("c_h is positive, vectorized, and consistent across L and log", {
 
 })
 
-test_that("c_h and kde_dir stay finite for small bandwidths", {
+test_that("c_h stays finite for small bandwidths", {
 
   for (q in 1:4) {
 
@@ -61,11 +71,6 @@ test_that("c_h and kde_dir stay finite for small bandwidths", {
   }
   h <- 1e-4
   expect_equal(c_h(h = h, q = 2), 1 / (2 * pi * h^2), tolerance = 1e-6)
-  set.seed(5)
-  samp <- r_proj_norm(n = 50, mu = c(0, 0, 1), kappa = 1e6)
-  dens <- kde_dir(x = rbind(c(0, 0, 1), c(1, 0, 0)), data = samp,
-                  h = bw_dir_rot(samp))
-  expect_true(all(is.finite(dens)) && all(dens >= 0))
 
 })
 
