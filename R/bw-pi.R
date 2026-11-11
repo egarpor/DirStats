@@ -265,6 +265,9 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #'
 #' The selectors warn and return \code{NA} (\code{h_opt = NA} for
 #' \code{bw_dir_emi}) for degenerate concentrations.
+#' @section Warning:
+#' \code{bw_dir_emi} overflows for large dimensions \eqn{q \approx 250}, and
+#' earlier for concentrated data.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
@@ -448,7 +451,8 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
                        h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                        plot_it = FALSE, optim_par = 0.25,
-                       optim_lower = sqrt(.Machine$double.eps),
+                       optim_lower = max(1e-4, exp(-700 / (ncol(data) - 1)) /
+                                           sqrt(2 * pi)),
                        optim_upper = 10) {
 
   # Remove NA's

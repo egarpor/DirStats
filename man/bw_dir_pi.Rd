@@ -21,7 +21,7 @@ bw_dir_emi(
   h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   plot_it = FALSE,
   optim_par = 0.25,
-  optim_lower = sqrt(.Machine$double.eps),
+  optim_lower = max(1e-04, exp(-700/(ncol(data) - 1))/sqrt(2 * pi)),
   optim_upper = 10
 )
 }
@@ -50,10 +50,11 @@ to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 \item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
-\item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
-\code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-\code{"L-BFGS-B"} method. Default to \code{0.25},
-\code{sqrt(.Machine$double.eps)}, and \code{10}.}
+\item{optim_par, optim_lower, optim_upper}{initial value, lower bound, and
+upper bound of the bandwidth for \code{\link[stats]{optim}} when using the
+\code{"L-BFGS-B"} method. The default \code{optim_lower} of
+\code{bw_dir_lscv} and \code{bw_dir_emi} prevents the overflow of their
+losses for large \eqn{q}.}
 }
 \value{
 \itemize{
@@ -88,6 +89,12 @@ results in a random output. Use \code{set.seed} before to avoid it.
 The selectors warn and return \code{NA} (\code{h_opt = NA} for
 \code{bw_dir_emi}) for degenerate concentrations.
 }
+\section{Warning}{
+
+\code{bw_dir_emi} overflows for large dimensions \eqn{q \approx 250}, and
+earlier for concentrated data.
+}
+
 \examples{
 # Sample
 n <- 25

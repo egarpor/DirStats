@@ -419,15 +419,22 @@ bw_select <- function(loss, optim, h_grid, optim_par, optim_lower, optim_upper,
   # Optimize versus grid search
   if (optim) {
 
-    opt <- optim(fn = loss, par = optim_par, lower = optim_lower,
-                 upper = optim_upper, method = "L-BFGS-B")
-    res <- list(h_opt = opt$par, h_grid = NULL, opt$value, NULL)
+    # Optimization on log(h), so the finite-difference steps are relative to h
+    opt <- optim(fn = function(log_h) loss(exp(log_h)), par = log(optim_par),
+                 lower = log(optim_lower), upper = log(optim_upper),
+                 method = "L-BFGS-B")
+    res <- list(h_opt = exp(opt$par), h_grid = NULL, opt$value, NULL)
 
-    # Warning
+    # Warnings
     if (opt$convergence != 0) {
 
       warning(paste0("optim() did not converge (code ", opt$convergence,
                      "): ", opt$message))
+
+    }
+    if (opt$par <= log(optim_lower) || opt$par >= log(optim_upper)) {
+
+      warning("h_opt is at the extreme of [optim_lower, optim_upper]")
 
     }
 
@@ -435,6 +442,12 @@ bw_select <- function(loss, optim, h_grid, optim_par, optim_lower, optim_upper,
 
     # Index of the minimum loss
     loss_grid <- loss(h_grid)
+    if (all(is.na(loss_grid))) {
+
+      stop(paste0(ylab, " loss is NA or NaN on the whole h_grid, possibly ",
+                  "from an overflow for large q."), call. = FALSE)
+
+    }
     ind_min <- which.min(loss_grid)
 
     # Plot?

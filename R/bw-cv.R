@@ -13,10 +13,11 @@
 #' @param optim run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
 #' search on \code{h} is done. For \code{bw_dir_lcv} and \code{bw_dir_lscv},
 #' only effective if \code{L = NULL}.
-#' @param optim_par,optim_lower,optim_upper parameters passed to \code{par},
-#' \code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-#' \code{"L-BFGS-B"} method. Default to \code{0.25},
-#' \code{sqrt(.Machine$double.eps)}, and \code{10}.
+#' @param optim_par,optim_lower,optim_upper initial value, lower bound, and
+#' upper bound of the bandwidth for \code{\link[stats]{optim}} when using the
+#' \code{"L-BFGS-B"} method. The default \code{optim_lower} of
+#' \code{bw_dir_lscv} and \code{bw_dir_emi} prevents the overflow of their
+#' losses for large \eqn{q}.
 #' @return A list with entries:
 #' \itemize{
 #'   \item \code{h_opt}: selected bandwidth.
@@ -34,6 +35,10 @@
 #'
 #' \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 #' results in a random output. Use \code{set.seed} before to avoid it.
+#'
+#' A warning is issued if \code{optim} does not converge, or if the selected
+#' bandwidth is at an extreme of \code{h_grid} or of
+#' \code{c(optim_lower, optim_upper)}.
 #' @section Warning:
 #' \code{bw_dir_lscv} is not suited for large dimensions, as its loss overflows
 #' for small bandwidths from \eqn{q \approx 45}. Use instead
@@ -74,8 +79,7 @@
 #' @export
 bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                        L = NULL, plot_it = FALSE, optim = TRUE,
-                       optim_par = 0.25, optim_lower =
-                         sqrt(.Machine$double.eps), optim_upper = 10) {
+                       optim_par = 0.25, optim_lower = 1e-4, optim_upper = 10) {
 
   # Remove NA's
   stopifnot(is.matrix(data))
@@ -169,8 +173,10 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 #' @export
 bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
                         L = NULL, plot_it = FALSE, optim = TRUE,
-                        optim_par = 0.25, optim_lower =
-                          sqrt(.Machine$double.eps), optim_upper = 10) {
+                        optim_par = 0.25,
+                        optim_lower = max(1e-4, exp(-700 / (ncol(data) - 1)) /
+                                            sqrt(2 * pi)),
+                        optim_upper = 10) {
 
   # Remove NA's
   stopifnot(is.matrix(data))

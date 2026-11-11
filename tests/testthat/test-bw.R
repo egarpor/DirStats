@@ -289,6 +289,20 @@ test_that("The CV losses are finite for large q", {
 
 })
 
+test_that("bw_dir_lscv optim() matches the grid search for large q", {
+
+  for (q in c(45, 100)) {
+
+    set.seed(987202226)
+    samp <- r_proj_norm(n = 50, mu = c(1, rep(0, q)), kappa = 9)
+    expect_equal(bw_dir_lscv(data = samp)$h_opt,
+                 bw_dir_lscv(data = samp, optim = FALSE)$h_opt,
+                 tolerance = 0.05)
+
+  }
+
+})
+
 ## bic_vmf_mix()
 
 test_that("bic_vmf_mix returns the documented structure", {
@@ -549,6 +563,24 @@ test_that("bw_dir_emi warns and returns NA for identical observations", {
 
 })
 
+test_that("bw_dir_emi optim() matches the grid search for large q", {
+
+  for (q in c(45, 100)) {
+
+    set.seed(987202226)
+    samp <- r_proj_norm(n = 50, mu = c(1, rep(0, q)), kappa = 9)
+    fit_mix <- list(best_fit = list(mu_hat = rbind(mu_ml(samp)),
+                                    kappa_hat = kappa_ml(samp), p_hat = 1))
+    set.seed(1)
+    h_optim <- bw_dir_emi(data = samp, fit_mix = fit_mix)$h_opt
+    set.seed(1)
+    h_grid <- bw_dir_emi(data = samp, fit_mix = fit_mix, optim = FALSE)$h_opt
+    expect_equal(h_optim, h_grid, tolerance = 0.05)
+
+  }
+
+})
+
 test_that("bw_dir_emi returns a positive bandwidth on S^1, S^2, and S^3", {
 
   for (q in 1:3) {
@@ -633,6 +665,23 @@ test_that("bw_select warns when optim() does not converge", {
                            h_grid = NULL, optim_par = 0.25, optim_lower = 1e-8,
                            optim_upper = 10, plot_it = FALSE, ylab = "LCV",
                            name = "CV"), "did not converge")
+
+})
+
+test_that("bw_select warns when optim() stops at optim_lower", {
+
+  expect_warning(bw_select(loss = function(h) h, optim = TRUE, h_grid = NULL,
+                           optim_par = 0.25, optim_lower = 1e-4,
+                           optim_upper = 10, plot_it = FALSE, ylab = "LCV",
+                           name = "CV"), "extreme")
+
+})
+
+test_that("bw_select handles edge cases", {
+
+  expect_error(bw_select(loss = function(h) rep(NaN, length(h)), optim = FALSE,
+                         h_grid = c(0.1, 0.2), plot_it = TRUE, ylab = "MISE",
+                         name = "MISE"), "MISE loss is NA or NaN")
 
 })
 

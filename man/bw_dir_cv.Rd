@@ -13,7 +13,7 @@ bw_dir_lcv(
   plot_it = FALSE,
   optim = TRUE,
   optim_par = 0.25,
-  optim_lower = sqrt(.Machine$double.eps),
+  optim_lower = 1e-04,
   optim_upper = 10
 )
 
@@ -24,7 +24,7 @@ bw_dir_lscv(
   plot_it = FALSE,
   optim = TRUE,
   optim_par = 0.25,
-  optim_lower = sqrt(.Machine$double.eps),
+  optim_lower = max(1e-04, exp(-700/(ncol(data) - 1))/sqrt(2 * pi)),
   optim_upper = 10
 )
 }
@@ -44,10 +44,11 @@ Defaults to \code{FALSE}.}
 search on \code{h} is done. For \code{bw_dir_lcv} and \code{bw_dir_lscv},
 only effective if \code{L = NULL}.}
 
-\item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
-\code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using the
-\code{"L-BFGS-B"} method. Default to \code{0.25},
-\code{sqrt(.Machine$double.eps)}, and \code{10}.}
+\item{optim_par, optim_lower, optim_upper}{initial value, lower bound, and
+upper bound of the bandwidth for \code{\link[stats]{optim}} when using the
+\code{"L-BFGS-B"} method. The default \code{optim_lower} of
+\code{bw_dir_lscv} and \code{bw_dir_emi} prevents the overflow of their
+losses for large \eqn{q}.}
 }
 \value{
 A list with entries:
@@ -72,6 +73,10 @@ in \eqn{n} for \eqn{n > 5000}.
 
 \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
+
+A warning is issued if \code{optim} does not converge, or if the selected
+bandwidth is at an extreme of \code{h_grid} or of
+\code{c(optim_lower, optim_upper)}.
 }
 \section{Warning}{
 
