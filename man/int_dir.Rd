@@ -5,8 +5,7 @@
 \alias{int_cir}
 \alias{int_sph}
 \alias{int_hypsph}
-\title{Integration routines on
-\ifelse{latex}{\eqn{\mathbb{S}\sp{q}}}{\eqn{\mathbb{S}^q}}}
+\title{Integration routines on the hypersphere}
 \usage{
 int_dir(f, q, sim = NULL, f_sim = NULL, ...)
 
