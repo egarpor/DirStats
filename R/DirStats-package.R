@@ -21,5 +21,4 @@
 #' @name DirStats-package
 #' @aliases DirStats
 #' @import graphics stats utils grDevices
-#' @keywords internal
 "_PACKAGE"

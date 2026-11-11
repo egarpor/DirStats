@@ -32,4 +32,3 @@ Useful links:
 \author{
 Eduardo García-Portugués.
 }
-\keyword{internal}
