@@ -48,7 +48,5 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
 }
 }
 \seealso{
-\code{\link{log_besselI_scaled}} for the scaled log-Bessel function
-this constant is computed through, and \code{\link{vmf}} for the von
-Mises--Fisher utilities that employ it.
+\code{\link{log_besselI_scaled}}, \code{\link{vmf}}.
 }

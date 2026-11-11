@@ -2,12 +2,9 @@
 % Please edit documentation in R/kde.R
 \name{kde_dir}
 \alias{kde_dir}
-\alias{c_h}
 \title{Directional kernel density estimator}
 \usage{
 kde_dir(x, data, h, L = NULL)
-
-c_h(h, q, L = NULL, log = FALSE)
 }
 \arguments{
 \item{x}{evaluation points on \eqn{\mathbb{S}^q}, a matrix of size
@@ -16,24 +13,14 @@ c_h(h, q, L = NULL, log = FALSE)
 \item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
 \code{c(n, q + 1)}.}
 
-\item{h}{bandwidth, a scalar for \code{kde_dir}. Can be a vector for
-\code{c_h}.}
+\item{h}{bandwidth, a scalar.}
 
 \item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
 Mises--Fisher kernel) if \code{NULL} (default).}
-
-\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
-
-\item{log}{return the normalizing constant in log scale? Defaults to
-\code{FALSE}.}
 }
 \value{
-\itemize{
-  \item \code{kde_dir}: the evaluated kernel density estimator, a vector of
-  size \code{nx}.
-  \item \code{c_h}: the normalizing constant of the kernel, a vector of size
-  \code{length(h)}.
-}
+The evaluated kernel density estimator, a vector of size
+\code{nx}.
 }
 \description{
 Kernel density estimation with directional data on
@@ -59,10 +46,6 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
   print(kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x)))
 
 }
-
-# c_h
-c_h(h = 0.5, q = q, L = NULL)
-c_h(h = 0.5, q = q, L = function(x) exp(-x))
 }
 \references{
 Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
@@ -71,7 +54,6 @@ Analysis}, 27(1):24--39.
 \doi{10.1016/0047-259X(88)90113-3}
 }
 \seealso{
-\code{\link{bw_dir_cv}} and \code{\link{bw_dir_pi}} for selecting
-the bandwidth \code{h}, and \code{\link{vmf}} for the underlying von
-Mises--Fisher utilities.
+\code{\link{bw_dir_cv}}, \code{\link{bw_dir_pi}}, \code{\link{c_h}},
+\code{\link{vmf}}.
 }

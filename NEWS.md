@@ -35,4 +35,3 @@
 * Add `kappa_max` to `bic_vmf_mix()` to discard mixtures with a collapsed component. When no mixture can be fitted, `bic_vmf_mix()` now warns and returns the single von Mises--Fisher fit; a refined fit that worsens `crit` is discarded.
 * Fix `to_rad()` mapping the S^2 south pole to the wrong polar angle, and `int_hypsph()` ignoring `na.rm`.
 * Fix documentation and add `\link`/`\seealso` cross-references and a `testthat` unit-test suite.
-* Remove `lambda_L()`, `b_L()`, and `d_L()` from the exports, as they are internal kernel moments.

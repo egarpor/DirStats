@@ -117,7 +117,5 @@ with spherical data. \emph{Biometrika}, 74(4):751--762.
 \doi{10.1093/biomet/74.4.751}
 }
 \seealso{
-\code{\link{kde_dir}} for the kernel density estimator these
-bandwidths are intended for, and \code{\link{bw_dir_pi}} for plug-in
-alternatives.
+\code{\link{kde_dir}}, \code{\link{bw_dir_pi}}.
 }

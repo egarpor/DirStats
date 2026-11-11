@@ -28,7 +28,7 @@ int_hypsph(
 \item{f}{function to be integrated on \eqn{\mathbb{S}^q}. Must be vectorized
 and accept matrix inputs of size \code{c(nx, q + 1)}.}
 
-\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q \ge 1}.}
 
 \item{sim}{proposal for the Monte Carlo integration in \code{int_hypsph}, and
 in \code{int_dir} if \eqn{q > 2}: either a function of \code{M} returning a
@@ -117,8 +117,6 @@ Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P.
 Volume 1. Cambridge University Press, Cambridge. Second edition.
 }
 \seealso{
-\code{\link{to_rad}} for the coordinate transformations used to
-build the integration grids, \code{\link{normalize}} for the normalization
-of the Monte Carlo draws, and \code{\link{lebedev}} for the quadrature data
-employed by \code{int_sph}.
+\code{\link{to_rad}}, \code{\link{normalize}},
+\code{\link{lebedev}}.
 }

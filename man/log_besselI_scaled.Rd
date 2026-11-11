@@ -71,7 +71,5 @@ DLMF (2026). \emph{NIST Digital Library of Mathematical Functions}. Section
 10.41. \url{https://dlmf.nist.gov/10.41}
 }
 \seealso{
-\code{\link{log_c_vmf}} for the von Mises--Fisher normalizing
-constant computed through this function, and \code{\link[base]{besselI}}
-for the direct evaluation.
+\code{\link{log_c_vmf}}, \code{\link[base]{besselI}}.
 }

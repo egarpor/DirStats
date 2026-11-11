@@ -104,7 +104,5 @@ von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
 58(10):1--31. \doi{10.18637/jss.v058.i10}
 }
 \seealso{
-\code{\link{bw_dir_pi}} for the plug-in bandwidth selectors that
-build on this mixture fit, and \code{\link{vmf}} for the single-component
-estimators used as a fallback.
+\code{\link{bw_dir_pi}}, \code{\link{vmf}}.
 }

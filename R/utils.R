@@ -15,7 +15,7 @@
 #' \code{f}? Defaults to \code{TRUE}.
 #' @param f_vect can \code{f} be called in a vectorized form, with matrix input?
 #' Defaults to \code{TRUE}.
-#' @inheritParams kde_dir
+#' @inheritParams c_h
 #' @param M number of Monte Carlo replicates. Defaults to \code{1e5}.
 #' @param sim proposal for the Monte Carlo integration in \code{int_hypsph}, and
 #' in \code{int_dir} if \eqn{q > 2}: either a function of \code{M} returning a
@@ -49,10 +49,8 @@
 #' (1997).
 #' \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
 #' Volume 1. Cambridge University Press, Cambridge. Second edition.
-#' @seealso \code{\link{to_rad}} for the coordinate transformations used to
-#' build the integration grids, \code{\link{normalize}} for the normalization
-#' of the Monte Carlo draws, and \code{\link{lebedev}} for the quadrature data
-#' employed by \code{int_sph}.
+#' @seealso \code{\link{to_rad}}, \code{\link{normalize}},
+#' \code{\link{lebedev}}.
 #' @examples
 #' # S^1, trapezoidal rule
 #' f <- function(x) d_mixvmf(x = x, mu = c(0, 1), kappa = 2, p = 1)
@@ -183,8 +181,7 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, sim = NULL,
 #'   \item \code{normalize}: the row-normalized \code{x}, a matrix with the
 #'   same size as \code{x}.
 #' }
-#' @seealso \code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q}, whose
-#' Monte Carlo draws are normalized with \code{normalize}.
+#' @seealso \code{\link{int_dir}}.
 #' @examples
 #' # Normalization
 #' x <- 1:3
@@ -236,8 +233,7 @@ normalize <- function(x) {
 #'   or a matrix of size \code{c(nrow(x), 2)} in \eqn{[0, 2\pi) \times
 #'   [0, \pi]} if \code{x} is in \eqn{\mathbb{S}^2}.
 #' }
-#' @seealso \code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q},
-#' which relies on these conversions.
+#' @seealso \code{\link{int_dir}}.
 #' @examples
 #' # Circular transformations
 #' th <- 1
@@ -309,9 +305,7 @@ to_sph <- function(th, ph) {
 #' @details
 #' \eqn{\mathbb{S}^0 = \{-1, 1\}} and its "surface area" is \eqn{2}. The
 #' function is vectorized on \code{q}.
-#' @seealso \code{\link{int_hypsph}} for the Monte Carlo integration that
-#' employs the area, and \code{\link{log_c_vmf}} for the von Mises--Fisher
-#' normalizing constant that reduces to \eqn{1 / \omega_q} if \eqn{\kappa = 0}.
+#' @seealso \code{\link{int_hypsph}}, \code{\link{log_c_vmf}}.
 #' @examples
 #' # Areas of S^0, S^1, and S^2
 #' w_q(q = 0:2)

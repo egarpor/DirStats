@@ -35,6 +35,5 @@ norm2(x)
 normalize(x)
 }
 \seealso{
-\code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q}, whose
-Monte Carlo draws are normalized with \code{normalize}.
+\code{\link{int_dir}}.
 }

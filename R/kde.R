@@ -9,20 +9,11 @@
 #' \code{c(nx, q + 1)}.
 #' @param data directional data on \eqn{\mathbb{S}^q}, a matrix of size
 #' \code{c(n, q + 1)}.
-#' @param h bandwidth, a scalar for \code{kde_dir}. Can be a vector for
-#' \code{c_h}.
+#' @param h bandwidth, a scalar.
 #' @param L kernel function. Set internally to \code{function(x) exp(-x)} (von
 #' Mises--Fisher kernel) if \code{NULL} (default).
-#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.
-#' @param log return the normalizing constant in log scale? Defaults to
-#' \code{FALSE}.
-#' @return
-#' \itemize{
-#'   \item \code{kde_dir}: the evaluated kernel density estimator, a vector of
-#'   size \code{nx}.
-#'   \item \code{c_h}: the normalizing constant of the kernel, a vector of size
-#'   \code{length(h)}.
-#' }
+#' @return The evaluated kernel density estimator, a vector of size
+#' \code{nx}.
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
 #' @references
@@ -30,9 +21,8 @@
 #' density function of directional data. \emph{Journal of Multivariate
 #' Analysis}, 27(1):24--39.
 #' \doi{10.1016/0047-259X(88)90113-3}
-#' @seealso \code{\link{bw_dir_cv}} and \code{\link{bw_dir_pi}} for selecting
-#' the bandwidth \code{h}, and \code{\link{vmf}} for the underlying von
-#' Mises--Fisher utilities.
+#' @seealso \code{\link{bw_dir_cv}}, \code{\link{bw_dir_pi}}, \code{\link{c_h}},
+#' \code{\link{vmf}}.
 #' @examples
 #' # Sample
 #' n <- 50
@@ -50,10 +40,6 @@
 #'   print(kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x)))
 #'
 #' }
-#'
-#' # c_h
-#' c_h(h = 0.5, q = q, L = NULL)
-#' c_h(h = 0.5, q = q, L = function(x) exp(-x))
 #' @export
 kde_dir <- function(x, data, h, L = NULL) {
 
@@ -100,7 +86,63 @@ kde_dir <- function(x, data, h, L = NULL) {
 }
 
 
-#' @rdname kde_dir
+#' @title Normalizing constant and moments of a directional kernel
+#'
+#' @description Normalizing constant \eqn{c_{h, q}(L)} and moments
+#' \eqn{\lambda_q(L)}, \eqn{b_q(L)}, and \eqn{d_q(L)} of a directional kernel
+#' \code{L}, which enter the kernel density estimator \code{\link{kde_dir}}
+#' and the AMISE bandwidth of \code{\link{bw_dir_ami}}.
+#'
+#' @param h vector of bandwidths.
+#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q \ge 1}.
+#' @inheritParams kde_dir
+#' @param log return the normalizing constant in log scale? Defaults to
+#' \code{FALSE}.
+#' @return
+#' \itemize{
+#'   \item \code{c_h}: the normalizing constant of the kernel, a vector of size
+#'   \code{length(h)}.
+#'   \item \code{lambda_L}, \code{b_L}, \code{d_L}: the moments
+#'   \eqn{\lambda_q(L)}, \eqn{b_q(L)}, and \eqn{d_q(L)} of \code{L}, each a
+#'   scalar.
+#' }
+#' @details
+#' The normalizing constant and the moments are given by
+#' \deqn{c_{h, q}(L)^{-1} = \omega_{q - 1} \int_{-1}^1
+#' L\left(\frac{1 - t}{h^2}\right) (1 - t^2)^{q / 2 - 1} \,\mathrm{d}t,}
+#' \deqn{\lambda_q(L) = 2^{q / 2 - 1} \omega_{q - 1} \int_0^\infty L(r)
+#' r^{q / 2 - 1} \,\mathrm{d}r,}
+#' \deqn{b_q(L) = \frac{\int_0^\infty L(r) r^{q / 2} \,\mathrm{d}r}
+#' {\int_0^\infty L(r) r^{q / 2 - 1} \,\mathrm{d}r}, \quad
+#' d_q(L) = \frac{\int_0^\infty L(r)^2 r^{q / 2 - 1} \,\mathrm{d}r}
+#' {\int_0^\infty L(r) r^{q / 2 - 1} \,\mathrm{d}r},}
+#' where \eqn{\omega_q} is the surface area of \eqn{\mathbb{S}^q} (see
+#' \code{\link{w_q}}). They have closed forms for the von Mises--Fisher kernel
+#' (\code{L = NULL}), and are otherwise computed by numerical integration.
+#' @references
+#' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
+#' for kernel density estimation with directional data. \emph{Electronic
+#' Journal of Statistics}, 7:1655--1685.
+#' \doi{10.1214/13-EJS821}
+#' @seealso \code{\link{kde_dir}}, \code{\link{bw_dir_pi}}.
+#' @examples
+#' q <- 3
+#'
+#' # c_h
+#' c_h(h = 0.5, q = q, L = NULL)
+#' c_h(h = 0.5, q = q, L = function(x) exp(-x))
+#'
+#' # b_L
+#' b_L(L = NULL, q = q)
+#' b_L(L = function(x) exp(-x), q = q)
+#'
+#' # d_L
+#' d_L(L = NULL, q = q)
+#' d_L(L = function(x) exp(-x), q = q)
+#'
+#' # lambda_L
+#' lambda_L(L = NULL, q = q)
+#' lambda_L(L = function(x) exp(-x), q = q)
 #' @export
 c_h <- function(h, q, L = NULL, log = FALSE) {
 
@@ -134,14 +176,8 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
 }
 
 
-#' @title Moments of a directional kernel
-#'
-#' @description Moments \eqn{\lambda_q(L)}, \eqn{b_q(L)}, and \eqn{d_q(L)} of
-#' the kernel \code{L} that enter the AMISE bandwidth of \code{bw_dir_ami}.
-#'
-#' @inheritParams kde_dir
-#' @return The moment, a scalar.
-#' @noRd
+#' @rdname c_h
+#' @export
 lambda_L <- function(L = NULL, q) {
 
   # Von Mises--Fisher kernel?
@@ -165,7 +201,8 @@ lambda_L <- function(L = NULL, q) {
 }
 
 
-#' @noRd
+#' @rdname c_h
+#' @export
 b_L <- function(L = NULL, q) {
 
   # Von Mises--Fisher kernel?
@@ -192,7 +229,8 @@ b_L <- function(L = NULL, q) {
 }
 
 
-#' @noRd
+#' @rdname c_h
+#' @export
 d_L <- function(L = NULL, q) {
 
   # Von Mises--Fisher kernel?

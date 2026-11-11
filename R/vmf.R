@@ -25,9 +25,7 @@
 #'   \item \code{d_mixvmf}: the evaluated mixture density, a vector of size
 #'   \code{nx}.
 #' }
-#' @seealso \code{\link{kde_dir}}, which uses the von Mises--Fisher kernel, and
-#' \code{\link{bic_vmf_mix}} for fitting mixtures of von Mises--Fisher
-#' distributions.
+#' @seealso \code{\link{kde_dir}}, \code{\link{bic_vmf_mix}}.
 #' @examples
 #' # Sample
 #' n <- 50
@@ -152,9 +150,7 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 #' \code{q} and \code{kappa}.
 #' @details The value at the uniform limit \eqn{\kappa = 0} is the reciprocal
 #' surface area of \eqn{\mathbb{S}^q}, obtained by continuity.
-#' @seealso \code{\link{log_besselI_scaled}} for the scaled log-Bessel function
-#' this constant is computed through, and \code{\link{vmf}} for the von
-#' Mises--Fisher utilities that employ it.
+#' @seealso \code{\link{log_besselI_scaled}}, \code{\link{vmf}}.
 #' @examples
 #' # Normalizing constant, uniform case included
 #' log_c_vmf(q = 2, kappa = c(0, 1, 10))

@@ -47,7 +47,6 @@ sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
 59(3):477--481.
 }
 \seealso{
-\code{\link{int_sph}}, which integrates functions on
-\eqn{\mathbb{S}^2} using this quadrature.
+\code{\link{int_sph}}.
 }
 \keyword{datasets}

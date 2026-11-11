@@ -35,7 +35,5 @@ plot(q, w_q(q = q), type = "o", pch = 16, xlab = "q", ylab = "Area",
      main = expression("Surface area of " * S^q))
 }
 \seealso{
-\code{\link{int_hypsph}} for the Monte Carlo integration that
-employs the area, and \code{\link{log_c_vmf}} for the von Mises--Fisher
-normalizing constant that reduces to \eqn{1 / \omega_q} if \eqn{\kappa = 0}.
+\code{\link{int_hypsph}}, \code{\link{log_c_vmf}}.
 }

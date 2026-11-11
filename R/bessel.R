@@ -45,9 +45,7 @@
 #' @references
 #' DLMF (2026). \emph{NIST Digital Library of Mathematical Functions}. Section
 #' 10.41. \url{https://dlmf.nist.gov/10.41}
-#' @seealso \code{\link{log_c_vmf}} for the von Mises--Fisher normalizing
-#' constant computed through this function, and \code{\link[base]{besselI}}
-#' for the direct evaluation.
+#' @seealso \code{\link{log_c_vmf}}, \code{\link[base]{besselI}}.
 #' @examples
 #' # Scaled log-Bessel across regimes
 #' log_besselI_scaled(nu = 0.5, x = c(1e-6, 1, 1e5))

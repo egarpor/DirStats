@@ -57,6 +57,5 @@ to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
 }
 \seealso{
-\code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q},
-which relies on these conversions.
+\code{\link{int_dir}}.
 }

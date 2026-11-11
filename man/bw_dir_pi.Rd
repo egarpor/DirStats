@@ -35,7 +35,7 @@ bw_dir_emi(
 \item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
 Mises--Fisher kernel) if \code{NULL} (default).}
 
-\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q \ge 1}.}
 
 \item{mu, kappa, p}{mixture parameters. \code{mu} is the mean matrix of size
 \code{c(length(p), q + 1)}, \code{kappa} is a vector of \code{length(p)}
@@ -133,7 +133,6 @@ Journal of Statistics}, 7:1655--1685.
 \doi{10.1214/13-EJS821}
 }
 \seealso{
-\code{\link{kde_dir}} for the estimator, \code{\link{bw_dir_cv}} for
-cross-validation alternatives, and \code{\link{bic_vmf_mix}} for the mixture
-fit these selectors rely on.
+\code{\link{kde_dir}}, \code{\link{bw_dir_cv}},
+\code{\link{bic_vmf_mix}}.
 }
