@@ -501,17 +501,30 @@ test_that("R_Psi_mixvmf handles edge cases", {
                             p = c(0.5, 0.5)), "dimension")
   fail <- function(...) stop("no integral")
   mu <- rbind(c(0, 0, 1), c(0, 1, 0))
-  R <- with_mocked_bindings(code = R_Psi_mixvmf(q = 2, mu = mu,
-                                                kappa = c(1, 2),
-                                                p = c(0.5, 0.5)),
-                            int_dir = fail)
-  expect_identical(R, NA)
+  expect_error(with_mocked_bindings(code = R_Psi_mixvmf(q = 2, mu = mu,
+                                                        kappa = c(1, 2),
+                                                        p = c(0.5, 0.5)),
+                                    int_dir = fail),
+               "no integral")
   expect_identical(R_Psi_mixvmf(q = 1, mu = rbind(c(1, 0)), kappa = 0, p = 1),
                    0)
 
 })
 
 ## bw_dir_ami()
+
+# Data collapsed at a single point
+ident <- matrix(c(0, 0, 1), nrow = 5, ncol = 3, byrow = TRUE)
+set.seed(42)
+fit_ident <- suppressWarnings(bic_vmf_mix(data = ident))
+
+test_that("bw_dir_ami warns and returns NA for identical observations", {
+
+  expect_warning(h <- bw_dir_ami(data = ident, fit_mix = fit_ident),
+                 "[Dd]egenerate")
+  expect_true(is.na(h))
+
+})
 
 test_that("bw_dir_ami returns a positive bandwidth on S^1, S^2, and S^3", {
 
@@ -527,6 +540,14 @@ test_that("bw_dir_ami returns a positive bandwidth on S^1, S^2, and S^3", {
 })
 
 ## bw_dir_emi()
+
+test_that("bw_dir_emi warns and returns NA for identical observations", {
+
+  expect_warning(emi <- bw_dir_emi(data = ident, fit_mix = fit_ident),
+                 "[Dd]egenerate")
+  expect_true(is.na(emi$h_opt))
+
+})
 
 test_that("bw_dir_emi returns a positive bandwidth on S^1, S^2, and S^3", {
 
@@ -600,6 +621,18 @@ test_that("bw_dir_emi draws its sample once per call, so optim() is stable", {
   })
   expect_true(all(is.finite(h_opt) & h_opt > 0))
   expect_lt(diff(range(h_opt)) / mean(h_opt), 0.1)
+
+})
+
+## bw_select()
+
+test_that("bw_select warns when optim() does not converge", {
+
+  # L-BFGS-B ends in ABNORMAL_TERMINATION_IN_LNSRCH at the kink of |h - 1|
+  expect_warning(bw_select(loss = function(h) abs(h - 1), optim = TRUE,
+                           h_grid = NULL, optim_par = 0.25, optim_lower = 1e-8,
+                           optim_upper = 10, plot_it = FALSE, ylab = "LCV",
+                           name = "CV"), "did not converge")
 
 })
 

@@ -187,7 +187,27 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
   # Type of approach
   if (is.null(L)) {
 
-    # CV function, reusing the block partition above
+    # Pairs (i, j) with j < i of the b-th row block, the strict lower triangle
+    # held by the columns up to max(ind): X_i'X_j - 1 and ||X_i + X_j||. They
+    # are cached for n <= 5000, keeping the memory flat in n.
+    pairs_block <- function(b) {
+
+      ind <- blocks[[b]]
+      j_max <- ind[length(ind)]
+      d_ij <- tcrossprod(x = data[ind, , drop = FALSE],
+                         y = data[seq_len(j_max), , drop = FALSE])
+      d_ij <- d_ij[outer(X = ind, Y = seq_len(j_max), FUN = ">")]
+      return(list(d_ij = d_ij - 1, norm_ij = sqrt(pmax(2 + 2 * d_ij, 0))))
+
+    }
+    if (n <= 5000) {
+
+      pairs_cache <- lapply(seq_along(blocks), pairs_block)
+      pairs_block <- function(b) pairs_cache[[b]]
+
+    }
+
+    # CV function, reusing the blocks and their pairs
     CV_vmf <- function(h) {
 
       # c_h() is by construction the exponentially scaled vMF constant,
@@ -211,23 +231,18 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
       log_S1 <- log_S2 <- matrix(nrow = length(blocks), ncol = length(h))
       for (b in seq_along(blocks)) {
 
-        # Strict lower triangle of the row block: the pairs (i, j) with j < i,
-        # held by the columns up to max(ind).
-        ind <- blocks[[b]]
-        j_max <- ind[length(ind)]
-        d_ij <- tcrossprod(x = data[ind, , drop = FALSE],
-                           y = data[seq_len(j_max), , drop = FALSE])
-        d_ij <- d_ij[outer(X = ind, Y = seq_len(j_max), FUN = ">")]
+        pairs_b <- pairs_block(b = b)
+        log_S1[b, ] <- sapply(h, function(hh) {
 
-        # ||X_i + X_j|| = sqrt(2 * (1 + X_i'X_j)), truncated as X_i'X_j may
-        # fall below -1 for numerically antipodal observations.
-        norm_ij <- sqrt(pmax(2 + 2 * d_ij, 0))
-        d_ij <- d_ij - 1
-        log_S1[b, ] <- sapply(h, function(hh) log_sum_exp(d_ij / hh^2))
+          log_sum_exp(pairs_b$d_ij / hh^2)
+
+        })
         log_S2[b, ] <- sapply(h, function(hh) {
-          log_sum_exp((norm_ij - 2) / hh^2 -
-                        log_c_vmf(q = q, kappa = norm_ij / hh^2,
+
+          log_sum_exp((pairs_b$norm_ij - 2) / hh^2 -
+                        log_c_vmf(q = q, kappa = pairs_b$norm_ij / hh^2,
                                   scaled = TRUE))
+
         })
 
       }
@@ -253,6 +268,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
     # draws miss its mass for small bandwidths. The proposal is a defensive
     # mixture of the estimator with a uniform.
     int <- sapply(seq_along(h_grid), function(hi) {
+
       prop <- switch((q > 2) + 1, NULL,
                      safe_mixvmf(q = q, mu = data,
                                  kappa = rep(1 / h_grid[hi]^2, n),
@@ -260,6 +276,7 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
       int_dir(f = function(x) kde_dir(x = x, data = data, h = h_grid[hi],
                                       L = L)^2,
               q = q, sim = prop$sim, f_sim = prop$f_sim)
+
     })
 
     # Loss on h_grid, which is always searched for a custom kernel

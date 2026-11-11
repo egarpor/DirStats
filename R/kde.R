@@ -121,7 +121,7 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
 
     # Exponentially scaled von Mises--Fisher normalizing constant:
     # c_h(h, q) = exp(1 / h^2) * c_q(1 / h^2), computed directly, as adding
-    # 1 / h^2 to log c_q(1 / h^2) cancels digits for small h
+    # 1 / h^2 to log c_q(1 / h^2) cancels digits for small h.
     log_ch <- log_c_vmf(q = q, kappa = 1 / h^2, scaled = TRUE)
 
   } else {
@@ -129,11 +129,13 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
     # Numerical integration, with the area of S^{q - 1} coming from the
     # tangent-normal change of variables.
     ch <- sapply(h, function(hh) {
-      integrate(function(t) {
-        L((1 - t) / hh^2) * (1 - t^2)^(q / 2 - 1)
-        }, lower = -1 + 1e-5, upper = 1 - 1e-5, rel.tol = 1e-5,
-        subdivisions = 200, stop.on.error = FALSE)$value * w_q(q = q - 1)
-      })
+
+      integrate(f = function(t) L((1 - t) / hh^2) * (1 - t^2)^(q / 2 - 1),
+                lower = -1 + 1e-5, upper = 1 - 1e-5, rel.tol = 1e-5,
+                subdivisions = 200, stop.on.error = FALSE)$value *
+        w_q(q = q - 1)
+
+    })
     log_ch <- -log(ch)
 
   }

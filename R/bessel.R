@@ -11,12 +11,11 @@
 #' @param nu order of the Bessel function. A scalar or a vector conformable
 #' with \code{x}.
 #' @param x vector of non-negative evaluation points.
-#' @param spline if \code{TRUE} (default), evaluate the scaled log-Bessel with a
-#' fast cubic-spline interpolation for orders \code{nu} in
-#' \code{seq(0, 50, by = 0.5)}, and fall back to \code{\link[base]{besselI}} for
-#' any other order. If \code{FALSE}, always use \code{\link[base]{besselI}}
-#' together with the asymptotic expansions. The spline is only effective when
-#' \code{nu} is a single value on that grid.
+#' @param spline evaluate the scaled log-Bessel with a fast cubic-spline
+#' interpolation for the orders \code{nu} in \code{seq(0, 50, by = 0.5)}? Other
+#' orders, or \code{spline = FALSE}, use \code{\link[base]{besselI}} together
+#' with the asymptotic expansions. The spline is only effective when \code{nu}
+#' is a single value on that grid. Defaults to \code{TRUE}.
 #' @return The evaluation of \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector
 #' conformable with \code{nu} and \code{x}.
 #' @details The function combines four regimes so that the result is finite and

@@ -39,6 +39,17 @@
 #' \eqn{\mathbb{S}^q}, yielding estimates close to zero. For them, pass in
 #' \code{sim} a proposal that covers that region, and its density in
 #' \code{f_sim}, to perform importance-sampling Monte Carlo.
+#' @references
+#' Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
+#' sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
+#' 59(3):477--481.
+#'
+#' Press, W. H., Teukolsky, S. A., Vetterling, W. T. and Flannery B. P. (1997).
+#' \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
+#' Volume 1. Cambridge University Press, Cambridge. Second edition.
+#' @seealso \code{\link{conv}} for the coordinate transformations used to build
+#' the integration grids, and \code{\link{lebedev}} for the quadrature data
+#' employed by \code{int_sph}.
 #' @examples
 #' # S^1, trapezoidal rule
 #' f <- function(x) d_mixvmf(x = x, mu = c(0, 1), kappa = 2, p = 1)
@@ -68,21 +79,32 @@
 #'   0.5 * d_mixvmf(x = x, mu = mu, kappa = kappa, p = 1) + 0.5 / w_q(q = 2)
 #' }
 #' int_hypsph(f = f, q = 2, sim = sim, f_sim = f_sim)
-#' @references
-#' Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
-#' sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
-#' 59(3):477--481.
-#'
-#' Press, W. H., Teukolsky, S. A., Vetterling, W. T. and Flannery B. P. (1997).
-#' \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
-#' Volume 1. Cambridge University Press, Cambridge. Second edition.
-#' @seealso \code{\link{conv}} for the coordinate transformations used to build
-#' the integration grids, and \code{\link{lebedev}} for the quadrature data
-#' employed by \code{int_sph}.
-#' @name int
+#' @name int_dir
 
 
-#' @rdname int
+#' @rdname int_dir
+#' @export
+int_dir <- function(f, q, sim = NULL, f_sim = NULL, ...) {
+
+  # Trapezoidal rule, Lebedev rule, or Monte Carlo, according to q
+  if (q == 1) {
+
+    return(int_cir(f = f, ...))
+
+  } else if (q == 2) {
+
+    return(int_sph(f = f, ...))
+
+  } else {
+
+    return(int_hypsph(f = f, q = q, sim = sim, f_sim = f_sim, ...))
+
+  }
+
+}
+
+
+#' @rdname int_dir
 #' @export
 int_cir <- function(f, N = 5e2, na.rm = TRUE, f_vect = TRUE, ...) {
 
@@ -95,7 +117,7 @@ int_cir <- function(f, N = 5e2, na.rm = TRUE, f_vect = TRUE, ...) {
 }
 
 
-#' @rdname int
+#' @rdname int_dir
 #' @export
 int_sph <- function(f, na.rm = TRUE, f_vect = TRUE, ...) {
 
@@ -107,7 +129,7 @@ int_sph <- function(f, na.rm = TRUE, f_vect = TRUE, ...) {
 }
 
 
-#' @rdname int
+#' @rdname int_dir
 #' @export
 int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, sim = NULL,
                        f_sim = NULL, ...) {
@@ -144,28 +166,6 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, sim = NULL,
 }
 
 
-#' @rdname int
-#' @export
-int_dir <- function(f, q, sim = NULL, f_sim = NULL, ...) {
-
-  # Trapezoidal rule, Lebedev rule, or Monte Carlo, according to q
-  if (q == 1) {
-
-    return(int_cir(f = f, ...))
-
-  } else if (q == 2) {
-
-    return(int_sph(f = f, ...))
-
-  } else {
-
-    return(int_hypsph(f = f, q = q, sim = sim, f_sim = f_sim, ...))
-
-  }
-
-}
-
-
 #' @title Convenience functions
 #'
 #' @description Normalization of data in \eqn{\mathbb{R}^{q + 1}} to
@@ -191,6 +191,8 @@ int_dir <- function(f, q, sim = NULL, f_sim = NULL, ...) {
 #'   or a matrix of size \code{c(nrow(x), 2)} in \eqn{[0, 2\pi) \times
 #'   [0, \pi]} if \code{x} is in \eqn{\mathbb{S}^2}.
 #' }
+#' @seealso \code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q},
+#' which relies on these conversions.
 #' @examples
 #' # Normalization
 #' x <- 1:3
@@ -217,8 +219,6 @@ int_dir <- function(f, q, sim = NULL, f_sim = NULL, ...) {
 #'               c(ph, ph + 1)))
 #' to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 #' to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
-#' @seealso \code{\link{int}} for integration on \eqn{\mathbb{S}^q}, which
-#' relies on these conversions.
 #' @name conv
 
 
@@ -422,6 +422,14 @@ bw_select <- function(loss, optim, h_grid, optim_par, optim_lower, optim_upper,
     opt <- optim(fn = loss, par = optim_par, lower = optim_lower,
                  upper = optim_upper, method = "L-BFGS-B")
     res <- list(h_opt = opt$par, h_grid = NULL, opt$value, NULL)
+
+    # Warning
+    if (opt$convergence != 0) {
+
+      warning(paste0("optim() did not converge (code ", opt$convergence,
+                     "): ", opt$message))
+
+    }
 
   } else {
 

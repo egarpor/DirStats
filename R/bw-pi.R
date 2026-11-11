@@ -98,14 +98,18 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 
   # Mixture fit with k components, NA if movMF() fails
   fit_k <- function(k, maxiter = 100) {
+
     tryCatch(movMF::movMF(x = data, k = k, maxiter = maxiter, start = "S"),
              error = function(e) NA)
+
   }
 
   # Information criterion of a fit, NA if the fit failed or if it is degenerate
   # (a component above kappa_max).
   get_BIC <- function(x) {
+
     if (is.na(x[1]) || any(norm2(x$theta) > kappa_max)) NA else crit(x)
+
   }
 
   # Mixture fitting for 1:M_bound
@@ -258,6 +262,9 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #'
 #' \code{bw_dir_emi} employs Monte Carlo integration for \eqn{q > 2}, which
 #' results in a random output. Use \code{set.seed} before to avoid it.
+#'
+#' The selectors warn and return \code{NA} (\code{h_opt = NA} for
+#' \code{bw_dir_emi}) for degenerate concentrations.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 #' for kernel density estimation with directional data. \emph{Electronic
@@ -302,18 +309,6 @@ bw_dir_rot <- function(data) {
   stopifnot(is.matrix(data))
   data <- na.omit(data)
 
-  # Concentration
-  kappa <- kappa_ml(data = data)
-
-  # Degenerate concentrations (uniform data or data collapsed at a single point)
-  if (!is.finite(kappa) || kappa <= 0) {
-
-    warning(paste0("Degenerate concentration estimate (kappa = ", kappa,
-                   "); returning NA."))
-    return(NA)
-
-  }
-
   # Rule of thumb of Proposition 2 in Garcia-Portugues (2013): the AMI selector
   # with a single von Mises--Fisher as reference, whose curvature
   # R_Psi_mixvmf() evaluates in log scale for arbitrarily large concentrations.
@@ -323,7 +318,8 @@ bw_dir_rot <- function(data) {
   # * CORRECT:          (1 + 4 * kappa^2) * sinh(2 * kappa)
   # This is not relevant for the general case q >= 1 computed here.
   fit_mix <- list(best_fit = list(mu_hat = rbind(mu_ml(data = data)),
-                                  kappa_hat = kappa, p_hat = 1))
+                                  kappa_hat = kappa_ml(data = data),
+                                  p_hat = 1))
 
   # Result
   return(bw_dir_ami(data = data, fit_mix = fit_mix))
@@ -355,6 +351,15 @@ bw_dir_ami <- function(data, fit_mix = NULL, L = NULL) {
   mu <- fit_mix$best_fit$mu_hat
   kappa <- fit_mix$best_fit$kappa_hat
   p <- fit_mix$best_fit$p_hat
+
+  # Degenerate concentrations (infinite or all zero)
+  if (any(!is.finite(kappa)) || all(kappa <= 0)) {
+
+    warning(paste0("Degenerate concentration estimates (kappa = ",
+                   paste(kappa, collapse = ", "), "); returning NA."))
+    return(NA)
+
+  }
 
   # Computation of curvature
   R <- R_Psi_mixvmf(q = q, mu = mu, kappa = kappa, p = p)
@@ -425,15 +430,10 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
 
     # Integration, by importance sampling for q > 2. The proposal is a
     # defensive mixture of the mixture itself with a uniform, which keeps the
-    # importance weights bounded where the mixture is close to zero
+    # importance weights bounded where the mixture is close to zero.
     prop <- switch((q > 2) + 1, NULL,
                    safe_mixvmf(q = q, mu = mu, kappa = kappa, p = p, M = 1e4))
-    R <- tryCatch(int_dir(f = integrand, q = q, sim = prop$sim,
-                          f_sim = prop$f_sim),
-                  error = function(e) NULL)
-
-    # NA if the integration failed
-    if (is.null(R)) R <- NA
+    R <- int_dir(f = integrand, q = q, sim = prop$sim, f_sim = prop$f_sim)
 
   }
 
@@ -469,22 +469,37 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
   kappa <- fit_mix$best_fit$kappa_hat
   p <- fit_mix$best_fit$p_hat
 
+  # Infinite concentrations make the MISE undefined
+  if (any(!is.finite(kappa))) {
+
+    warning(paste0("Degenerate concentration estimates (kappa = ",
+                   paste(kappa, collapse = ", "), "); returning NA."))
+    return(list(h_opt = NA, h_grid = NULL, MISE_opt = NA, MISE_grid = NULL))
+
+  }
+
   # Integrand for MISE function
   integrand <- function(x, h) {
 
-    # Expectation of the estimator, computed in log scale to avoid overflow and
-    # underflow for small h. Eq is the inverse of the vMF normalizing constant
-    # at 1 / h^2.
-    h2 <- h^2
-    log_inv_Cq_x <- matrix(sapply(seq_along(p), function(j) {
-      nrm <- norm2(sweep(x / h2, 2, mu[j, ] * kappa[j], "+"))
-      log(p[j]) + log_c_vmf(q = q, kappa = kappa[j]) -
-        log_c_vmf(q = q, kappa = nrm)
-    }), nrow = nrow(x))
-    log_Eq <- -log_c_vmf(q = q, kappa = 1 / h2)
+    # Expectation of the estimator, the mixture over j of
+    # c_q(kappa_j) * c_q(a) / c_q(r_j), with a = 1 / h^2 and
+    # r_j = ||a * x + kappa_j * mu_j||. In terms of the exponentially scaled
+    # constants \tilde c_q(kappa) = exp(kappa) * c_q(kappa), the remaining
+    # exponent r_j - a - kappa_j is computed as
+    #   r_j - a - kappa_j = (r_j^2 - (a + kappa_j)^2) / (r_j + a + kappa_j)
+    #     = -2 * a * kappa_j * (1 - x'mu_j) / (r_j + a + kappa_j)
+    a <- 1 / h^2
+    log_c_a <- log_c_vmf(q = q, kappa = a, scaled = TRUE)
+    log_Ef <- matrix(sapply(seq_along(p), function(j) {
 
-    # Expectation of the estimator
-    Ef <- rowSums(exp(log_inv_Cq_x - log_Eq))
+      t_j <- drop(x %*% mu[j, ])
+      r_j <- norm2(sweep(a * x, 2, kappa[j] * mu[j, ], "+"))
+      log(p[j]) + log_c_vmf(q = q, kappa = kappa[j], scaled = TRUE) + log_c_a -
+        log_c_vmf(q = q, kappa = r_j, scaled = TRUE) -
+        2 * a * kappa[j] * (1 - t_j) / (r_j + a + kappa[j])
+
+    }), nrow = nrow(x))
+    Ef <- rowSums(exp(log_Ef))
 
     # Mixture of von Mises--Fisher
     f_mix <- d_mixvmf(x = x, mu = mu, kappa = kappa, p = p)

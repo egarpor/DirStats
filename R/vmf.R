@@ -25,6 +25,9 @@
 #'   \item \code{d_mixvmf}: the evaluated mixture density, a vector of size
 #'   \code{nx}.
 #' }
+#' @seealso \code{\link{kde_dir}}, which uses the von Mises--Fisher kernel, and
+#' \code{\link{bic_vmf_mix}} for fitting mixtures of von Mises--Fisher
+#' distributions.
 #' @examples
 #' # Sample
 #' n <- 50
@@ -45,9 +48,6 @@
 #' dens <- d_mixvmf(x = x, mu = rbind(c(-1, 0), c(0, 1), c(1, 0)),
 #'                  kappa = 1:3, p = c(0.5, 0.2, 0.3))
 #' plot(to_rad(x), dens, type = "l")
-#' @seealso \code{\link{kde_dir}}, which uses the von Mises--Fisher kernel, and
-#' \code{\link{bic_vmf_mix}} for fitting mixtures of von Mises--Fisher
-#' distributions.
 #' @name vmf
 
 
@@ -122,7 +122,7 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
   if (norm) x <- normalize(x)
 
   # Density accumulated over the components, so the memory stays flat in
-  # length(p)
+  # length(p).
   log_c <- log_c_vmf(q = q, kappa = kappa)
   dens <- numeric(nrow(x))
   for (i in seq_along(p)) {
