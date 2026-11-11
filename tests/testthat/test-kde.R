@@ -69,7 +69,7 @@ test_that("c_h stays finite for small bandwidths", {
     expect_true(all(is.finite(ch)) && all(ch > 0))
 
   }
-  h <- 1e-4
+  h <- c(1e-4, sqrt(.Machine$double.eps))
   expect_equal(c_h(h = h, q = 2), 1 / (2 * pi * h^2), tolerance = 1e-6)
 
 })

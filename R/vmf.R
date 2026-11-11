@@ -121,14 +121,16 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
   # Normalize
   if (norm) x <- normalize(x)
 
-  # Density components, a matrix of size c(nrow(x), length(p))
-  dens <- matrix(sapply(seq_along(p), function(i) {
-    p[i] * exp(log_c_vmf(q = q, kappa = kappa[i]) +
-                 kappa[i] * x %*% mu[i, ])
-  }), nrow = nrow(x))
+  # Density accumulated over the components, so the memory stays flat in
+  # length(p)
+  log_c <- log_c_vmf(q = q, kappa = kappa)
+  dens <- numeric(nrow(x))
+  for (i in seq_along(p)) {
 
-  # Add components
-  return(rowSums(dens))
+    dens <- dens + p[i] * exp(log_c[i] + kappa[i] * drop(x %*% mu[i, ]))
+
+  }
+  return(dens)
 
 }
 
@@ -144,6 +146,8 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 #' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 0}.
 #' @param kappa vector of non-negative concentration parameters.
 #' @inheritParams log_besselI_scaled
+#' @param scaled return the exponentially scaled constant
+#' \eqn{e^\kappa c_q(\kappa)}? Defaults to \code{FALSE}.
 #' @return The evaluation of \eqn{\log c_q(\kappa)}, a vector conformable with
 #' \code{q} and \code{kappa}.
 #' @details The uniform limit \eqn{\kappa = 0} is returned as the reciprocal
@@ -161,12 +165,17 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 #'
 #' }
 #' @export
-log_c_vmf <- function(q, kappa, spline = TRUE) {
+log_c_vmf <- function(q, kappa, spline = TRUE, scaled = FALSE) {
 
+  # Log of exp(kappa) * c_q(kappa), whose exp(kappa) is absorbed by the
+  # exp(-kappa) scaling of log_besselI_scaled().
   log_bessel <- log_besselI_scaled(nu = 0.5 * (q - 1), x = kappa,
                                    spline = spline)
   log_cq <- (0.5 * (q - 1)) * log(kappa) - (0.5 * (q + 1)) * log(2 * pi) -
-    kappa - log_bessel
+    log_bessel
+
+  # Unscaled constant?
+  if (!scaled) log_cq <- log_cq - kappa
 
   # Uniform density limit (kappa = 0)
   if (any(kappa == 0, na.rm = TRUE)) {

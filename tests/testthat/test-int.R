@@ -127,3 +127,15 @@ test_that("int_dir dispatches to int_cir, int_sph, and int_hypsph", {
                int_hypsph(f = f, q = 3, sim = sim))
 
 })
+
+## log_sum_exp()
+
+test_that("log_sum_exp handles edge cases", {
+
+  expect_identical(log_sum_exp(x = numeric(0)), -Inf)
+  expect_identical(log_sum_exp(x = c(-Inf, -Inf)), -Inf)
+  expect_identical(log_sum_exp(x = c(1, Inf)), Inf)
+  expect_equal(log_sum_exp(x = c(1000, 1000)), 1000 + log(2))
+  expect_equal(log_sum_exp(x = c(-1000, -1000)), -1000 + log(2))
+
+})

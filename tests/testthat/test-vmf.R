@@ -146,3 +146,21 @@ test_that("log_c_vmf normalizes the density, also vectorized in q", {
   expect_equal(log_c_vmf(q = q, kappa = 0), -w_q(q = q, log = TRUE))
 
 })
+
+test_that("log_c_vmf scaled = TRUE adds kappa to the log constant exactly", {
+
+  for (q in 1:5) {
+
+    kappa <- c(0, 0.5, 5, 50, 300)
+    expect_equal(log_c_vmf(q = q, kappa = kappa, scaled = TRUE),
+                 log_c_vmf(q = q, kappa = kappa) + kappa)
+
+  }
+
+  # exp(kappa) * c_2(kappa) = kappa / (2 * pi * (1 - exp(-2 * kappa)))
+  kappa <- 10^(0:15)
+  expect_equal(log_c_vmf(q = 2, kappa = kappa, scaled = TRUE),
+               log(kappa / (2 * pi)) - log1p(-exp(-2 * kappa)),
+               tolerance = 1e-10)
+
+})

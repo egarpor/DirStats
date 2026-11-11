@@ -4,7 +4,7 @@
 \alias{log_c_vmf}
 \title{(Log) von Mises--Fisher normalizing constant}
 \usage{
-log_c_vmf(q, kappa, spline = TRUE)
+log_c_vmf(q, kappa, spline = TRUE, scaled = FALSE)
 }
 \arguments{
 \item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 0}.}
@@ -17,6 +17,9 @@ fast cubic-spline interpolation for orders \code{nu} in
 any other order. If \code{FALSE}, always use \code{\link[base]{besselI}}
 together with the asymptotic expansions. The spline is only effective when
 \code{nu} is a single value on that grid.}
+
+\item{scaled}{return the exponentially scaled constant
+\eqn{e^\kappa c_q(\kappa)}? Defaults to \code{FALSE}.}
 }
 \value{
 The evaluation of \eqn{\log c_q(\kappa)}, a vector conformable with

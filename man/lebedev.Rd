@@ -12,7 +12,7 @@ A data frame with 5810 rows and two variables:
 }
 }
 \source{
-\url{ https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
+\url{https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
 }
 }
 \usage{
@@ -25,7 +25,8 @@ of order 131.
 }
 \details{
 The approximation to the integral of \eqn{f} has the form
-\deqn{\int_{\mathbb{S}^2} f(x, y, z) \,\mathrm{d}x \,\mathrm{d}y \,\mathrm{d}z =
+\deqn{\int_{\mathbb{S}^2} f(x, y, z) \,\mathrm{d}x \,\mathrm{d}y
+\,\mathrm{d}z =
 4 \pi \sum_{i = 1}^N w_i f(x_i, y_i, z_i)}
 where \eqn{N = 5810}. The nodes (in spherical coordinates) and weights
 are processed from

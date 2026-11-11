@@ -272,6 +272,23 @@ test_that("The CV losses are finite for tiny bandwidths", {
 
 })
 
+test_that("The CV losses are finite for large q", {
+
+  for (q in c(24, 50)) {
+
+    samp <- diag(q + 1)[1:2, ]
+    lcv <- suppressWarnings(bw_dir_lcv(data = samp, h_grid = 1e-7,
+                                       optim = FALSE)$CV_grid)
+    expect_true(is.finite(lcv))
+
+  }
+  samp <- diag(25)[1:2, ]
+  lscv <- suppressWarnings(bw_dir_lscv(data = samp, h_grid = 1e-7,
+                                       optim = FALSE)$CV_grid)
+  expect_true(is.finite(lscv))
+
+})
+
 ## bic_vmf_mix()
 
 test_that("bic_vmf_mix returns the documented structure", {
@@ -489,6 +506,8 @@ test_that("R_Psi_mixvmf handles edge cases", {
                                                 p = c(0.5, 0.5)),
                             int_dir = fail)
   expect_identical(R, NA)
+  expect_identical(R_Psi_mixvmf(q = 1, mu = rbind(c(1, 0)), kappa = 0, p = 1),
+                   0)
 
 })
 

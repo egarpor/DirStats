@@ -34,6 +34,11 @@
 #'
 #' \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 #' results in a random output. Use \code{set.seed} before to avoid it.
+#' @section Warning:
+#' \code{bw_dir_lscv} is not suited for large dimensions, as its loss overflows
+#' for small bandwidths from \eqn{q \approx 45}. Use instead
+#' \code{polykde::bw_cv_polysph(X = data, d = q, type = "LSCV",
+#' arcsinh = TRUE)}.
 #' @references
 #' Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 #' with spherical data. \emph{Biometrika}, 74(4):751--762.
@@ -122,7 +127,7 @@ bw_dir_lcv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
     # CV function, reusing the blocks and M
     CV_vmf <- function(h) {
 
-      ch <- log(c_h(h = h, q = q) / (n - 1))
+      ch <- c_h(h = h, q = q, log = TRUE) - log(n - 1)
       cv <- numeric(length(h))
       for (ind in blocks) {
 
@@ -187,26 +192,28 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
 
       # c_h() is by construction the exponentially scaled vMF constant,
       # c_h(h, q) = exp(1 / h^2) * c_q(1 / h^2) =: \tilde c_q(1 / h^2), so
-      # Cq = \tilde c_q(1 / h^2) and Cq2 = \tilde c_q(2 / h^2). Their exp()
-      # factors cancel the exponentially small terms in the sums below.
-      Cq <- c_h(h = h, q = q)
-      Cq2 <- c_h(h = h / sqrt(2), q = q)
+      # log_Cq = log \tilde c_q(1 / h^2) and log_Cq2 = log \tilde c_q(2 / h^2).
+      # Their exp() factors cancel the exponentially small terms in the sums
+      # below. Everything stays in log scale until each complete term is
+      # formed, as Cq^2 overflows for large q and small h.
+      log_Cq <- c_h(h = h, q = q, log = TRUE)
+      log_Cq2 <- c_h(h = h / sqrt(2), q = q, log = TRUE)
 
-      # Accumulate the pairwise kernel sums block by block, with exponents
-      # that never overflow:
+      # Accumulate the logs of the pairwise kernel sums block by block, with
+      # exponents that never overflow:
       # (i) exp((X_i'X_j - 1) / h^2) <= 1, as X_i'X_j <= 1;
       # (ii) with kappa_ij = ||X_i + X_j|| / h^2 and
       # c_q(kappa) = exp(-kappa) * \tilde c_q(kappa),
       #  exp(-2 / h^2) / c_q(kappa_ij)
       #   = exp((||X_i + X_j|| - 2) / h^2) / \tilde c_q(kappa_ij),
-      # whose exponent is <= 0 as ||X_i + X_j|| <= 2. The scaling is never
-      # formed: log_c_vmf() gives log c_q(kappa_ij) and the exp(kappa_ij)
-      # stays in the exponent.
-      sum_CV1 <- sum_CV2 <- numeric(length(h))
-      for (ind in blocks) {
+      # whose exponent is <= 0 as ||X_i + X_j|| <= 2. log_c_vmf(scaled = TRUE)
+      # gives log \tilde c_q(kappa_ij) directly, so kappa_ij is never added.
+      log_S1 <- log_S2 <- matrix(nrow = length(blocks), ncol = length(h))
+      for (b in seq_along(blocks)) {
 
         # Strict lower triangle of the row block: the pairs (i, j) with j < i,
         # held by the columns up to max(ind).
+        ind <- blocks[[b]]
         j_max <- ind[length(ind)]
         d_ij <- tcrossprod(x = data[ind, , drop = FALSE],
                            y = data[seq_len(j_max), , drop = FALSE])
@@ -216,16 +223,21 @@ bw_dir_lscv <- function(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
         # fall below -1 for numerically antipodal observations.
         norm_ij <- sqrt(pmax(2 + 2 * d_ij, 0))
         d_ij <- d_ij - 1
-        sum_CV1 <- sum_CV1 + sapply(h, function(hh) sum(exp(d_ij / hh^2)))
-        sum_CV2 <- sum_CV2 + sapply(h, function(hh) {
-          sum(exp(-2 / hh^2 - log_c_vmf(q = q, kappa = norm_ij / hh^2)))
+        log_S1[b, ] <- sapply(h, function(hh) log_sum_exp(d_ij / hh^2))
+        log_S2[b, ] <- sapply(h, function(hh) {
+          log_sum_exp((norm_ij - 2) / hh^2 -
+                        log_c_vmf(q = q, kappa = norm_ij / hh^2,
+                                  scaled = TRUE))
         })
 
       }
+      log_S1 <- apply(log_S1, 2, log_sum_exp)
+      log_S2 <- apply(log_S2, 2, log_sum_exp)
 
-      # Computation of the CV
-      -((4 * Cq) / (n * (n - 1)) * sum_CV1 - Cq^2 / (n * Cq2) -
-          (2 * Cq^2) / n^2 * sum_CV2)
+      # Computation of the CV, exponentiating each complete term
+      exp(2 * log_Cq - log_Cq2 - log(n)) +
+        exp(log(2) + 2 * log_Cq - 2 * log(n) + log_S2) -
+        exp(log(4) + log_Cq - log(n) - log(n - 1) + log_S1)
 
     }
 

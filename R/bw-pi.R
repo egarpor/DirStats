@@ -390,19 +390,26 @@ R_Psi_mixvmf <- function(q, mu, kappa, p) {
   # Exact expression
   if (length(p) == 1) {
 
-    # Evaluated in log scale (with a log-sum-exp for the two-term sum), so that
-    # the curvature stays finite for large concentrations. The exp(2 * kappa)
-    # factors of const and R cancel.
-    log_const <- ((q + 1) / 2) * log(kappa) -
-      ((q + 2) * log(2) + ((q + 1) / 2) * log(pi) + log(q) +
-         2 * log_besselI_scaled(nu = (q - 1) / 2, x = kappa))
-    log_1 <- log(2 * q) +
-      log_besselI_scaled(nu = (q + 1) / 2, x = 2 * kappa)
-    log_2 <- log((2 + q) * kappa) +
-      log_besselI_scaled(nu = (q + 3) / 2, x = 2 * kappa)
-    log_max <- pmax(log_1, log_2)
-    R <- exp(log_const + log_max +
-               log(exp(log_1 - log_max) + exp(log_2 - log_max)))
+    # The uniform density has zero curvature
+    if (kappa == 0) {
+
+      R <- 0
+
+    } else {
+
+      # Evaluated in log scale (with a log-sum-exp for the two-term sum), so
+      # that the curvature stays finite for large concentrations. The
+      # exp(2 * kappa) factors of const and R cancel.
+      log_const <- ((q + 1) / 2) * log(kappa) -
+        ((q + 2) * log(2) + ((q + 1) / 2) * log(pi) + log(q) +
+           2 * log_besselI_scaled(nu = (q - 1) / 2, x = kappa))
+      log_1 <- log(2 * q) +
+        log_besselI_scaled(nu = (q + 1) / 2, x = 2 * kappa)
+      log_2 <- log((2 + q) * kappa) +
+        log_besselI_scaled(nu = (q + 3) / 2, x = 2 * kappa)
+      R <- exp(log_const + log_sum_exp(c(log_1, log_2)))
+
+    }
 
   # Numeric approximation
   } else {

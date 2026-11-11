@@ -73,6 +73,14 @@ in \eqn{n} for \eqn{n > 5000}.
 \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
 }
+\section{Warning}{
+
+\code{bw_dir_lscv} is not suited for large dimensions, as its loss overflows
+for small bandwidths from \eqn{q \approx 45}. Use instead
+\code{polykde::bw_cv_polysph(X = data, d = q, type = "LSCV",
+arcsinh = TRUE)}.
+}
+
 \examples{
 # Sample
 n <- 25

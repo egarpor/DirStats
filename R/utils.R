@@ -382,6 +382,25 @@ row_blocks <- function(n, m = n) {
 }
 
 
+#' @title Log-sum-exp
+#'
+#' @description Computes \eqn{\log\sum_i e^{x_i}} without overflow or
+#' underflow.
+#'
+#' @param x a vector.
+#' @return \eqn{\log\sum_i e^{x_i}}, \code{-Inf} for an empty \code{x}.
+#' @noRd
+log_sum_exp <- function(x) {
+
+  # Empty sums, as for a row block without pairs, and sums of zeros
+  if (length(x) == 0) return(-Inf)
+  m <- max(x)
+  if (!is.finite(m)) return(m)
+  return(m + log(sum(exp(x - m))))
+
+}
+
+
 #' @title Bandwidth minimizing a selection loss
 #'
 #' @description Minimizes a bandwidth selection loss by
