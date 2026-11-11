@@ -256,7 +256,7 @@ test_that("The CV losses are finite for n = 2 and antipodal pairs", {
 
 test_that("The CV losses are finite for tiny bandwidths", {
 
-  h_grid <-c(sqrt(.Machine$double.eps), 1e-6, 1e-3, 0.01, 0.05, 0.5)
+  h_grid <- c(sqrt(.Machine$double.eps), 1e-6, 1e-3, 0.01, 0.05, 0.5)
   for (q in 1:3) {
 
     set.seed(7)
@@ -425,7 +425,7 @@ test_that("R_Psi_mixvmf is finite and increasing in kappa up to 1e8", {
 
 test_that("The plug-in selectors are finite for a component of kappa = 1.2e5", {
 
-  mu <-rbind(c(1, 0, 0), c(0, 1, 0))
+  mu <- rbind(c(1, 0, 0), c(0, 1, 0))
   kappa <- c(4, 1.2e5)
   p <- c(0.9, 0.1)
   R <- R_Psi_mixvmf(q = 2, mu = mu, kappa = kappa, p = p)

@@ -14,14 +14,15 @@
 #' }
 #' @details
 #' The approximation to the integral of \eqn{f} has the form
-#' \deqn{\int_{\mathbb{S}^2} f(x, y, z) \,\mathrm{d}x \,\mathrm{d}y \,\mathrm{d}z =
+#' \deqn{\int_{\mathbb{S}^2} f(x, y, z) \,\mathrm{d}x \,\mathrm{d}y
+#' \,\mathrm{d}z =
 #' 4 \pi \sum_{i = 1}^N w_i f(x_i, y_i, z_i)}
 #' where \eqn{N = 5810}. The nodes (in spherical coordinates) and weights
 #' are processed from
 #' \href{https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/lebedev_131.txt
 #' }{lebedev_131.txt}.
 #' @source
-#' \url{ https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
+#' \url{https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
 #' }
 #' @references
 #' Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
