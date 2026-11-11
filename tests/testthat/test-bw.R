@@ -482,8 +482,6 @@ test_that("R_Psi_mixvmf handles edge cases", {
 
   expect_error(R_Psi_mixvmf(q = 2, mu = rbind(c(0, 0, 1)), kappa = c(1, 2),
                             p = c(0.5, 0.5)), "dimension")
-
-  # A failed numerical integration returns NA
   fail <- function(...) stop("no integral")
   mu <- rbind(c(0, 0, 1), c(0, 1, 0))
   R <- with_mocked_bindings(code = R_Psi_mixvmf(q = 2, mu = mu,
