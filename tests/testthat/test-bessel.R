@@ -53,11 +53,19 @@ test_that("log_besselI_scaled vectorizes and propagates NAs", {
   expect_length(log_besselI_scaled(nu = 0.5, x = 1:4), 4)
   out <- log_besselI_scaled(nu = 0.5, x = c(1, NA, 3))
   expect_true(is.na(out[2]) && all(is.finite(out[-2])))
-  expect_error(log_besselI_scaled(nu = c(1, 2), x = c(1, 2, 3)), "scalar")
-  expect_length(log_besselI_scaled(nu = 0.5, x = numeric(0)), 0)
   expect_identical(log_besselI_scaled(nu = 1, x = matrix(1:4, 2),
                                       spline = FALSE),
                    log_besselI_scaled(nu = 1, x = 1:4, spline = FALSE))
+
+})
+
+test_that("log_besselI_scaled handles edge cases", {
+
+  expect_error(log_besselI_scaled(nu = c(1, 2), x = c(1, 2, 3)), "scalar")
+  expect_error(log_besselI_scaled(nu = NA, x = 1), "NAs")
+  expect_length(log_besselI_scaled(nu = 0.5, x = numeric(0)), 0)
+  expect_identical(log_besselI_scaled(nu = 0.5, x = c(NA_real_, NA_real_)),
+                   c(NA_real_, NA_real_))
 
 })
 

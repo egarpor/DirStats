@@ -465,9 +465,6 @@ bw_dir_emi <- function(data, fit_mix = NULL, optim = TRUE,
   # Integrand for MISE function
   integrand <- function(x, h) {
 
-    # Startup
-    if (!is.matrix(x)) x <- t(x)
-
     # Expectation of the estimator, computed in log scale to avoid overflow and
     # underflow for small h. Eq is the inverse of the vMF normalizing constant
     # at 1 / h^2.

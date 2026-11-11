@@ -1,4 +1,6 @@
 
+# Runs at load time, before covr instruments the namespace
+# nocov start
 .onLoad <- function(libname = find.package("DirStats"), pkgname = "DirStats") {
 
   # Build the (scaled, log) Bessel splines in u = log(x) from the tables
@@ -22,3 +24,4 @@
   invisible()
 
 }
+# nocov end
