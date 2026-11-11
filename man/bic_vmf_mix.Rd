@@ -4,74 +4,105 @@
 \alias{bic_vmf_mix}
 \title{Fitting mixtures of von Mises--Fisher distributions}
 \usage{
-bic_vmf_mix(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
-  crit = "BIC", iterative = TRUE, plot_it = FALSE, verbose = FALSE,
-  kappa_max = 250)
+bic_vmf_mix(
+  data,
+  M_bound = ceiling(log(nrow(data))),
+  M_neig = 3,
+  crit = "BIC",
+  iterative = TRUE,
+  plot_it = FALSE,
+  verbose = FALSE,
+  kappa_max = 10000
+)
 }
 \arguments{
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
 \item{M_bound}{bound for the number of components in the mixtures. If it is
-not enough, the search for the mixture with minimum \code{crit} will
-continue from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
+not enough, the search for the mixture with minimum \code{crit} will continue
+from \code{M_bound + 1} if \code{iterative = TRUE}. Defaults to
 \code{ceiling(log(nrow(data)))}.}
 
-\item{M_neig}{number of neighbors explored around the optimal number
-of mixture components. Defaults to \code{3}.}
+\item{M_neig}{number of neighbors explored around the optimal number of
+mixture components. Defaults to \code{3}.}
 
-\item{crit}{information criterion employed, either \code{"BIC"} (default),
-\code{"AICc"} or \code{"AIC"}.}
+\item{crit}{information criterion to be minimized, given as the name of a
+function or as a function itself. It must take a fitted mixture and return a
+single number. Defaults to \code{"BIC"}; see the examples for a custom
+criterion.}
 
-\item{iterative}{keep exploring higher number of components if the optimum
-is attained at \code{M_bound}? Defaults to \code{TRUE}.}
+\item{iterative}{keep exploring higher number of components if the optimum is
+attained at \code{M_bound}? Defaults to \code{TRUE}.}
 
 \item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
 \item{verbose}{display fitting progress? Defaults to \code{FALSE}.}
 
-\item{kappa_max}{maximum value of allowed concentrations, to avoid numerical
-instabilities. Defaults to \code{250}.}
+\item{kappa_max}{maximum concentration allowed in a fitted mixture. Mixtures
+with a component above it are discarded. Set to \code{Inf} to disable the
+screening. Defaults to \code{1e4}.}
 }
 \value{
 A list with entries:
 \itemize{
-  \item{\code{best_fit}: a list with estimated mixture parameters
+  \item \code{best_fit}: a list with estimated mixture parameters
   \code{mu_hat}, \code{kappa_hat}, and \code{p_hat} of the best-fitting
-  mixture according to \code{crit}.}
-  \item{\code{fit_mixs}: a list with of the fitted mixtures.}
-  \item{\code{BICs}: a vector with the BICs (or other information criterion)
-  of the fitted mixtures.}
+  mixture according to \code{crit}.
+  \item \code{fits}: a list with the fitted mixtures.
+  \item \code{BICs}: a vector with the BICs (or other information criterion)
+  of the fitted mixtures.
 }
 }
 \description{
 Fitting mixtures of von Mises--Fisher distributions by the
-Expectation-Maximization algorithm, with determination of the optimal
+expectation--maximization algorithm, with determination of the optimal
 number of mixture components.
 }
 \details{
-See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
+See Algorithm 3 in García-Portugués (2013). The expectation--maximization
 fit is performed with \code{\link[movMF]{movMF}}.
+
+The \code{kappa_max} screening allows discarding fits with spurious
+components featuring high concentration.
 }
 \examples{
-# Sample
+# Custom criterion: the AIC with the finite-sample correction
+# 2 * k * (k + 1) / (n - k - 1), for k parameters and n observations.
+AICc <- function(object) {
+  ll <- logLik(object)
+  k <- attr(ll, "df")
+  n <- attr(ll, "nobs")
+  AIC(object) + ifelse(n - k - 1 > 0, 2 * k * (k + 1) / (n - k - 1), Inf)
+}
+
+# Sample from a mixture of three von Mises--Fisher distributions
 q <- 2
 n <- 300
-set.seed(42)
-samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
-              rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
-              rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# Mixture fit
-bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE)
+  set.seed(42)
+  samp <- rbind(rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), 1), kappa = 5),
+                rotasym::r_vMF(n = n / 3, mu = c(rep(0, q), -1), kappa = 5),
+                rotasym::r_vMF(n = n / 3, mu = c(1, rep(0, q)), kappa = 5))
+
+  # Mixture fit
+  print(bic_vmf_mix(data = samp, plot_it = TRUE, verbose = TRUE))
+  print(bic_vmf_mix(data = samp, crit = AICc, plot_it = TRUE)$BICs)
+
+}
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
-\doi{10.1214/13-ejs821}
+\doi{10.1214/13-EJS821}
 
 Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
 58(10):1--31. \doi{10.18637/jss.v058.i10}
+}
+\seealso{
+\code{\link{bw_dir_pi}}, \code{\link{vmf}}.
 }

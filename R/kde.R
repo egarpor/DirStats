@@ -2,57 +2,44 @@
 
 #' @title Directional kernel density estimator
 #'
-#' @description Kernel density estimation with directional data as in
-#' the estimator of Bai et al. (1988).
+#' @description Kernel density estimation with directional data on
+#' \eqn{\mathbb{S}^q} as in the estimator of Bai et al. (1988).
 #'
-#' @param x evaluation points, a matrix of size \code{c(nx, q + 1)}.
-#' @param data directional data, a matrix of size \code{c(n, q + 1)}.
-#' @param h bandwidth, a scalar for \code{kde_dir}. Can be a vector
-#' for \code{c_h}.
-#' @param L kernel function. Set internally to \code{function(x) exp(-x)}
-#' (von Mises--Fisher kernel) if \code{NULL} (default).
-#' @param q dimension of \eqn{S^q}, \eqn{q\ge 1}.
-#' @return \code{kde_dir} returns a vector of size \code{nx} with the
-#' evaluated kernel density estimator. \code{c_h} returns the normalizing
-#' constant for the kernel, a vector of length \code{length(h)}.
-#' \code{lambda_L}, \code{b_L}, and \code{d_L} return moments of \code{L}.
+#' @param x evaluation points on \eqn{\mathbb{S}^q}, a matrix of size
+#' \code{c(nx, q + 1)}.
+#' @param data directional data on \eqn{\mathbb{S}^q}, a matrix of size
+#' \code{c(n, q + 1)}.
+#' @param h bandwidth, a scalar.
+#' @param L kernel function. Set internally to \code{function(x) exp(-x)} (von
+#' Mises--Fisher kernel) if \code{NULL} (default).
+#' @return The evaluated kernel density estimator, a vector of size
+#' \code{nx}.
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
-#' When \code{L = NULL}, faster FORTRAN code is employed.
 #' @references
 #' Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
 #' density function of directional data. \emph{Journal of Multivariate
 #' Analysis}, 27(1):24--39.
 #' \doi{10.1016/0047-259X(88)90113-3}
+#' @seealso \code{\link{bw_dir_cv}}, \code{\link{bw_dir_pi}}, \code{\link{c_h}},
+#' \code{\link{vmf}}.
 #' @examples
 #' # Sample
 #' n <- 50
 #' q <- 3
-#' samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+#' if (requireNamespace("rotasym", quietly = TRUE)) {
 #'
-#' # Evaluation points
-#' x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
+#'   set.seed(42)
+#'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 #'
-#' # kde_dir
-#' kde_dir(x = x, data = samp, h = 0.5, L = NULL)
-#' kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x))
+#'   # Evaluation points
+#'   x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
 #'
-#' # c_h
-#' c_h(h = 0.5, q = q, L = NULL)
-#' c_h(h = 0.5, q = q, L = function(x) exp(-x))
+#'   # kde_dir
+#'   print(kde_dir(x = x, data = samp, h = 0.5, L = NULL))
+#'   print(kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x)))
 #'
-#' # b_L
-#' b_L(L = NULL, q = q)
-#' b_L(L = function(x) exp(-x), q = q)
-#'
-#' # d_L
-#' d_L(L = NULL, q = q)
-#' d_L(L = function(x) exp(-x), q = q)
-#'
-#' # lambda_L
-#' lambda_L(L = NULL, q = q)
-#' lambda_L(L = function(x) exp(-x), q = q)
-#' @useDynLib DirStats
+#' }
 #' @export
 kde_dir <- function(x, data, h, L = NULL) {
 
@@ -72,40 +59,24 @@ kde_dir <- function(x, data, h, L = NULL) {
   }
   nx <- nrow(x)
   stopifnot(ncol(x) == q + 1)
-
-  # von Mises--Fisher kernel?
-  if (is.null(L)) {
-
-    is_vm <- TRUE
-
-  } else {
-
-    is_vm <- FALSE
-    ch <- c_h(h = h, q = q, L = L)
-
-  }
   stopifnot(length(h) == 1)
 
-  # Normalizing constant
-  ch <- c_h(h = h, q = q, L = switch(is_vm + 1, L, NULL))
+  # Normalizing constant (L = NULL triggers the closed-form vMF expression)
+  ch <- c_h(h = h, q = q, L = L)
 
-  # Approach type
-  if (is_vm) {
+  # Von Mises--Fisher kernel?
+  if (is.null(L)) {
 
-    # Ensure data types for kde_dir
-    x <- matrix(as.double(x), nrow = nx, ncol = q + 1)
-    data_dir <- matrix(as.double(data), nrow = n, ncol = q + 1)
+    L <- function(z) exp(-z)
 
-    # Call to kde_dir
-    kde <- .Fortran("kde_dir_vmf", x = x, data_dir = data_dir,
-                    h = as.double(h), ch = as.double(ch),
-                    n = as.integer(n), q = as.integer(q),
-                    nx = as.integer(nx), kde = double(nx))$kde
+  }
 
-  } else {
+  # Kernel sums over blocks of evaluation points, so the memory stays flat in n
+  kde <- numeric(nx)
+  for (ind in row_blocks(n = nx, m = n)) {
 
-    kde <- (1 - data %*% t(x)) / h^2
-    kde <- ch * colMeans(L(kde))
+    mat_L <- 1 - tcrossprod(x = data, y = x[ind, , drop = FALSE])
+    kde[ind] <- ch * colMeans(L(mat_L / h^2))
 
   }
 
@@ -115,43 +86,101 @@ kde_dir <- function(x, data, h, L = NULL) {
 }
 
 
-#' @rdname kde_dir
+#' @title Normalizing constant and moments of a directional kernel
+#'
+#' @description Normalizing constant \eqn{c_{h, q}(L)} and moments
+#' \eqn{\lambda_q(L)}, \eqn{b_q(L)}, and \eqn{d_q(L)} of a directional kernel
+#' \code{L}, which enter the kernel density estimator \code{\link{kde_dir}}
+#' and the AMISE bandwidth of \code{\link{bw_dir_ami}}.
+#'
+#' @param h vector of bandwidths.
+#' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q \ge 1}.
+#' @inheritParams kde_dir
+#' @param log return the normalizing constant in log scale? Defaults to
+#' \code{FALSE}.
+#' @return
+#' \itemize{
+#'   \item \code{c_h}: the normalizing constant of the kernel, a vector of size
+#'   \code{length(h)}.
+#'   \item \code{lambda_L}, \code{b_L}, \code{d_L}: the moments
+#'   \eqn{\lambda_q(L)}, \eqn{b_q(L)}, and \eqn{d_q(L)} of \code{L}, each a
+#'   scalar.
+#' }
+#' @details
+#' The normalizing constant and the moments are given by
+#' \deqn{c_{h, q}(L)^{-1} = \omega_{q - 1} \int_{-1}^1
+#' L\left(\frac{1 - t}{h^2}\right) (1 - t^2)^{q / 2 - 1} \,\mathrm{d}t,}
+#' \deqn{\lambda_q(L) = 2^{q / 2 - 1} \omega_{q - 1} \int_0^\infty L(r)
+#' r^{q / 2 - 1} \,\mathrm{d}r,}
+#' \deqn{b_q(L) = \frac{\int_0^\infty L(r) r^{q / 2} \,\mathrm{d}r}
+#' {\int_0^\infty L(r) r^{q / 2 - 1} \,\mathrm{d}r}, \quad
+#' d_q(L) = \frac{\int_0^\infty L(r)^2 r^{q / 2 - 1} \,\mathrm{d}r}
+#' {\int_0^\infty L(r) r^{q / 2 - 1} \,\mathrm{d}r},}
+#' where \eqn{\omega_q} is the surface area of \eqn{\mathbb{S}^q} (see
+#' \code{\link{w_q}}). They have closed forms for the von Mises--Fisher kernel
+#' (\code{L = NULL}), and are otherwise computed by numerical integration.
+#' @references
+#' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
+#' for kernel density estimation with directional data. \emph{Electronic
+#' Journal of Statistics}, 7:1655--1685.
+#' \doi{10.1214/13-EJS821}
+#' @seealso \code{\link{kde_dir}}, \code{\link{bw_dir_pi}}.
+#' @examples
+#' q <- 3
+#'
+#' # c_h
+#' c_h(h = 0.5, q = q, L = NULL)
+#' c_h(h = 0.5, q = q, L = function(x) exp(-x))
+#'
+#' # b_L
+#' b_L(L = NULL, q = q)
+#' b_L(L = function(x) exp(-x), q = q)
+#'
+#' # d_L
+#' d_L(L = NULL, q = q)
+#' d_L(L = function(x) exp(-x), q = q)
+#'
+#' # lambda_L
+#' lambda_L(L = NULL, q = q)
+#' lambda_L(L = function(x) exp(-x), q = q)
 #' @export
-c_h <- function(h, q, L = NULL) {
+c_h <- function(h, q, L = NULL, log = FALSE) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
-    # Analytical expression
-    ch <- (2 * pi)^((q + 1) / 2) * h^(q - 1) *
-      besselI(x = 1 / h^2, nu = (q - 1) / 2, expon.scaled = TRUE)
+    # Exponentially scaled von Mises--Fisher normalizing constant:
+    # c_h(h, q) = exp(1 / h^2) * c_q(1 / h^2), computed directly, as adding
+    # 1 / h^2 to log c_q(1 / h^2) cancels digits for small h.
+    log_ch <- log_c_vmf(q = q, kappa = 1 / h^2, scaled = TRUE)
 
   } else {
 
-    # Log-area of Omega_{q - 1}
-    w_q <- exp(log(2) + q / 2 * log(pi) - lgamma(q / 2))
-
-    # Numerical integration
+    # Numerical integration, with the area of S^{q - 1} coming from the
+    # tangent-normal change of variables.
     ch <- sapply(h, function(hh) {
-      integrate(function(t) {
-        L((1 - t) / hh^2) * (1 - t^2)^(q / 2 - 1)
-        }, lower = -1 + 1e-5, upper = 1 - 1e-5, rel.tol = 1e-5,
-        subdivisions = 200, stop.on.error = FALSE)$value * w_q
-      })
+
+      integrate(f = function(t) L((1 - t) / hh^2) * (1 - t^2)^(q / 2 - 1),
+                lower = -1 + 1e-5, upper = 1 - 1e-5, rel.tol = 1e-5,
+                subdivisions = 200, stop.on.error = FALSE)$value *
+        w_q(q = q - 1)
+
+    })
+    log_ch <- -log(ch)
 
   }
 
   # Normalizing constant
-  return(1 / ch)
+  return(switch(log + 1, exp(log_ch), log_ch))
 
 }
 
 
-#' @rdname kde_dir
+#' @rdname c_h
 #' @export
 lambda_L <- function(L = NULL, q) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Analytical expression
@@ -160,7 +189,7 @@ lambda_L <- function(L = NULL, q) {
   } else {
 
     # Numerical integration
-    lambda <- 2^(q / 2 - 1) * 2 * pi^(q / 2) / gamma(q / 2) *
+    lambda <- 2^(q / 2 - 1) * w_q(q = q - 1) *
       integrate(function(r) L(r) * r^(q / 2 - 1), lower = 0, upper = 100,
                 rel.tol = 1e-5, subdivisions = 200, stop.on.error = FALSE)$value
 
@@ -172,11 +201,11 @@ lambda_L <- function(L = NULL, q) {
 }
 
 
-#' @rdname kde_dir
+#' @rdname c_h
 #' @export
 b_L <- function(L = NULL, q) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Analytical expression
@@ -200,11 +229,11 @@ b_L <- function(L = NULL, q) {
 }
 
 
-#' @rdname kde_dir
+#' @rdname c_h
 #' @export
 d_L <- function(L = NULL, q) {
 
-  # von Mises--Fisher kernel?
+  # Von Mises--Fisher kernel?
   if (is.null(L)) {
 
     # Analytical expression
@@ -224,5 +253,42 @@ d_L <- function(L = NULL, q) {
 
   # Moment
   return(d)
+
+}
+
+
+#' @title Leave-one-out kernel density estimates
+#'
+#' @description Leave-one-out kernel density estimator evaluated at each
+#' observation, for a kernel \code{L} and a grid of bandwidths.
+#'
+#' @inheritParams kde_dir
+#' @inheritParams bw_dir_cv
+#' @return A matrix of size \code{c(nrow(data), length(h_grid))}.
+#' @noRd
+loo_kde <- function(data, h_grid, L) {
+
+  # Normalizing constants
+  n <- nrow(data)
+  ch <- c_h(h = h_grid, q = ncol(data) - 1, L = L)
+
+  # Leave-one-out kernel sums, accumulated over the row blocks with the
+  # bandwidths inside, so the memory is O(n * b).
+  f_hi <- matrix(nrow = n, ncol = length(h_grid))
+  for (ind in row_blocks(n = n)) {
+
+    mat_L <- 1 - tcrossprod(x = data[ind, , drop = FALSE], y = data)
+    for (hi in seq_along(h_grid)) {
+
+      L_hi <- (ch[hi] / (n - 1)) * L(mat_L / h_grid[hi]^2)
+      L_hi[cbind(seq_along(ind), ind)] <- 0
+      f_hi[ind, hi] <- rowSums(L_hi)
+
+    }
+
+  }
+
+  # Result
+  return(f_hi)
 
 }

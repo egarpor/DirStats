@@ -14,27 +14,36 @@ bw_dir_ami(data, fit_mix = NULL, L = NULL)
 
 R_Psi_mixvmf(q, mu, kappa, p)
 
-bw_dir_emi(data, fit_mix = NULL, optim = TRUE,
-  h_grid = exp(seq(log(0.05), log(1.5), l = 100)), plot_it = TRUE,
-  optim_par = 0.25, optim_lower = 0.06, optim_upper = 10)
+bw_dir_emi(
+  data,
+  fit_mix = NULL,
+  optim = TRUE,
+  h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
+  plot_it = FALSE,
+  optim_par = 0.25,
+  optim_lower = max(1e-04, exp(-700/(ncol(data) - 1))/sqrt(2 * pi)),
+  optim_upper = 10
+)
 }
 \arguments{
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
-\item{fit_mix}{output from \code{\link{bic_vmf_mix}}. Computed internally
-if \code{NULL} (default).}
+\item{fit_mix}{output from \code{\link{bic_vmf_mix}}. Computed internally if
+\code{NULL} (default).}
 
-\item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
-(von Mises--Fisher kernel) if \code{NULL} (default).}
+\item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
+Mises--Fisher kernel) if \code{NULL} (default).}
 
-\item{q}{dimension of \eqn{S^q}, \eqn{q\ge 1}.}
+\item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q \ge 1}.}
 
 \item{mu, kappa, p}{mixture parameters. \code{mu} is the mean matrix of size
-\code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
+\code{c(length(p), q + 1)}, \code{kappa} is a vector of \code{length(p)}
 concentration parameters, and \code{p} is the vector of mixture proportions.}
 
-\item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise,
-a grid search on \code{h} is done. Only effective if \code{L = NULL}.}
+\item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
+search on \code{h} is done. For \code{bw_dir_lcv} and \code{bw_dir_lscv},
+only effective if \code{L = NULL}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
 to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
@@ -42,28 +51,32 @@ to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 \item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
-\item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
-\code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using
-the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
-(to avoid numerical instabilities), and \code{10}.}
+\item{optim_par, optim_lower, optim_upper}{initial value, lower bound, and
+upper bound of the bandwidth for \code{\link[stats]{optim}} when using the
+\code{"L-BFGS-B"} method. The default \code{optim_lower} of
+\code{bw_dir_lscv} and \code{bw_dir_emi} prevents the overflow of their
+losses for large \eqn{q}.}
 }
 \value{
-Selected bandwidth for \code{bw_dir_rot} and \code{bw_dir_ami}.
-\code{bw_dir_emi} returns a list with entries:
 \itemize{
-  \item{\code{h_opt}: selected bandwidth.}
-  \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
-  \item{\code{MISE_opt}: minimum of the MISE loss.}
-  \item{\code{MISE_grid}: value of the MISE function at \code{h_grid}, if
-   used (otherwise \code{NULL}).}
+  \item \code{bw_dir_rot}, \code{bw_dir_ami}: the selected bandwidth, a
+  scalar.
+  \item \code{bw_dir_emi}: a list with entries \code{h_opt} (selected
+  bandwidth), \code{h_grid} (\code{h_grid}, if used, otherwise
+  \code{NULL}), \code{MISE_opt} (minimum of the MISE loss), and
+  \code{MISE_grid} (value of the MISE function at \code{h_grid}, if used,
+  otherwise \code{NULL}).
+  \item \code{R_Psi_mixvmf}: the curvature term of the mixture, a scalar.
 }
 }
 \description{
-Plug-in bandwidth selectors for kernel density estimation
-with directional data, including Rule-Of-Thumb (ROT),
-Asymptotic MIxtures (AMI), and Exact MIxtures (EMI).
+Plug-in bandwidth selectors for kernel density estimation with
+directional data, including Rule-Of-Thumb (ROT), Asymptotic MIxtures (AMI),
+and Exact MIxtures (EMI).
 }
 \details{
+\code{data} is not checked to have unit norm, so the user must be careful.
+
 See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
 selector is implemented according to Proposition 2, \bold{but} without
 the paper's typo in equation (6), case \eqn{q = 2}, where an incorrect
@@ -75,32 +88,51 @@ term of a mixture of von Mises--Fisher densities.
 
 \code{bw_dir_emi} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
+
+The selectors warn and return \code{NA} (\code{h_opt = NA} for
+\code{bw_dir_emi}) for degenerate concentrations.
 }
+\section{Warning}{
+
+\code{bw_dir_emi} overflows for large dimensions \eqn{q \approx 250}, and
+earlier for concentrated data.
+}
+
 \examples{
 # Sample
 n <- 25
 q <- 2
-set.seed(42)
-samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# Mixture fit
-fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
-# ROT
-bw_dir_rot(samp)
+  # Mixture fit
+  fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
 
-# AMI
-bw_dir_ami(samp)
-bw_dir_ami(samp, fit_mix = fit_mix)
-bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x))
+  # ROT
+  print(bw_dir_rot(data = samp))
 
-# EMI
-bw_dir_emi(samp)
-bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE)
+  # AMI
+  print(bw_dir_ami(data = samp))
+  print(bw_dir_ami(data = samp, fit_mix = fit_mix))
+  print(bw_dir_ami(data = samp, fit_mix = fit_mix,
+                   L = function(x) exp(-x)))
+
+  # EMI
+  print(bw_dir_emi(data = samp))
+  print(bw_dir_emi(data = samp, fit_mix = fit_mix, optim = FALSE,
+                   plot_it = TRUE))
+
+}
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
 for kernel density estimation with directional data. \emph{Electronic
 Journal of Statistics}, 7:1655--1685.
-\doi{10.1214/13-ejs821}
+\doi{10.1214/13-EJS821}
+}
+\seealso{
+\code{\link{kde_dir}}, \code{\link{bw_dir_cv}},
+\code{\link{bic_vmf_mix}}.
 }

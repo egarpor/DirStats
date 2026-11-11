@@ -4,9 +4,12 @@
 ^README.*$
 ^TODO$
 ^data-raw$
+^logo$
 ^CRAN-RELEASE$
 ^cran-comments\.md$
 ^LICENSE\.md$
 TODO.md
 ^\.github$
 ^CRAN-SUBMISSION$
+^DirStats\.code-workspace$
+^revdep$

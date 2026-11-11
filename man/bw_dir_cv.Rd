@@ -5,53 +5,60 @@
 \alias{bw_dir_lcv}
 \alias{bw_dir_lscv}
 \title{Cross-validation bandwidth selectors for directional data}
-\source{
-The function \code{bw_dir_lscv} employs Netlib's subroutine
-\href{https://www.netlib.org/specfun/ribesl}{\code{ribesl}} for evaluating
-the modified Bessel function of the first kind. The subroutine is based
-on a program by Sookne (1973) and was modified by W. J. Cody and L. Stoltz.
-An earlier version was published in Cody (1983).
-}
 \usage{
-bw_dir_lcv(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)), L = NULL,
-  plot_it = FALSE, optim = TRUE, optim_par = 0.25, optim_lower = 0.06,
-  optim_upper = 10)
+bw_dir_lcv(
+  data,
+  h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
+  L = NULL,
+  plot_it = FALSE,
+  optim = TRUE,
+  optim_par = 0.25,
+  optim_lower = 1e-04,
+  optim_upper = 10
+)
 
-bw_dir_lscv(data, h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
-  L = NULL, plot_it = FALSE, optim = TRUE, R_code = FALSE,
-  optim_par = 0.25, optim_lower = 0.06, optim_upper = 10)
+bw_dir_lscv(
+  data,
+  h_grid = exp(seq(log(0.05), log(1.5), l = 100)),
+  L = NULL,
+  plot_it = FALSE,
+  optim = TRUE,
+  optim_par = 0.25,
+  optim_lower = max(1e-04, exp(-700/(ncol(data) - 1))/sqrt(2 * pi)),
+  optim_upper = 10
+)
 }
 \arguments{
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
 \item{h_grid}{vector of bandwidths for performing a grid search. Defaults
 to\cr \code{exp(seq(log(0.05), log(1.5), l = 100))}.}
 
-\item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
-(von Mises--Fisher kernel) if \code{NULL} (default).}
+\item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
+Mises--Fisher kernel) if \code{NULL} (default).}
 
 \item{plot_it}{display an informative plot on the optimization's grid search?
 Defaults to \code{FALSE}.}
 
-\item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise,
-a grid search on \code{h} is done. Only effective if \code{L = NULL}.}
+\item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
+search on \code{h} is done. For \code{bw_dir_lcv} and \code{bw_dir_lscv},
+only effective if \code{L = NULL}.}
 
-\item{optim_par, optim_lower, optim_upper}{parameters passed to \code{par},
-\code{lower}, and \code{upper} in \code{\link[stats]{optim}} when using
-the \code{"L-BFGS-B"} method. Default to \code{0.25}, \code{0.06}
-(to avoid numerical instabilities), and \code{10}.}
-
-\item{R_code}{use slower R code when \code{L = NULL}? Defaults to
-\code{FALSE}.}
+\item{optim_par, optim_lower, optim_upper}{initial value, lower bound, and
+upper bound of the bandwidth for \code{\link[stats]{optim}} when using the
+\code{"L-BFGS-B"} method. The default \code{optim_lower} of
+\code{bw_dir_lscv} and \code{bw_dir_emi} prevents the overflow of their
+losses for large \eqn{q}.}
 }
 \value{
 A list with entries:
 \itemize{
-  \item{\code{h_opt}: selected bandwidth.}
-  \item{\code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).}
-  \item{\code{CV_opt}: minimum of the CV loss.}
-  \item{\code{CV_grid}: value of the CV function at \code{h_grid}, if used
-  (otherwise \code{NULL}).}
+  \item \code{h_opt}: selected bandwidth.
+  \item \code{h_grid}: \code{h_grid}, if used (otherwise \code{NULL}).
+  \item \code{CV_opt}: minimum of the CV loss.
+  \item \code{CV_grid}: value of the CV function at \code{h_grid}, if used
+  (otherwise \code{NULL}).
 }
 }
 \description{
@@ -60,40 +67,55 @@ selectors for kernel density estimation with directional data.
 }
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.
-When \code{L = NULL}, faster FORTRAN code is employed.
+
+When \code{L = NULL}, faster vectorized expressions specific to the von
+Mises--Fisher kernel are employed.
+
+The pairwise sums are accumulated in row blocks of at most 2.5e5 inner
+products, so the memory footprint stays flat in \eqn{n} for \eqn{n > 5000}.
 
 \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
+
+A warning is issued if \code{optim} does not converge, or if the selected
+bandwidth is at an extreme of \code{h_grid} or of
+\code{c(optim_lower, optim_upper)}.
 }
+\section{Warning}{
+
+\code{bw_dir_lscv} is not suited for large dimensions, as its loss overflows
+for small bandwidths from \eqn{q \approx 45}. Use instead
+\href{https://CRAN.R-project.org/package=polykde}{\code{polykde::bw_cv_polysph}}
+with \code{type = "LSCV"} and \code{arcsinh = TRUE}.
+}
+
 \examples{
 # Sample
 n <- 25
 q <- 2
-set.seed(42)
-samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# bw_dir_lcv
-bw_dir_lcv(data = samp, optim = TRUE)$h_opt
-bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
-bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
-# bw_dir_lscv
-set.seed(42)
-bw_dir_lscv(data = samp, optim = TRUE)$h_opt
-bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt
-bw_dir_lscv(data = samp, optim = FALSE, R_code = TRUE)$h_opt
-bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt
+  # bw_dir_lcv
+  print(bw_dir_lcv(data = samp, optim = TRUE)$h_opt)
+  print(bw_dir_lcv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt)
+  print(bw_dir_lcv(data = samp, L = function(x) exp(-x))$h_opt)
+
+  # bw_dir_lscv
+  set.seed(42)
+  print(bw_dir_lscv(data = samp, optim = TRUE)$h_opt)
+  print(bw_dir_lscv(data = samp, optim = FALSE, plot_it = TRUE)$h_opt)
+  print(bw_dir_lscv(data = samp, L = function(x) exp(-x))$h_opt)
+
+}
 }
 \references{
-Cody, W. J. (1983). Algorithm 597: Sequence of modified Bessel functions of
-the first kind. \emph{ACM Transactions on Mathematical Software},
-9(2):242--245. \doi{10.1145/357456.357462}
-
 Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 with spherical data. \emph{Biometrika}, 74(4):751--762.
 \doi{10.1093/biomet/74.4.751}
-
-Sookne, D. J. (1973). Bessel functions of real argument and integer order.
-\emph{Journal of Research of the National Bureau of Standards},
-77B:125--132.
+}
+\seealso{
+\code{\link{kde_dir}}, \code{\link{bw_dir_pi}}.
 }

@@ -2,81 +2,58 @@
 % Please edit documentation in R/kde.R
 \name{kde_dir}
 \alias{kde_dir}
-\alias{c_h}
-\alias{lambda_L}
-\alias{b_L}
-\alias{d_L}
 \title{Directional kernel density estimator}
 \usage{
 kde_dir(x, data, h, L = NULL)
-
-c_h(h, q, L = NULL)
-
-lambda_L(L = NULL, q)
-
-b_L(L = NULL, q)
-
-d_L(L = NULL, q)
 }
 \arguments{
-\item{x}{evaluation points, a matrix of size \code{c(nx, q + 1)}.}
+\item{x}{evaluation points on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(nx, q + 1)}.}
 
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
-\item{h}{bandwidth, a scalar for \code{kde_dir}. Can be a vector
-for \code{c_h}.}
+\item{h}{bandwidth, a scalar.}
 
-\item{L}{kernel function. Set internally to \code{function(x) exp(-x)}
-(von Mises--Fisher kernel) if \code{NULL} (default).}
-
-\item{q}{dimension of \eqn{S^q}, \eqn{q\ge 1}.}
+\item{L}{kernel function. Set internally to \code{function(x) exp(-x)} (von
+Mises--Fisher kernel) if \code{NULL} (default).}
 }
 \value{
-\code{kde_dir} returns a vector of size \code{nx} with the
-evaluated kernel density estimator. \code{c_h} returns the normalizing
-constant for the kernel, a vector of length \code{length(h)}.
-\code{lambda_L}, \code{b_L}, and \code{d_L} return moments of \code{L}.
+The evaluated kernel density estimator, a vector of size
+\code{nx}.
 }
 \description{
-Kernel density estimation with directional data as in
-the estimator of Bai et al. (1988).
+Kernel density estimation with directional data on
+\eqn{\mathbb{S}^q} as in the estimator of Bai et al. (1988).
 }
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.
-When \code{L = NULL}, faster FORTRAN code is employed.
 }
 \examples{
 # Sample
 n <- 50
 q <- 3
-samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
+if (requireNamespace("rotasym", quietly = TRUE)) {
 
-# Evaluation points
-x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
+  set.seed(42)
+  samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
-# kde_dir
-kde_dir(x = x, data = samp, h = 0.5, L = NULL)
-kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x))
+  # Evaluation points
+  x <- rbind(diag(1, nrow = q + 1), diag(-1, nrow = q + 1))
 
-# c_h
-c_h(h = 0.5, q = q, L = NULL)
-c_h(h = 0.5, q = q, L = function(x) exp(-x))
+  # kde_dir
+  print(kde_dir(x = x, data = samp, h = 0.5, L = NULL))
+  print(kde_dir(x = x, data = samp, h = 0.5, L = function(x) exp(-x)))
 
-# b_L
-b_L(L = NULL, q = q)
-b_L(L = function(x) exp(-x), q = q)
-
-# d_L
-d_L(L = NULL, q = q)
-d_L(L = function(x) exp(-x), q = q)
-
-# lambda_L
-lambda_L(L = NULL, q = q)
-lambda_L(L = function(x) exp(-x), q = q)
+}
 }
 \references{
 Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
 density function of directional data. \emph{Journal of Multivariate
 Analysis}, 27(1):24--39.
 \doi{10.1016/0047-259X(88)90113-3}
+}
+\seealso{
+\code{\link{bw_dir_cv}}, \code{\link{bw_dir_pi}}, \code{\link{c_h}},
+\code{\link{vmf}}.
 }

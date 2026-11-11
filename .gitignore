@@ -1,7 +1,6 @@
 *.o
 *.so
 .DS_Store
-.DS_Store
-.DS_Store
 .Rproj.user
 DirStats.code-workspace
+revdep/
