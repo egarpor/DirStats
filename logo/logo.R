@@ -182,8 +182,3 @@ dir.create("man/figures", recursive = TRUE, showWarnings = FALSE)
 # Primary logo (master + shipped mirror)
 sticker_logo(make_globe(), "logo/logo.png")
 file.copy("logo/logo.png", "man/figures/logo.png", overwrite = TRUE)
-
-# Variants for comparison (kept in logo/, not shipped)
-sticker_logo(make_globe(graticule = FALSE), "logo/logo-variant-nogrid.png")
-sticker_logo(make_globe(palette = viridisLite::magma),
-             "logo/logo-variant-magma.png")
