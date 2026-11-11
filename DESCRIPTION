@@ -26,7 +26,7 @@ Suggests:
     testthat (>= 3.0.0),
     viridisLite
 URL: https://github.com/egarpor/DirStats
-BugReports: https://github.com/egarpor/DirStats
+BugReports: https://github.com/egarpor/DirStats/issues
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3
