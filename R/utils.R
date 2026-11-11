@@ -1,10 +1,11 @@
 
 
-#' @title Integration routines
+#' @title Integration routines on the hypersphere
 #'
-#' @description Several quadrature rules for integration of functions on
+#' @description Quadrature rules for integration of functions on
 #' \eqn{\mathbb{S}^1}, \eqn{\mathbb{S}^2}, and \eqn{\mathbb{S}^q},
-#' \eqn{q \ge 3}.
+#' \eqn{q \ge 3}. \code{int_dir} dispatches \code{int_cir}, \code{int_sph}, or
+#' \code{int_hypsph}, depending on \eqn{q}.
 #'
 #' @param f function to be integrated on \eqn{\mathbb{S}^q}. Must be vectorized
 #' and accept matrix inputs of size \code{c(nx, q + 1)}.
@@ -20,8 +21,8 @@
 #' in \code{int_dir} if \eqn{q > 2}: either a function of \code{M} returning a
 #' matrix of size \code{c(M, q + 1)}, or a matrix of draws on
 #' \eqn{\mathbb{S}^q}. Passing a matrix reuses the same sample across several
-#' integrations. \code{M} is ignored if \code{sim} is a matrix. Defaults to
-#' \code{NULL}, which draws uniformly on \eqn{\mathbb{S}^q}.
+#' integrations. Defaults to \code{NULL}, which draws uniformly on
+#' \eqn{\mathbb{S}^q}.
 #' @param f_sim density of \code{sim}, used as the importance weights. Defaults
 #' to \code{NULL}, which assumes that \code{sim} is uniform.
 #' @param ... further arguments passed to \code{f}. For \code{int_dir}, passed
@@ -44,11 +45,13 @@
 #' sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
 #' 59(3):477--481.
 #'
-#' Press, W. H., Teukolsky, S. A., Vetterling, W. T. and Flannery B. P. (1997).
+#' Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P.
+#' (1997).
 #' \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
 #' Volume 1. Cambridge University Press, Cambridge. Second edition.
-#' @seealso \code{\link{conv}} for the coordinate transformations used to build
-#' the integration grids, and \code{\link{lebedev}} for the quadrature data
+#' @seealso \code{\link{to_rad}} for the coordinate transformations used to
+#' build the integration grids, \code{\link{normalize}} for the normalization
+#' of the Monte Carlo draws, and \code{\link{lebedev}} for the quadrature data
 #' employed by \code{int_sph}.
 #' @examples
 #' # S^1, trapezoidal rule
@@ -166,22 +169,64 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, sim = NULL,
 }
 
 
-#' @title Convenience functions
+#' @title Normalization onto the hypersphere
 #'
-#' @description Normalization of data in \eqn{\mathbb{R}^{q + 1}} to
-#' \eqn{\mathbb{S}^q}. Transformations between \eqn{\mathbb{S}^1} and
-#' \eqn{[0, 2\pi)}, and between \eqn{\mathbb{S}^2} and
-#' \eqn{[0, 2\pi) \times [0, \pi]}.
+#' @description Euclidean norms of the rows of \code{x}, and normalization of
+#' data in \eqn{\mathbb{R}^{q + 1}} to \eqn{\mathbb{S}^q}.
 #'
-#' @param x matrix or vector, in \eqn{\mathbb{S}^1} for \code{to_cir}.
-#' @param th vector of angles in \eqn{[0, 2\pi)}.
-#' @param ph vector of angles in \eqn{[0, \pi]}.
+#' @param x a matrix of size \code{c(n, q + 1)} or a vector of length
+#' \code{q + 1}.
 #' @return
 #' \itemize{
 #'   \item \code{norm2}: the Euclidean norms of the rows of \code{x}, a vector
 #'   of size \code{nrow(x)}.
 #'   \item \code{normalize}: the row-normalized \code{x}, a matrix with the
 #'   same size as \code{x}.
+#' }
+#' @seealso \code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q}, whose
+#' Monte Carlo draws are normalized with \code{normalize}.
+#' @examples
+#' # Normalization
+#' x <- 1:3
+#' norm2(x)
+#' normalize(x)
+#' x <- rbind(1:3, 3:1)
+#' norm2(x)
+#' normalize(x)
+#' @name normalize
+
+
+#' @rdname normalize
+#' @export
+norm2 <- function(x) {
+
+  if (!is.matrix(x)) x <- t(x)
+  return(sqrt(rowSums(x^2)))
+
+}
+
+
+#' @rdname normalize
+#' @export
+normalize <- function(x) {
+
+  return(x / norm2(x))
+
+}
+
+
+#' @title Polar and spherical coordinates
+#'
+#' @description Transformations between \eqn{\mathbb{S}^1} and
+#' \eqn{[0, 2\pi)}, and between \eqn{\mathbb{S}^2} and
+#' \eqn{[0, 2\pi) \times [0, \pi]}.
+#'
+#' @param x points on \eqn{\mathbb{S}^1} or \eqn{\mathbb{S}^2}, a matrix of size
+#' \code{c(n, 2)} or \code{c(n, 3)}, or a vector.
+#' @param th vector of angles in \eqn{[0, 2\pi)}.
+#' @param ph vector of angles in \eqn{[0, \pi]}.
+#' @return
+#' \itemize{
 #'   \item \code{to_cir}: the position in \eqn{\mathbb{S}^1}, a matrix of size
 #'   \code{c(length(th), 2)}.
 #'   \item \code{to_sph}: the position in \eqn{\mathbb{S}^2}, a matrix of size
@@ -194,14 +239,6 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, sim = NULL,
 #' @seealso \code{\link{int_dir}} for integration on \eqn{\mathbb{S}^q},
 #' which relies on these conversions.
 #' @examples
-#' # Normalization
-#' x <- 1:3
-#' norm2(x)
-#' normalize(x)
-#' x <- rbind(1:3, 3:1)
-#' norm2(x)
-#' normalize(x)
-#'
 #' # Circular transformations
 #' th <- 1
 #' x <- c(0, 1)
@@ -219,29 +256,10 @@ int_hypsph <- function(f, q, M = 1e5, na.rm = TRUE, f_vect = TRUE, sim = NULL,
 #'               c(ph, ph + 1)))
 #' to_sph(to_rad(x)[, 1], to_rad(x)[, 2])
 #' to_sph(to_rad(rbind(x, -x))[, 1], to_rad(rbind(x, -x))[, 2])
-#' @name conv
+#' @name to_rad
 
 
-#' @rdname conv
-#' @export
-norm2 <- function(x) {
-
-  if (!is.matrix(x)) x <- t(x)
-  return(sqrt(rowSums(x^2)))
-
-}
-
-
-#' @rdname conv
-#' @export
-normalize <- function(x) {
-
-  return(x / norm2(x))
-
-}
-
-
-#' @rdname conv
+#' @rdname to_rad
 #' @export
 to_cir <- function(th) {
 
@@ -250,7 +268,7 @@ to_cir <- function(th) {
 }
 
 
-#' @rdname conv
+#' @rdname to_rad
 #' @export
 to_rad <- function(x) {
 
@@ -268,7 +286,7 @@ to_rad <- function(x) {
 }
 
 
-#' @rdname conv
+#' @rdname to_rad
 #' @export
 to_sph <- function(th, ph) {
 
@@ -282,7 +300,7 @@ to_sph <- function(th, ph) {
 #' @description Surface area of the hypersphere
 #' \eqn{\mathbb{S}^q := \{x \in \mathbb{R}^{q + 1} : ||x|| = 1\}},
 #' \eqn{q \ge 0}, given by
-#' \deqn{\omega_q := 2\pi^{(q + 1) / 2} / \Gamma((q + 1) / 2).}
+#' \eqn{\omega_q := 2\pi^{(q + 1) / 2} / \Gamma((q + 1) / 2)}.
 #'
 #' @param q dimension of \eqn{\mathbb{S}^q}, \eqn{q \ge 0}. A vector.
 #' @param log return the logarithm of the area? Defaults to \code{FALSE}.

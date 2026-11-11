@@ -7,13 +7,13 @@
 #'
 #' @inheritParams kde_dir
 #' @param mu,kappa,p mixture parameters. \code{mu} is the mean matrix of size
-#' \code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
+#' \code{c(length(p), q + 1)}, \code{kappa} is a vector of \code{length(p)}
 #' concentration parameters, and \code{p} is the vector of mixture proportions.
 #' @param norm enforce normalization of \code{x} internally? Defaults to
 #' \code{FALSE}.
 #' @param min_kappa,max_kappa initial search interval (in \code{kappa}) for the
 #' maximum likelihood estimate. The interval is automatically extended if the
-#' root lies outside. Default to \code{1e-4} and \code{1e4}.
+#' root lies outside. Defaults to \code{1e-4} and \code{1e4}.
 #' @param R resultant length, a scalar. If \code{NULL} (default), it is computed
 #' from \code{data}.
 #' @param ... further parameters passed to \code{\link{uniroot}}.
@@ -38,8 +38,8 @@
 #'   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 #'
 #'   # Estimates
-#'   print(mu_ml(samp))
-#'   print(kappa_ml(samp))
+#'   print(mu_ml(data = samp))
+#'   print(kappa_ml(data = samp))
 #'
 #' }
 #'
@@ -150,10 +150,11 @@ d_mixvmf <- function(x, mu, kappa, p, norm = FALSE) {
 #' \eqn{e^\kappa c_q(\kappa)}? Defaults to \code{FALSE}.
 #' @return The evaluation of \eqn{\log c_q(\kappa)}, a vector conformable with
 #' \code{q} and \code{kappa}.
-#' @details The uniform limit \eqn{\kappa = 0} is returned as the reciprocal
-#' surface area of \eqn{\mathbb{S}^q}, avoiding the \eqn{\log(0)} of the general
-#' expression.
-#' @seealso \code{\link{log_besselI_scaled}}, \code{\link{vmf}}.
+#' @details The value at the uniform limit \eqn{\kappa = 0} is the reciprocal
+#' surface area of \eqn{\mathbb{S}^q}, obtained by continuity.
+#' @seealso \code{\link{log_besselI_scaled}} for the scaled log-Bessel function
+#' this constant is computed through, and \code{\link{vmf}} for the von
+#' Mises--Fisher utilities that employ it.
 #' @examples
 #' # Normalizing constant, uniform case included
 #' log_c_vmf(q = 2, kappa = c(0, 1, 10))

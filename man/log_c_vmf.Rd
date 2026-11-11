@@ -12,10 +12,11 @@ log_c_vmf(q, kappa, spline = TRUE, scaled = FALSE)
 \item{kappa}{vector of non-negative concentration parameters.}
 
 \item{spline}{evaluate the scaled log-Bessel with a fast cubic-spline
-interpolation for the orders \code{nu} in \code{seq(0, 50, by = 0.5)}? Other
-orders, or \code{spline = FALSE}, use \code{\link[base]{besselI}} together
-with the asymptotic expansions. The spline is only effective when \code{nu}
-is a single value on that grid. Defaults to \code{TRUE}.}
+interpolation? Only for the orders \code{nu} in
+\code{seq(0, 50, by = 0.5)}. Other orders, or \code{spline = FALSE}, use
+\code{\link[base]{besselI}} together with the asymptotic expansions. The
+spline is only effective when \code{nu} is a single value on that grid.
+Defaults to \code{TRUE}.}
 
 \item{scaled}{return the exponentially scaled constant
 \eqn{e^\kappa c_q(\kappa)}? Defaults to \code{FALSE}.}
@@ -32,9 +33,8 @@ logarithm of the von Mises--Fisher normalizing constant
 \code{\link{log_besselI_scaled}}.
 }
 \details{
-The uniform limit \eqn{\kappa = 0} is returned as the reciprocal
-surface area of \eqn{\mathbb{S}^q}, avoiding the \eqn{\log(0)} of the general
-expression.
+The value at the uniform limit \eqn{\kappa = 0} is the reciprocal
+surface area of \eqn{\mathbb{S}^q}, obtained by continuity.
 }
 \examples{
 # Normalizing constant, uniform case included
@@ -48,5 +48,7 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
 }
 }
 \seealso{
-\code{\link{log_besselI_scaled}}, \code{\link{vmf}}.
+\code{\link{log_besselI_scaled}} for the scaled log-Bessel function
+this constant is computed through, and \code{\link{vmf}} for the von
+Mises--Fisher utilities that employ it.
 }

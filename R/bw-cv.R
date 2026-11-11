@@ -28,10 +28,12 @@
 #' }
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
+#'
 #' When \code{L = NULL}, faster vectorized expressions specific to the von
-#' Mises--Fisher kernel are employed. The pairwise sums are accumulated in row
-#' blocks of at most 2.5e5 inner products, so the memory footprint stays flat
-#' in \eqn{n} for \eqn{n > 5000}.
+#' Mises--Fisher kernel are employed.
+#'
+#' The pairwise sums are accumulated in row blocks of at most 2.5e5 inner
+#' products, so the memory footprint stays flat in \eqn{n} for \eqn{n > 5000}.
 #'
 #' \code{bw_dir_lscv} employs Monte Carlo integration for \eqn{q > 2}, which
 #' results in a random output. Use \code{set.seed} before to avoid it.
@@ -42,8 +44,8 @@
 #' @section Warning:
 #' \code{bw_dir_lscv} is not suited for large dimensions, as its loss overflows
 #' for small bandwidths from \eqn{q \approx 45}. Use instead
-#' \code{polykde::bw_cv_polysph(X = data, d = q, type = "LSCV",
-#' arcsinh = TRUE)}.
+#' \href{https://CRAN.R-project.org/package=polykde}{\code{polykde::bw_cv_polysph}}
+#' with \code{type = "LSCV"} and \code{arcsinh = TRUE}.
 #' @references
 #' Hall, P., Watson, G. S., and Cabrera, J. (1987). Kernel density estimation
 #' with spherical data. \emph{Biometrika}, 74(4):751--762.

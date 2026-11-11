@@ -12,10 +12,11 @@
 #' with \code{x}.
 #' @param x vector of non-negative evaluation points.
 #' @param spline evaluate the scaled log-Bessel with a fast cubic-spline
-#' interpolation for the orders \code{nu} in \code{seq(0, 50, by = 0.5)}? Other
-#' orders, or \code{spline = FALSE}, use \code{\link[base]{besselI}} together
-#' with the asymptotic expansions. The spline is only effective when \code{nu}
-#' is a single value on that grid. Defaults to \code{TRUE}.
+#' interpolation? Only for the orders \code{nu} in
+#' \code{seq(0, 50, by = 0.5)}. Other orders, or \code{spline = FALSE}, use
+#' \code{\link[base]{besselI}} together with the asymptotic expansions. The
+#' spline is only effective when \code{nu} is a single value on that grid.
+#' Defaults to \code{TRUE}.
 #' @return The evaluation of \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector
 #' conformable with \code{nu} and \code{x}.
 #' @details The function combines four regimes so that the result is finite and
@@ -36,13 +37,21 @@
 #' The cutoff \eqn{\nu = 50} is where \code{besselI.nuAsym(k.max = 5)} is
 #' accurate to below \eqn{10^{-10}}, so it takes over from the tabulated orders
 #' with a smooth join.
+#'
+#' The splines are built at load time from internal tables of
+#' \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, precomputed for the 101 orders
+#' \code{seq(0, 50, by = 0.5)} on 1400 knots equispaced in \eqn{\log(x)} over
+#' \eqn{[10^{-5}, 10^4]}.
 #' @references
-#' DLMF (2024). \emph{NIST Digital Library of Mathematical Functions}. Section
+#' DLMF (2026). \emph{NIST Digital Library of Mathematical Functions}. Section
 #' 10.41. \url{https://dlmf.nist.gov/10.41}
-#' @seealso \code{\link{log_c_vmf}}, \code{\link[base]{besselI}}.
+#' @seealso \code{\link{log_c_vmf}} for the von Mises--Fisher normalizing
+#' constant computed through this function, and \code{\link[base]{besselI}}
+#' for the direct evaluation.
 #' @examples
 #' # Scaled log-Bessel across regimes
 #' log_besselI_scaled(nu = 0.5, x = c(1e-6, 1, 1e5))
+#'
 #' # The spline (default) and the direct evaluation agree closely
 #' log_besselI_scaled(nu = 0.5, x = 2)
 #' log_besselI_scaled(nu = 0.5, x = 2, spline = FALSE)

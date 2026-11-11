@@ -2,11 +2,13 @@
 
 #' @title Directional kernel density estimator
 #'
-#' @description Kernel density estimation with directional data as in the
-#' estimator of Bai et al. (1988).
+#' @description Kernel density estimation with directional data on
+#' \eqn{\mathbb{S}^q} as in the estimator of Bai et al. (1988).
 #'
-#' @param x evaluation points, a matrix of size \code{c(nx, q + 1)}.
-#' @param data directional data, a matrix of size \code{c(n, q + 1)}.
+#' @param x evaluation points on \eqn{\mathbb{S}^q}, a matrix of size
+#' \code{c(nx, q + 1)}.
+#' @param data directional data on \eqn{\mathbb{S}^q}, a matrix of size
+#' \code{c(n, q + 1)}.
 #' @param h bandwidth, a scalar for \code{kde_dir}. Can be a vector for
 #' \code{c_h}.
 #' @param L kernel function. Set internally to \code{function(x) exp(-x)} (von
@@ -20,8 +22,6 @@
 #'   size \code{nx}.
 #'   \item \code{c_h}: the normalizing constant of the kernel, a vector of size
 #'   \code{length(h)}.
-#'   \item \code{lambda_L}, \code{b_L}, \code{d_L}: the moments
-#'   \eqn{\lambda(L)}, \eqn{b(L)}, and \eqn{d(L)} of \code{L}, each a scalar.
 #' }
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
@@ -54,18 +54,6 @@
 #' # c_h
 #' c_h(h = 0.5, q = q, L = NULL)
 #' c_h(h = 0.5, q = q, L = function(x) exp(-x))
-#'
-#' # b_L
-#' b_L(L = NULL, q = q)
-#' b_L(L = function(x) exp(-x), q = q)
-#'
-#' # d_L
-#' d_L(L = NULL, q = q)
-#' d_L(L = function(x) exp(-x), q = q)
-#'
-#' # lambda_L
-#' lambda_L(L = NULL, q = q)
-#' lambda_L(L = function(x) exp(-x), q = q)
 #' @export
 kde_dir <- function(x, data, h, L = NULL) {
 
@@ -146,8 +134,14 @@ c_h <- function(h, q, L = NULL, log = FALSE) {
 }
 
 
-#' @rdname kde_dir
-#' @export
+#' @title Moments of a directional kernel
+#'
+#' @description Moments \eqn{\lambda_q(L)}, \eqn{b_q(L)}, and \eqn{d_q(L)} of
+#' the kernel \code{L} that enter the AMISE bandwidth of \code{bw_dir_ami}.
+#'
+#' @inheritParams kde_dir
+#' @return The moment, a scalar.
+#' @noRd
 lambda_L <- function(L = NULL, q) {
 
   # Von Mises--Fisher kernel?
@@ -171,8 +165,7 @@ lambda_L <- function(L = NULL, q) {
 }
 
 
-#' @rdname kde_dir
-#' @export
+#' @noRd
 b_L <- function(L = NULL, q) {
 
   # Von Mises--Fisher kernel?
@@ -199,8 +192,7 @@ b_L <- function(L = NULL, q) {
 }
 
 
-#' @rdname kde_dir
-#' @export
+#' @noRd
 d_L <- function(L = NULL, q) {
 
   # Von Mises--Fisher kernel?

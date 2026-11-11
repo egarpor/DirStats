@@ -3,8 +3,8 @@
 #' @title Fitting mixtures of von Mises--Fisher distributions
 #'
 #' @description Fitting mixtures of von Mises--Fisher distributions by the
-#' Expectation-maximization algorithm, with determination of the optimal number
-#' of mixture components.
+#' expectation--maximization algorithm, with determination of the optimal
+#' number of mixture components.
 #'
 #' @inheritParams kde_dir
 #' @param M_bound bound for the number of components in the mixtures. If it is
@@ -34,7 +34,7 @@
 #'   of the fitted mixtures.
 #' }
 #' @details
-#' See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
+#' See Algorithm 3 in García-Portugués (2013). The expectation--maximization
 #' fit is performed with \code{\link[movMF]{movMF}}.
 #'
 #' The \code{kappa_max} screening allows discarding fits with spurious
@@ -251,6 +251,8 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #'   \item \code{R_Psi_mixvmf}: the curvature term of the mixture, a scalar.
 #' }
 #' @details
+#' \code{data} is not checked to have unit norm, so the user must be careful.
+#'
 #' See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
 #' selector is implemented according to Proposition 2, \bold{but} without
 #' the paper's typo in equation (6), case \eqn{q = 2}, where an incorrect
@@ -289,16 +291,18 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #'   fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
 #'
 #'   # ROT
-#'   print(bw_dir_rot(samp))
+#'   print(bw_dir_rot(data = samp))
 #'
 #'   # AMI
-#'   print(bw_dir_ami(samp))
-#'   print(bw_dir_ami(samp, fit_mix = fit_mix))
-#'   print(bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x)))
+#'   print(bw_dir_ami(data = samp))
+#'   print(bw_dir_ami(data = samp, fit_mix = fit_mix))
+#'   print(bw_dir_ami(data = samp, fit_mix = fit_mix,
+#'                    L = function(x) exp(-x)))
 #'
 #'   # EMI
-#'   print(bw_dir_emi(samp))
-#'   print(bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE))
+#'   print(bw_dir_emi(data = samp))
+#'   print(bw_dir_emi(data = samp, fit_mix = fit_mix, optim = FALSE,
+#'                    plot_it = TRUE))
 #'
 #' }
 #' @name bw_dir_pi

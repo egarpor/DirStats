@@ -5,7 +5,8 @@
 \alias{int_cir}
 \alias{int_sph}
 \alias{int_hypsph}
-\title{Integration routines}
+\title{Integration routines on
+\ifelse{latex}{\eqn{\mathbb{S}\sp{q}}}{\eqn{\mathbb{S}^q}}}
 \usage{
 int_dir(f, q, sim = NULL, f_sim = NULL, ...)
 
@@ -34,8 +35,8 @@ and accept matrix inputs of size \code{c(nx, q + 1)}.}
 in \code{int_dir} if \eqn{q > 2}: either a function of \code{M} returning a
 matrix of size \code{c(M, q + 1)}, or a matrix of draws on
 \eqn{\mathbb{S}^q}. Passing a matrix reuses the same sample across several
-integrations. \code{M} is ignored if \code{sim} is a matrix. Defaults to
-\code{NULL}, which draws uniformly on \eqn{\mathbb{S}^q}.}
+integrations. Defaults to \code{NULL}, which draws uniformly on
+\eqn{\mathbb{S}^q}.}
 
 \item{f_sim}{density of \code{sim}, used as the importance weights. Defaults
 to \code{NULL}, which assumes that \code{sim} is uniform.}
@@ -58,9 +59,10 @@ Defaults to \code{TRUE}.}
 A scalar approximating the integral.
 }
 \description{
-Several quadrature rules for integration of functions on
+Quadrature rules for integration of functions on
 \eqn{\mathbb{S}^1}, \eqn{\mathbb{S}^2}, and \eqn{\mathbb{S}^q},
-\eqn{q \ge 3}.
+\eqn{q \ge 3}. \code{int_dir} dispatches \code{int_cir}, \code{int_sph}, or
+\code{int_hypsph}, depending on \eqn{q}.
 }
 \details{
 \code{int_cir} is an extension of equation (4.1.11) in Press et al. (1997),
@@ -110,12 +112,14 @@ Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
 sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
 59(3):477--481.
 
-Press, W. H., Teukolsky, S. A., Vetterling, W. T. and Flannery B. P. (1997).
+Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P.
+(1997).
 \emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
 Volume 1. Cambridge University Press, Cambridge. Second edition.
 }
 \seealso{
-\code{\link{conv}} for the coordinate transformations used to build
-the integration grids, and \code{\link{lebedev}} for the quadrature data
+\code{\link{to_rad}} for the coordinate transformations used to
+build the integration grids, \code{\link{normalize}} for the normalization
+of the Monte Carlo draws, and \code{\link{lebedev}} for the quadrature data
 employed by \code{int_sph}.
 }

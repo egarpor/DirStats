@@ -3,25 +3,18 @@
 \name{kde_dir}
 \alias{kde_dir}
 \alias{c_h}
-\alias{lambda_L}
-\alias{b_L}
-\alias{d_L}
 \title{Directional kernel density estimator}
 \usage{
 kde_dir(x, data, h, L = NULL)
 
 c_h(h, q, L = NULL, log = FALSE)
-
-lambda_L(L = NULL, q)
-
-b_L(L = NULL, q)
-
-d_L(L = NULL, q)
 }
 \arguments{
-\item{x}{evaluation points, a matrix of size \code{c(nx, q + 1)}.}
+\item{x}{evaluation points on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(nx, q + 1)}.}
 
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
 \item{h}{bandwidth, a scalar for \code{kde_dir}. Can be a vector for
 \code{c_h}.}
@@ -40,13 +33,11 @@ Mises--Fisher kernel) if \code{NULL} (default).}
   size \code{nx}.
   \item \code{c_h}: the normalizing constant of the kernel, a vector of size
   \code{length(h)}.
-  \item \code{lambda_L}, \code{b_L}, \code{d_L}: the moments
-  \eqn{\lambda(L)}, \eqn{b(L)}, and \eqn{d(L)} of \code{L}, each a scalar.
 }
 }
 \description{
-Kernel density estimation with directional data as in the
-estimator of Bai et al. (1988).
+Kernel density estimation with directional data on
+\eqn{\mathbb{S}^q} as in the estimator of Bai et al. (1988).
 }
 \details{
 \code{data} is not checked to have unit norm, so the user must be careful.
@@ -72,18 +63,6 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
 # c_h
 c_h(h = 0.5, q = q, L = NULL)
 c_h(h = 0.5, q = q, L = function(x) exp(-x))
-
-# b_L
-b_L(L = NULL, q = q)
-b_L(L = function(x) exp(-x), q = q)
-
-# d_L
-d_L(L = NULL, q = q)
-d_L(L = function(x) exp(-x), q = q)
-
-# lambda_L
-lambda_L(L = NULL, q = q)
-lambda_L(L = function(x) exp(-x), q = q)
 }
 \references{
 Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of

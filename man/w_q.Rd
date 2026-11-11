@@ -19,7 +19,7 @@ The surface area of \eqn{\mathbb{S}^q}, a vector of size
 Surface area of the hypersphere
 \eqn{\mathbb{S}^q := \{x \in \mathbb{R}^{q + 1} : ||x|| = 1\}},
 \eqn{q \ge 0}, given by
-\deqn{\omega_q := 2\pi^{(q + 1) / 2} / \Gamma((q + 1) / 2).}
+\eqn{\omega_q := 2\pi^{(q + 1) / 2} / \Gamma((q + 1) / 2)}.
 }
 \details{
 \eqn{\mathbb{S}^0 = \{-1, 1\}} and its "surface area" is \eqn{2}. The

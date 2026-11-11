@@ -16,7 +16,8 @@ bic_vmf_mix(
 )
 }
 \arguments{
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
 \item{M_bound}{bound for the number of components in the mixtures. If it is
 not enough, the search for the mixture with minimum \code{crit} will continue
@@ -56,11 +57,11 @@ A list with entries:
 }
 \description{
 Fitting mixtures of von Mises--Fisher distributions by the
-Expectation-maximization algorithm, with determination of the optimal number
-of mixture components.
+expectation--maximization algorithm, with determination of the optimal
+number of mixture components.
 }
 \details{
-See Algorithm 3 in García-Portugués (2013). The Expectation-Maximization
+See Algorithm 3 in García-Portugués (2013). The expectation--maximization
 fit is performed with \code{\link[movMF]{movMF}}.
 
 The \code{kappa_max} screening allows discarding fits with spurious

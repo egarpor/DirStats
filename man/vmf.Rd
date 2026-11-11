@@ -14,21 +14,23 @@ mu_ml(data)
 d_mixvmf(x, mu, kappa, p, norm = FALSE)
 }
 \arguments{
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
 \item{min_kappa, max_kappa}{initial search interval (in \code{kappa}) for the
 maximum likelihood estimate. The interval is automatically extended if the
-root lies outside. Default to \code{1e-4} and \code{1e4}.}
+root lies outside. Defaults to \code{1e-4} and \code{1e4}.}
 
 \item{R}{resultant length, a scalar. If \code{NULL} (default), it is computed
 from \code{data}.}
 
 \item{...}{further parameters passed to \code{\link{uniroot}}.}
 
-\item{x}{evaluation points, a matrix of size \code{c(nx, q + 1)}.}
+\item{x}{evaluation points on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(nx, q + 1)}.}
 
 \item{mu, kappa, p}{mixture parameters. \code{mu} is the mean matrix of size
-\code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
+\code{c(length(p), q + 1)}, \code{kappa} is a vector of \code{length(p)}
 concentration parameters, and \code{p} is the vector of mixture proportions.}
 
 \item{norm}{enforce normalization of \code{x} internally? Defaults to
@@ -57,8 +59,8 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
   samp <- rotasym::r_vMF(n = n, mu = c(1, rep(0, q)), kappa = 2)
 
   # Estimates
-  print(mu_ml(samp))
-  print(kappa_ml(samp))
+  print(mu_ml(data = samp))
+  print(kappa_ml(data = samp))
 
 }
 

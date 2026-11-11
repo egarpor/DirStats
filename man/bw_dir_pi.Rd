@@ -26,7 +26,8 @@ bw_dir_emi(
 )
 }
 \arguments{
-\item{data}{directional data, a matrix of size \code{c(n, q + 1)}.}
+\item{data}{directional data on \eqn{\mathbb{S}^q}, a matrix of size
+\code{c(n, q + 1)}.}
 
 \item{fit_mix}{output from \code{\link{bic_vmf_mix}}. Computed internally if
 \code{NULL} (default).}
@@ -37,7 +38,7 @@ Mises--Fisher kernel) if \code{NULL} (default).}
 \item{q}{dimension of \eqn{\mathbb{S}^q}, \eqn{q\ge 1}.}
 
 \item{mu, kappa, p}{mixture parameters. \code{mu} is the mean matrix of size
-\code{c(length(p), q + 1)}, \code{kappa} is vector of \code{length(p)}
+\code{c(length(p), q + 1)}, \code{kappa} is a vector of \code{length(p)}
 concentration parameters, and \code{p} is the vector of mixture proportions.}
 
 \item{optim}{run an optimization? Defaults to \code{TRUE}. Otherwise, a grid
@@ -74,6 +75,8 @@ directional data, including Rule-Of-Thumb (ROT), Asymptotic MIxtures (AMI),
 and Exact MIxtures (EMI).
 }
 \details{
+\code{data} is not checked to have unit norm, so the user must be careful.
+
 See Algorithms 1 (AMI) and 2 (EMI) in García-Portugués (2013). The ROT
 selector is implemented according to Proposition 2, \bold{but} without
 the paper's typo in equation (6), case \eqn{q = 2}, where an incorrect
@@ -108,16 +111,18 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
   fit_mix <- bic_vmf_mix(data = samp, plot_it = TRUE)
 
   # ROT
-  print(bw_dir_rot(samp))
+  print(bw_dir_rot(data = samp))
 
   # AMI
-  print(bw_dir_ami(samp))
-  print(bw_dir_ami(samp, fit_mix = fit_mix))
-  print(bw_dir_ami(samp, fit_mix = fit_mix, L = function(x) exp(-x)))
+  print(bw_dir_ami(data = samp))
+  print(bw_dir_ami(data = samp, fit_mix = fit_mix))
+  print(bw_dir_ami(data = samp, fit_mix = fit_mix,
+                   L = function(x) exp(-x)))
 
   # EMI
-  print(bw_dir_emi(samp))
-  print(bw_dir_emi(samp, fit_mix = fit_mix, optim = FALSE, plot_it = TRUE))
+  print(bw_dir_emi(data = samp))
+  print(bw_dir_emi(data = samp, fit_mix = fit_mix, optim = FALSE,
+                   plot_it = TRUE))
 
 }
 }
