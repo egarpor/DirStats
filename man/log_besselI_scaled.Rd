@@ -12,12 +12,11 @@ with \code{x}.}
 
 \item{x}{vector of non-negative evaluation points.}
 
-\item{spline}{if \code{TRUE} (default), evaluate the scaled log-Bessel with a
-fast cubic-spline interpolation for orders \code{nu} in
-\code{seq(0, 50, by = 0.5)}, and fall back to \code{\link[base]{besselI}} for
-any other order. If \code{FALSE}, always use \code{\link[base]{besselI}}
-together with the asymptotic expansions. The spline is only effective when
-\code{nu} is a single value on that grid.}
+\item{spline}{evaluate the scaled log-Bessel with a fast cubic-spline
+interpolation for the orders \code{nu} in \code{seq(0, 50, by = 0.5)}? Other
+orders, or \code{spline = FALSE}, use \code{\link[base]{besselI}} together
+with the asymptotic expansions. The spline is only effective when \code{nu}
+is a single value on that grid. Defaults to \code{TRUE}.}
 }
 \value{
 The evaluation of \eqn{\log(e^{-x} \mathcal{I}_\nu(x))}, a vector

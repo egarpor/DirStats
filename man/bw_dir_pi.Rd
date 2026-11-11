@@ -84,6 +84,9 @@ term of a mixture of von Mises--Fisher densities.
 
 \code{bw_dir_emi} employs Monte Carlo integration for \eqn{q > 2}, which
 results in a random output. Use \code{set.seed} before to avoid it.
+
+The selectors warn and return \code{NA} (\code{h_opt = NA} for
+\code{bw_dir_emi}) for degenerate concentrations.
 }
 \examples{
 # Sample

@@ -19,7 +19,7 @@ distribution.
 Useful links:
 \itemize{
   \item \url{https://github.com/egarpor/DirStats}
-  \item Report bugs at \url{https://github.com/egarpor/DirStats}
+  \item Report bugs at \url{https://github.com/egarpor/DirStats/issues}
 }
 
 }
