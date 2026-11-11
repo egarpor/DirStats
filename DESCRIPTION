@@ -24,7 +24,8 @@ Imports:
 Suggests:
     rotasym,
     testthat (>= 3.0.0),
-    viridisLite
+    viridisLite,
+    withr
 URL: https://github.com/egarpor/DirStats
 BugReports: https://github.com/egarpor/DirStats/issues
 Encoding: UTF-8
