@@ -23,38 +23,20 @@ test_that("kde_dir integrates to one over the sphere", {
 
 })
 
-test_that("kde_dir accepts a single evaluation point as a vector", {
+test_that("kde_dir accepts a vector x and removes NAs in data", {
 
   set.seed(1)
   samp <- r_proj_norm(n = 20, mu = c(0, 1), kappa = 1)
-  expect_length(kde_dir(x = c(0, 1), data = samp, h = 0.5), 1)
-
-})
-
-test_that("kde_dir removes NAs in data", {
-
-  set.seed(1)
-  samp <- r_proj_norm(n = 20, mu = c(0, 1), kappa = 1)
-  samp_na <- rbind(samp, c(NA, NA))
-  expect_equal(kde_dir(x = c(0, 1), data = samp_na, h = 0.5),
-               kde_dir(x = c(0, 1), data = samp, h = 0.5))
-
-})
-
-test_that("kde_dir is finite at a bandwidth selected for concentrated data", {
-
-  set.seed(5)
-  samp <- r_proj_norm(n = 50, mu = c(0, 0, 1), kappa = 1e6)
-  h <- bw_dir_rot(samp)
-  expect_true(is.finite(h) && h > 0)
-  dens <- kde_dir(x = rbind(c(0, 0, 1), c(1, 0, 0)), data = samp, h = h)
-  expect_true(all(is.finite(dens)) && all(dens >= 0))
+  kde <- kde_dir(x = c(0, 1), data = samp, h = 0.5)
+  expect_length(kde, 1)
+  expect_equal(kde_dir(x = c(0, 1), data = rbind(samp, c(NA, NA)), h = 0.5),
+               kde)
 
 })
 
 ## c_h()
 
-test_that("c_h is positive and accepts vectors of bandwidths", {
+test_that("c_h is positive, vectorized, and consistent across L and log", {
 
   h <- c(0.2, 0.5, 1)
   expect_length(c_h(h = h, q = 2, L = NULL), 3)
@@ -62,11 +44,6 @@ test_that("c_h is positive and accepts vectors of bandwidths", {
   expect_equal(c_h(h = 0.5, q = 2, L = NULL),
                c_h(h = 0.5, q = 2, L = function(z) exp(-z)),
                tolerance = 1e-4)
-
-})
-
-test_that("c_h with log = TRUE is the logarithm of c_h", {
-
   h <- c(0.05, 0.2, 0.5, 1)
   expect_equal(c_h(h = h, q = 3, log = TRUE), log(c_h(h = h, q = 3)))
   expect_equal(c_h(h = h, q = 3, L = function(z) exp(-z), log = TRUE),
@@ -74,14 +51,21 @@ test_that("c_h with log = TRUE is the logarithm of c_h", {
 
 })
 
-test_that("c_h stays finite for small bandwidths", {
+test_that("c_h and kde_dir stay finite for small bandwidths", {
 
   for (q in 1:4) {
+
     ch <- c_h(h = c(0.005, 0.002, 0.001, 1e-4), q = q)
     expect_true(all(is.finite(ch)) && all(ch > 0))
+
   }
   h <- 1e-4
   expect_equal(c_h(h = h, q = 2), 1 / (2 * pi * h^2), tolerance = 1e-6)
+  set.seed(5)
+  samp <- r_proj_norm(n = 50, mu = c(0, 0, 1), kappa = 1e6)
+  dens <- kde_dir(x = rbind(c(0, 0, 1), c(1, 0, 0)), data = samp,
+                  h = bw_dir_rot(samp))
+  expect_true(all(is.finite(dens)) && all(dens >= 0))
 
 })
 
@@ -91,10 +75,12 @@ test_that("kernel moments match between analytical and numerical vMF kernel", {
 
   L <- function(z) exp(-z)
   for (q in 1:3) {
+
     expect_equal(lambda_L(L = NULL, q = q), lambda_L(L = L, q = q),
                  tolerance = 1e-3)
     expect_equal(b_L(L = NULL, q = q), b_L(L = L, q = q), tolerance = 1e-3)
     expect_equal(d_L(L = NULL, q = q), d_L(L = L, q = q), tolerance = 1e-3)
+
   }
 
 })

@@ -1,16 +1,18 @@
 
 ## int_cir()
 
-test_that("int_cir integrates a circular density to one", {
+test_that("int_cir integrates a vMF density to one", {
 
   f <- function(x) d_mixvmf(x = x, mu = c(0, 1), kappa = 2, p = 1)
   expect_equal(int_cir(f = f), 1, tolerance = 1e-4)
+  f_nonvec <- function(x) d_mixvmf(x = rbind(x), mu = c(0, 1), kappa = 1, p = 1)
+  expect_equal(int_cir(f = f_nonvec, f_vect = FALSE), 1, tolerance = 1e-4)
 
 })
 
 ## int_sph()
 
-test_that("int_sph integrates a spherical density to one", {
+test_that("int_sph integrates a vMF density to one", {
 
   f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
   expect_equal(int_sph(f = f), 1, tolerance = 1e-4)
@@ -19,7 +21,7 @@ test_that("int_sph integrates a spherical density to one", {
 
 ## int_hypsph()
 
-test_that("int_hypsph integrates a density to one", {
+test_that("int_hypsph integrates a vMF density to one", {
 
   f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 0, 1), kappa = 2, p = 1)
   set.seed(42)
@@ -27,21 +29,42 @@ test_that("int_hypsph integrates a density to one", {
 
 })
 
-test_that("int_hypsph honors na.rm (regression: was hardcoded to TRUE)", {
+test_that("int_hypsph honors na.rm, sim functions, and the uniform default", {
 
-  set.seed(1)
+  # A function returning NAs
   f_na <- function(x) {
+
     v <- d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
     v[1] <- NA
     v
+
   }
+  set.seed(1)
   expect_true(is.na(int_hypsph(f = f_na, q = 2, M = 1e3, na.rm = FALSE)))
   set.seed(1)
   expect_true(is.finite(int_hypsph(f = f_na, q = 2, M = 1e3, na.rm = TRUE)))
 
+  # A sampler function, and a sample of the wrong dimension
+  set.seed(42)
+  r_unif <- function(M) normalize(matrix(rnorm(n = M * 3), nrow = M, ncol = 3))
+  f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
+  expect_equal(int_hypsph(f = f, q = 2, M = 1e4, sim = r_unif), 1,
+               tolerance = 5e-2)
+  expect_error(int_hypsph(f = f, q = 5, sim = matrix(0, nrow = 10, ncol = 3)),
+               "ncol")
+
+  # Without a proposal, the plain uniform estimator
+  q <- 3
+  f <- function(x) d_mixvmf(x = x, mu = c(1, rep(0, q)), kappa = 2, p = 1)
+  set.seed(42)
+  int <- int_hypsph(f = f, q = q, M = 1e4)
+  set.seed(42)
+  sim <- normalize(matrix(rnorm(n = 1e4 * (q + 1)), nrow = 1e4, ncol = q + 1))
+  expect_identical(int, mean(f(sim)) * w_q(q = q))
+
 })
 
-test_that("Importance sampling recovers a concentrated integral", {
+test_that("safe_mixvmf proposals recover concentrated integrals", {
 
   # Concentrated integrand
   q <- 10
@@ -69,12 +92,8 @@ test_that("Importance sampling recovers a concentrated integral", {
   expect_equal(int_hypsph(f = f1, q = q, sim = prop$sim, f_sim = prop$f_sim),
                1, tolerance = 1e-2)
 
-})
-
-test_that("safe_mixvmf weights match the draws, capped or not", {
-
-  q <- 10
-  mu <- rbind(c(1, rep(0, q)))
+  # A constant is recovered whatever the proposal, but only if the density of
+  # the proposal matches its draws, which capping kappa must preserve.
   f <- function(x) rep(1, nrow(x))
   set.seed(42)
   expect_silent(prop <- safe_mixvmf(q = q, mu = mu, kappa = 4547, p = 1,
@@ -86,39 +105,6 @@ test_that("safe_mixvmf weights match the draws, capped or not", {
                  "collapsed")
   expect_equal(int_hypsph(f = f, q = q, sim = prop$sim, f_sim = prop$f_sim),
                w_q(q = q), tolerance = 1e-2)
-
-})
-
-test_that("int_hypsph accepts a sampler function and checks its dimension", {
-
-  set.seed(42)
-  r_unif <- function(M) normalize(matrix(rnorm(n = M * 3), nrow = M, ncol = 3))
-  f <- function(x) d_mixvmf(x = x, mu = c(0, 0, 1), kappa = 2, p = 1)
-  expect_equal(int_hypsph(f = f, q = 2, M = 1e4, sim = r_unif), 1,
-               tolerance = 5e-2)
-  expect_error(int_hypsph(f = f, q = 5, sim = matrix(0, nrow = 10, ncol = 3)),
-               "ncol")
-
-})
-
-test_that("int_hypsph without a proposal is the plain uniform estimator", {
-
-  q <- 3
-  f <- function(x) d_mixvmf(x = x, mu = c(1, rep(0, q)), kappa = 2, p = 1)
-  set.seed(42)
-  int <- int_hypsph(f = f, q = q, M = 1e4)
-  set.seed(42)
-  sim <- normalize(matrix(rnorm(n = 1e4 * (q + 1)), nrow = 1e4, ncol = q + 1))
-  expect_identical(int, mean(f(sim)) * w_q(q = q))
-
-})
-
-## int_cir(), int_sph(), int_hypsph()
-
-test_that("integration routines also work with non-vectorized f", {
-
-  f <- function(x) d_mixvmf(x = rbind(x), mu = c(0, 1), kappa = 1, p = 1)
-  expect_equal(int_cir(f = f, f_vect = FALSE), 1, tolerance = 1e-4)
 
 })
 

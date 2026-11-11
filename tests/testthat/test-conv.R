@@ -1,7 +1,7 @@
 
 ## norm2()
 
-test_that("norm2 works for vectors and matrices", {
+test_that("norm2 and normalize work for vectors and matrices", {
 
   expect_equal(norm2(c(3, 4)), 5)
   expect_equal(norm2(rbind(c(3, 4), c(0, 1), c(1, 0))), c(5, 1, 1))
