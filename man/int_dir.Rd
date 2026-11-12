@@ -107,14 +107,13 @@ f_sim <- function(x) {
 int_hypsph(f = f, q = 2, sim = sim, f_sim = f_sim)
 }
 \references{
-Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
-sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
+Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the sphere
+of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
 59(3):477--481.
 
 Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P.
-(1997).
-\emph{Numerical Recipes in Fortran 77: The Art of Scientific Computing}.
-Volume 1. Cambridge University Press, Cambridge. Second edition.
+(1997). \emph{Numerical Recipes in Fortran 77: The Art of Scientific
+Computing}. Volume 1. Second edition. Cambridge University Press, Cambridge.
 }
 \seealso{
 \code{\link{to_rad}}, \code{\link{normalize}},

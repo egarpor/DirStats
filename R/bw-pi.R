@@ -41,9 +41,8 @@
 #' components featuring high concentration.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
-#' for kernel density estimation with directional data. \emph{Electronic
-#' Journal of Statistics}, 7:1655--1685.
-#' \doi{10.1214/13-EJS821}
+#' for kernel density estimation with directional data. \emph{Electronic Journal
+#' of Statistics}, 7:1655--1685. \doi{10.1214/13-EJS821}
 #'
 #' Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 #' von Mises--Fisher Distributions. \emph{Journal of Statistical Software},
@@ -271,9 +270,8 @@ bic_vmf_mix <- function(data, M_bound = ceiling(log(nrow(data))), M_neig = 3,
 #' earlier for concentrated data.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
-#' for kernel density estimation with directional data. \emph{Electronic
-#' Journal of Statistics}, 7:1655--1685.
-#' \doi{10.1214/13-EJS821}
+#' for kernel density estimation with directional data. \emph{Electronic Journal
+#' of Statistics}, 7:1655--1685. \doi{10.1214/13-EJS821}
 #' @seealso \code{\link{kde_dir}}, \code{\link{bw_dir_cv}},
 #' \code{\link{bic_vmf_mix}}.
 #' @examples

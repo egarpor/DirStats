@@ -95,9 +95,8 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
 }
 \references{
 García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
-for kernel density estimation with directional data. \emph{Electronic
-Journal of Statistics}, 7:1655--1685.
-\doi{10.1214/13-EJS821}
+for kernel density estimation with directional data. \emph{Electronic Journal
+of Statistics}, 7:1655--1685. \doi{10.1214/13-EJS821}
 
 Hornik, K. and Grün, B. (2014). movMF: An R Package for Fitting Mixtures of
 von Mises--Fisher Distributions. \emph{Journal of Statistical Software},

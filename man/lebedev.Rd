@@ -42,8 +42,8 @@ f_1 <- function(x) x[, 1] * x[, 2]^2
 4 * pi * sum(lebedev$w * f_1(lebedev$xyz))
 }
 \references{
-Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the
-sphere of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
+Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the sphere
+of the 131st algebraic order of accuracy. \emph{Doklady Mathematics},
 59(3):477--481.
 }
 \seealso{

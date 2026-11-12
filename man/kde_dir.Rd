@@ -48,10 +48,9 @@ if (requireNamespace("rotasym", quietly = TRUE)) {
 }
 }
 \references{
-Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
-density function of directional data. \emph{Journal of Multivariate
-Analysis}, 27(1):24--39.
-\doi{10.1016/0047-259X(88)90113-3}
+Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of density
+function of directional data. \emph{Journal of Multivariate Analysis},
+27(1):24--39. \doi{10.1016/0047-259X(88)90113-3}
 }
 \seealso{
 \code{\link{bw_dir_cv}}, \code{\link{bw_dir_pi}}, \code{\link{c_h}},

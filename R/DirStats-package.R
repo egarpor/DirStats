@@ -5,14 +5,12 @@
 #' @description Nonparametric kernel density estimation and bandwidth selection
 #' for directional data on the hypersphere \eqn{\mathbb{S}^q}, \eqn{q \ge 1}.
 #' Implements the kernel density estimator of Bai et al. (1988)
-#' \doi{10.1016/0047-259X(88)90113-3} in \code{\link{kde_dir}}, the likelihood
-#' and least squares cross-validation bandwidth selectors of Hall et al. (1987)
-#' \doi{10.1093/biomet/74.4.751} in \code{\link{bw_dir_lcv}} and
+#' in \code{\link{kde_dir}}, the likelihood and least squares cross-validation
+#' bandwidth selectors of Hall et al. (1987) in \code{\link{bw_dir_lcv}} and
 #' \code{\link{bw_dir_lscv}}, and the rule-of-thumb and plug-in selectors of
-#' García-Portugués (2013) \doi{10.1214/13-EJS821} in
-#' \code{\link{bw_dir_rot}}, \code{\link{bw_dir_ami}}, and
-#' \code{\link{bw_dir_emi}}. Also fits mixtures of von Mises--Fisher
-#' distributions with \code{\link{bic_vmf_mix}}, integrates on
+#' García-Portugués (2013) in \code{\link{bw_dir_rot}},
+#' \code{\link{bw_dir_ami}}, and \code{\link{bw_dir_emi}}. Also fits mixtures of
+#' von Mises--Fisher distributions with \code{\link{bic_vmf_mix}}, integrates on
 #' \eqn{\mathbb{S}^q}, and provides fast stable evaluations of the log-Bessel
 #' function and the von Mises--Fisher normalizing constant for large orders and
 #' concentrations.

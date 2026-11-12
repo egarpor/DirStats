@@ -17,10 +17,9 @@
 #' @details
 #' \code{data} is not checked to have unit norm, so the user must be careful.
 #' @references
-#' Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of
-#' density function of directional data. \emph{Journal of Multivariate
-#' Analysis}, 27(1):24--39.
-#' \doi{10.1016/0047-259X(88)90113-3}
+#' Bai, Z. D., Rao, C. R., and Zhao, L. C. (1988). Kernel estimators of density
+#' function of directional data. \emph{Journal of Multivariate Analysis},
+#' 27(1):24--39. \doi{10.1016/0047-259X(88)90113-3}
 #' @seealso \code{\link{bw_dir_cv}}, \code{\link{bw_dir_pi}}, \code{\link{c_h}},
 #' \code{\link{vmf}}.
 #' @examples
@@ -121,9 +120,8 @@ kde_dir <- function(x, data, h, L = NULL) {
 #' (\code{L = NULL}), and are otherwise computed by numerical integration.
 #' @references
 #' García-Portugués, E. (2013). Exact risk improvement of bandwidth selectors
-#' for kernel density estimation with directional data. \emph{Electronic
-#' Journal of Statistics}, 7:1655--1685.
-#' \doi{10.1214/13-EJS821}
+#' for kernel density estimation with directional data. \emph{Electronic Journal
+#' of Statistics}, 7:1655--1685. \doi{10.1214/13-EJS821}
 #' @seealso \code{\link{kde_dir}}, \code{\link{bw_dir_pi}}.
 #' @examples
 #' q <- 3
