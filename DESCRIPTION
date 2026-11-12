@@ -4,10 +4,10 @@ Title: Nonparametric Methods for Directional Data
 Version: 1.0.0
 Date: 2026-11-11
 Authors@R: c(
-     person(given = "Eduardo", family = "García-Portugués",
-            role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
-            comment = c(ORCID = "0000-0002-9224-4111"))
-     )
+    person(given = "Eduardo", family = "García-Portugués",
+           role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
+           comment = c(ORCID = "0000-0002-9224-4111"))
+    )
 Description: Nonparametric kernel density estimation and bandwidth selection
     for directional data on the hypersphere S^q, q >= 1. Implements the kernel
     density estimator of Bai et al. (1988) <doi:10.1016/0047-259X(88)90113-3>
